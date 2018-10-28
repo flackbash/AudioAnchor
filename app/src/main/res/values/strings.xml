@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">AudioAnchor</string>
+
+    <!-- Error messages -->
+    <string name="no_albums">No albums found in the specified directory.</string>
+    <string name="no_audio_files">No audio files found in this album.</string>
+    <string name="play_error">Error playing the selected file.</string>
+
+    <!-- SharedPreferences Strings -->
+    <string name="preference_filename">storage_directory</string>
+
+    <!-- Intent data Strings -->
+    <string name="album_id">album_id</string>
+    <string name="directory_path">directory_path</string>
+
+    <!-- Layout Texts -->
+    <string name="title">Title</string>
+    <string name="album">Album</string>
+    <string name="choose_directory">Choose directory</string>
+
+    <!-- Dialog strings -->
+    <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
+    <string name="dialog_msg_change">Change</string>
+    <string name="dialog_msg_cancel">Cancel</string>
+    <string name="play_activity_title">Playing</string>
+
+</resources>

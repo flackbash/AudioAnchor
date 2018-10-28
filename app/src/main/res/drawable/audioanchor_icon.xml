@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item>
+        <shape
+            android:shape="rectangle">
+            <corners android:radius="120dp" />
+
+            <gradient
+                android:angle="45"
+                android:endColor="@color/colorPrimaryBright"
+                android:centerX="0.5"
+                android:startColor="@color/colorPrimaryDark"
+                android:type="linear"
+                android:height="300dp"/>
+        </shape>
+    </item>
+    <item android:drawable="@drawable/audioanchor_white"/>
+</layer-list>
+
