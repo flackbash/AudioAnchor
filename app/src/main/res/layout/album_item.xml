@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/audio_storage_item_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:drawSelectorOnTop="true"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/audio_storage_item_thumbnail"
+            android:layout_width="@dimen/list_item_height"
+            android:layout_height="@dimen/list_item_height"
+            android:background="@drawable/empty_cover_grey_blue"/>
+        <TextView
+            android:id="@+id/audio_storage_item_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/list_item_font_size"
+            android:padding="@dimen/small_margin"
+            />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
