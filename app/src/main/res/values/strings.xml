@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AudioAnchor</string>
+    <string name="app_name" translatable="false">AudioAnchor</string>
 
     <!-- Error messages -->
     <string name="no_albums">No albums found in the specified directory.</string>
@@ -7,21 +7,26 @@
     <string name="play_error">Error playing the selected file.</string>
 
     <!-- SharedPreferences Strings -->
-    <string name="preference_filename">storage_directory</string>
+    <string name="preference_filename" translatable="false">storage_directory</string>
+
+    <!-- Settings strings -->
+    <string name="settings_autoplay_label">Autoplay</string>
+    <string name="settings_autoplay_key" translatable="false">autoplay</string>
+    <string name="settings_autoplay_default" translatable="false">false</string>
 
     <!-- Intent data Strings -->
-    <string name="album_id">album_id</string>
-    <string name="directory_path">directory_path</string>
+    <string name="album_id" translatable="false">album_id</string>
+    <string name="directory_path" translatable="false">directory_path</string>
 
     <!-- Layout Texts -->
     <string name="title">Title</string>
     <string name="album">Album</string>
     <string name="choose_directory">Choose directory</string>
+    <string name="settings">Settings</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
     <string name="dialog_msg_change">Change</string>
     <string name="dialog_msg_cancel">Cancel</string>
     <string name="play_activity_title">Playing</string>
-
 </resources>

@@ -1,6 +1,0 @@
-<resources>
-    <string name="app_name">AudioAnchor</string>
-
-    <!-- SharedPreferences Strings -->
-    <string name="preference_filename">AudioAnchor</string>
-</resources>
