@@ -1,16 +1,19 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Display;
@@ -30,6 +33,7 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int PLAY_LOADER = 0;
 
     // Audio File variables
+    int mId;
     String mTitle;
     int mAlbumId;
     String mPath;
@@ -47,6 +51,10 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
     TextView mCompletedTimeTV;
     TextView mTimeTV;
 
+    // Settings variables
+    SharedPreferences mSharedPreferences;
+    boolean mAutoplay = true;
+
     // The Sound Player
     SimpleSoundPlayer mPlayer;
 
@@ -61,6 +69,10 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Get the current uri from the intent
         mCurrentUri = getIntent().getData();
+
+        // Set up the shared preferences.
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mAutoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
 
         // Set up the audio player
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -84,7 +96,7 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void onClick(View view) {
                 if (!mPlayer.isPlaying()) {
-                    if (mPlayer.play()) {
+                    if (mPlayer.play(mAutoplay)) {
                         mPlayIV.setImageResource(R.drawable.pause_button);
                     }
                 } else {
@@ -145,13 +157,57 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         if (c == null || c.getCount() < 1) {
             return;
         }
+
+        // Get the audio file details from the cursor
         if (c.moveToFirst()) {
-            mTitle = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
-            mPath = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
-            mAlbumId = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_ALBUM));
-            mCompletedTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-            mTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+            setNewAudioFile(c);
+
+            // Set Album Cover and Title
+            setAlbumInfo(mAlbumId);
         }
+        c.close();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return(super.onOptionsItemSelected(item));
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        updateAudioFileStatus();
+        mPlayer.releaseMediaPlayer();
+    }
+
+
+    /*
+    * Set up a new audio file from a given cursor. I.e. get audio file details, set up the Views,
+    * initialize the Player
+    */
+    void setNewAudioFile(Cursor c) {
+        mId = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
+        mCurrentUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mId);
+        mTitle = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
+        mPath = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
+        mAlbumId = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_ALBUM));
+        mCompletedTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+        mTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+
+        // Initialize the player for the current audio file
+        mPlayer.initialize(mPath, mCompletedTime);
+
+        // Update the time column of the audiofiles table if it has not yet been set
         if (mTime == 0) {
             mTime = mPlayer.getDuration();
             ContentValues values = new ContentValues();
@@ -163,10 +219,42 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         mTitleTV.setText(mTitle);
         mTimeTV.setText(Utils.formatTime(mTime, mTime));
 
+        // Create an OnCompletionListener to react when the audio file has finished playing
+        MediaPlayer.OnCompletionListener listener = new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                mPlayer.setCurrentPosition(mPlayer.getDuration());
+                Cursor c = null;
+                if (mAutoplay) {
+                    updateAudioFileStatus();
+                    c = getNextAudioFileCursor(mId);
+                    if (c != null) {
+                        setNewAudioFile(c);
+                        c.close();
+                        if (!mPlayer.play(mAutoplay)) {
+                            mPlayIV.setImageResource(R.drawable.play_button);
+                        }
+                    }
+                }
+                if (!mAutoplay || c == null){
+                    mPlayIV.setImageResource(R.drawable.play_button);
+                }
+            }
+        };
+        mPlayer.setOnCompletionListener(listener);
+
+        // Initialize the seek bar for the current audio file
+        initializeSeekBar();
+    }
+
+    /*
+    * Get the album information and set up the related Views
+    */
+    void setAlbumInfo(int albumId) {
         // Set the album cover to the ImageView and the album title to the TextView
         String[] proj = {AnchorContract.AlbumEntry.COLUMN_COVER_PATH, AnchorContract.AlbumEntry.COLUMN_TITLE};
         String sel = AnchorContract.AlbumEntry._ID + "=?";
-        String[] selArgs = {Long.toString(mAlbumId)};
+        String[] selArgs = {Long.toString(albumId)};
         Cursor ac = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI, proj, sel, selArgs, null);
         if (ac == null || ac.getCount() < 1) {
             return;
@@ -188,51 +276,56 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
             BitmapUtils.setImage(mCoverIV, coverPath, reqSize);
         }
         ac.close();
-
-        // Initialize the player
-        mPlayer.initialize(mPath, mCompletedTime);
-        initializeSeekBar();
-
-        // Create an OnCompletionListener to react when the audio file has finished playing
-        MediaPlayer.OnCompletionListener listener = new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                mPlayIV.setImageResource(R.drawable.play_button);
-                mPlayer.setCurrentPosition(mPlayer.getDuration());
-            }
-        };
-        mPlayer.setOnCompletionListener(listener);
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-    }
+    /*
+    * Get the cursor for the next audio file in the album
+    */
+    Cursor getNextAudioFileCursor(int currentId) {
+        String[] projection = {
+                AnchorContract.AudioEntry._ID,
+                AnchorContract.AudioEntry.COLUMN_TITLE,
+                AnchorContract.AudioEntry.COLUMN_ALBUM,
+                AnchorContract.AudioEntry.COLUMN_PATH,
+                AnchorContract.AudioEntry.COLUMN_TIME,
+                AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME};
+        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+        String[] selArgs = {Long.toString(mAlbumId)};
+        Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, null);
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
+        if (c == null || c.getCount() < 1) {
+            return null;
         }
 
-        return(super.onOptionsItemSelected(item));
+        // Get the next audio file after the current in the same album
+        if (c.moveToFirst()) {
+            int id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
+            boolean takeNext = (id == currentId);
+            while (c.moveToNext()) {
+                if (takeNext) {
+                    return c;
+                }
+                id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
+                takeNext = (id == currentId);
+            }
+        }
+        return null;
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-
+    /*
+    * Update the completed time of the current audio file in the audiofiles table of the database
+    */
+    void updateAudioFileStatus() {
         // Update the time columns of the audiofiles table
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, mPlayer.getCurrentPosition());
         getContentResolver().update(mCurrentUri, values, null, null);
-
-        mPlayer.releaseMediaPlayer();
-
         getContentResolver().notifyChange(mCurrentUri, null);
     }
 
+    /*
+    * Initialize the SeekBar
+    */
     void initializeSeekBar(){
         mSeekBar.setMax(mPlayer.getDuration()/1000);
 

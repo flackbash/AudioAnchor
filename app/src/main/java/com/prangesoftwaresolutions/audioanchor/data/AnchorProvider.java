@@ -224,7 +224,6 @@ public class AnchorProvider extends ContentProvider {
                 return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
             case ALBUM:
                 // Delete all rows that match the selection and selection args
-                // TODO: need to delete all audio files for the given album as well?
                 getContext().getContentResolver().notifyChange(uri, null);
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
             case AUDIO_ID:
@@ -235,7 +234,6 @@ public class AnchorProvider extends ContentProvider {
                 return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
             case ALBUM_ID:
                 // Delete a single row given by the ID in the URI
-                // TODO: need to delete all audio files for the given album as well?
                 selection = AnchorContract.AlbumEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 getContext().getContentResolver().notifyChange(uri, null);

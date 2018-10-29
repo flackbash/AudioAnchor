@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
-
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -28,7 +26,7 @@ class Utils {
             public boolean accept(File dir, String filename) {
                 File sel = new File(dir, filename);
                 // Only list files that are readable and images
-                return sel.getName().endsWith(".jpg") || sel.getName().endsWith(".png");
+                return sel.getName().endsWith(".jpg") || sel.getName().endsWith(".jpeg") || sel.getName().endsWith(".png");
             }
         };
 
@@ -45,7 +43,7 @@ class Utils {
      * Taken from http://techin-android.blogspot.com/2012/01/millisecond-to-hhmmss-format-convertor.html
      */
     static String formatTime(long millis, long fullTime) {
-        String output = "00:00:00";
+        String output;
         long seconds = millis / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;

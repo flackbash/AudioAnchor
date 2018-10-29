@@ -10,7 +10,6 @@ import java.io.IOException;
 /**
  * Class to simplify working with sounds.
  */
-
 class SimpleSoundPlayer {
 
     private static final String LOG_TAG = SimpleSoundPlayer.class.getName();
@@ -42,6 +41,9 @@ class SimpleSoundPlayer {
     }
 
     void initialize(String path, int position) {
+        if (mMediaPlayer != null) {
+            releaseMediaPlayer();
+        }
         mMediaPlayer = new MediaPlayer();
         try {
             mMediaPlayer.setDataSource(path);
@@ -55,10 +57,10 @@ class SimpleSoundPlayer {
     /*
      * Play the audio file stored at the specified path
      */
-    boolean play() {
+    boolean play(boolean playOverDuration) {
         // Request audio focus for playback
         int result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED  && getCurrentPosition() != getDuration()) {
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED && (playOverDuration || getCurrentPosition() != getDuration())) {
             mMediaPlayer.start();
             return true;
         }
@@ -78,14 +80,16 @@ class SimpleSoundPlayer {
      * Skip the specified amount of seconds forward
      */
     void forward(int seconds) {
-        mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition() + seconds*1000);
+        int newPos = Math.min(getDuration(), mMediaPlayer.getCurrentPosition() + seconds*1000);
+        mMediaPlayer.seekTo(newPos);
     }
 
     /*
      * Skip the specified amount of seconds backward
      */
     void backward(int seconds) {
-        mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition() - seconds*1000);
+        int newPos = Math.max(0,mMediaPlayer.getCurrentPosition() - seconds*1000);
+        mMediaPlayer.seekTo(newPos);
     }
 
     /*

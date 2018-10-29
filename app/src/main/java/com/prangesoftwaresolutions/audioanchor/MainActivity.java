@@ -32,6 +32,9 @@ import java.util.LinkedHashMap;
 
 // TODO: Don't include file extension in title --> get file metadata?
 // TODO: Show border around button play
+// TODO: Support subdirectories?
+// TODO: Show progress (and total time) in AlbumActivity
+// TODO: Show album progress in MainActivity
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Set up the shared preferences.
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String storageDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
 
@@ -132,6 +136,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         switch (item.getItemId()) {
             case R.id.menu_choose_directory:
                 showDirectorySelector();
+                return true;
+            case R.id.menu_settings:
+                // Send an intent to open the Learn Settings
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
         }
         return super.onOptionsItemSelected(item);
