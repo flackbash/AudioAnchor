@@ -23,8 +23,12 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+
+import java.io.IOException;
+
 
 public class PlayActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -205,7 +209,13 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         mTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
 
         // Initialize the player for the current audio file
-        mPlayer.initialize(mPath, mCompletedTime);
+        try {
+            mPlayer.initialize(mPath, mCompletedTime);
+        } catch (IOException e) {
+            Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // Update the time column of the audiofiles table if it has not yet been set
         if (mTime == 0) {

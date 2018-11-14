@@ -4,7 +4,7 @@
     <!-- Error messages -->
     <string name="no_albums">No albums found in the specified directory.</string>
     <string name="no_audio_files">No audio files found in this album.</string>
-    <string name="play_error">Error playing the selected file.</string>
+    <string name="play_error">The selected audio file is not playable.</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>

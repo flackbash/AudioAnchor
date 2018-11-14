@@ -2,7 +2,6 @@ package com.prangesoftwaresolutions.audioanchor;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.util.Log;
 
 import java.io.IOException;
 
@@ -11,8 +10,6 @@ import java.io.IOException;
  * Class to simplify working with sounds.
  */
 class SimpleSoundPlayer {
-
-    private static final String LOG_TAG = SimpleSoundPlayer.class.getName();
 
     private MediaPlayer mMediaPlayer;
     private AudioManager mAudioManager;
@@ -40,7 +37,7 @@ class SimpleSoundPlayer {
         mAudioManager = audioManager;
     }
 
-    void initialize(String path, int position) {
+    void initialize(String path, int position) throws IOException {
         if (mMediaPlayer != null) {
             releaseMediaPlayer();
         }
@@ -50,7 +47,7 @@ class SimpleSoundPlayer {
             mMediaPlayer.prepare();
             mMediaPlayer.seekTo(position);
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Problem playing audio file: ", e);
+            throw new IOException("Problem playing audio file.");
         }
     }
 
