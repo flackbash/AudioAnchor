@@ -1,8 +1,12 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +36,21 @@ public class AudioFileCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        // Temporary Michi-Solution:
+        ContentValues values = new ContentValues();
+        // Retrieve audio duration from Metadata.
+        MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+        String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
+        metaRetriever.setDataSource(path);
+        String dur = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(dur));
+        metaRetriever.release();
+        // Insert the row into the database table
+        int id = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry._ID));
+        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
+        mContext.getContentResolver().update(uri, values, null, null);
+
+
         // Get the title of the current audio file and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_file_item_title);
         String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
