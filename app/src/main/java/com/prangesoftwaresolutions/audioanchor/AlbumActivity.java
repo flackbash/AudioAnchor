@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -39,6 +40,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     TextView mEmptyTV;
     ImageView mAlbumInfoCoverIV;
     TextView mAlbumInfoTitleTV;
+    TextView mAlbumInfoTimeTV;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +59,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Set up the views
         mAlbumInfoTitleTV = findViewById(R.id.album_info_title);
+        mAlbumInfoTimeTV = findViewById(R.id.album_info_time);
         mAlbumInfoCoverIV = findViewById(R.id.album_info_cover);
 
         // Use a ListView and CursorAdapter to recycle space
@@ -108,7 +111,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Set the text of the empty view
         mEmptyTV.setText(R.string.no_audio_files);
 
-        // Set the Album Info Text and Image
+        // Set the slbum info text and image
         String[] proj = {AnchorContract.AlbumEntry.COLUMN_COVER_PATH, AnchorContract.AlbumEntry.COLUMN_TITLE};
         String sel = AnchorContract.AlbumEntry._ID + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};
@@ -125,6 +128,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             BitmapUtils.setImage(mAlbumInfoCoverIV, coverPath, reqSize);
         }
         c.close();
+
+        // Set the album info time
+        setCompletedAlbumTime();
 
         // Swap the new cursor in. The framework will take care of closing the old cursor
         mCursorAdapter.swapCursor(cursor);
@@ -171,7 +177,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         LinkedHashMap<String, Integer> audioTitles = getAudioFileTitles();
 
-        // Insert new directories into the database
+        // Insert new files into the database
         for (String file : fileList) {
             if (!audioTitles.containsKey(file)) {
                 insertAudioFile(file);
@@ -197,6 +203,15 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         String path = Utils.getPath(this, mDirectory.getName(), title);
         values.put(AnchorContract.AudioEntry.COLUMN_PATH, path);
         values.put(AnchorContract.AudioEntry.COLUMN_ALBUM, mAlbumId);
+
+        // Retrieve audio duration from Metadata.
+        MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+        metaRetriever.setDataSource(path);
+        String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(duration));
+        metaRetriever.release();
+
+        // Insert the row into the database table
         getContentResolver().insert(AnchorContract.AudioEntry.CONTENT_URI, values);
     }
 
@@ -219,14 +234,47 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             return titles;
         }
 
-        // Loop through the database rows and add the recipes to the ArrayList
+        // Loop through the database rows and add the audio file titles to the hashmap
         while (c.moveToNext()) {
             String title = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
-            Integer id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
+            int id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
             titles.put(title, id);
         }
 
         c.close();
         return titles;
     }
+
+    private void setCompletedAlbumTime() {
+        SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
+        String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
+        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+        String[] selArgs = {Long.toString(mAlbumId)};
+
+        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
+                columns, sel, selArgs, null, null, null);
+
+        // Bail early if the cursor is null
+        if (c == null) {
+            return;
+        }
+
+        // Loop through the database rows and sum up the audio durations and completed time
+        int sumDuration = 0;
+        int sumCompletedTime = 0;
+        while (c.moveToNext()) {
+            sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+            sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+        }
+
+        c.close();
+
+        // Set the text for the album time TextView
+        String durationStr = Utils.formatTime(sumDuration, sumDuration);
+        String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
+        String timeStr = getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
+        mAlbumInfoTimeTV.setText(timeStr);
+
+    }
+
 }
