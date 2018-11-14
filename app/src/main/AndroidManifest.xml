@@ -11,7 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,17 +25,17 @@
             android:enabled="true"
             android:exported="false" />
 
-        <activity android:name=".AlbumActivity">
+        <activity android:name=".AlbumActivity" android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.prangesoftwaresolutions.audioanchor.MainActivity" />
         </activity>
-        <activity android:name=".PlayActivity">
+        <activity android:name=".PlayActivity" android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.prangesoftwaresolutions.audioanchor.AlbumActivity" />
         </activity>
-        <activity android:name=".SettingsActivity">
+        <activity android:name=".SettingsActivity" android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.prangesoftwaresolutions.audioanchor.MainActivity" />
