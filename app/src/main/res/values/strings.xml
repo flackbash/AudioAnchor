@@ -23,6 +23,7 @@
     <string name="album">Album</string>
     <string name="choose_directory">Choose directory</string>
     <string name="settings">Settings</string>
+    <string name="time_completed">%s / %s</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>

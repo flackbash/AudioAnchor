@@ -15,14 +15,30 @@
             android:layout_width="@dimen/list_item_height"
             android:layout_height="@dimen/list_item_height"
             android:src="@drawable/ic_unchecked"/>
-        <TextView
-            android:id="@+id/audio_file_item_title"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/audio_file_list_item_font_size"
-            android:padding="@dimen/small_margin"
-            android:text="@string/title"
-            />
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/audio_file_item_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/audio_file_list_item_font_size"
+                android:paddingStart="@dimen/small_margin"
+                android:paddingEnd="@dimen/small_margin"
+                android:paddingTop="@dimen/small_margin"
+                android:text="@string/title"
+                />
+            <TextView
+                android:id="@+id/audio_file_item_duration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/small_font_size"
+                android:paddingStart="@dimen/small_margin"
+                android:paddingEnd="@dimen/small_margin"
+                android:text="00:00 / 00:00"
+                />
+        </LinearLayout>
 
     </LinearLayout>
 

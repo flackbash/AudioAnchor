@@ -17,8 +17,12 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
  */
 
 public class AudioFileCursorAdapter extends CursorAdapter {
+
+    private Context mContext;
+
     AudioFileCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
+        mContext = context;
     }
 
     @Override
@@ -28,18 +32,25 @@ public class AudioFileCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        // Get the title of the current Recipe and set this text to the recipeTV
+        // Get the title of the current audio file and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_file_item_title);
         String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
         titleTV.setText(title);
+
+        // Get the completed time and full time of the current audio file and set this text to the durationTV
+        TextView durationTV = view.findViewById(R.id.audio_file_item_duration);
+        int duration = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+        int completedTime = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+        String completedTimeStr = Utils.formatTime(completedTime, duration);
+        String durationStr = Utils.formatTime(duration, duration);
+        String timeString = mContext.getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
+        durationTV.setText(timeString);
 
         // Get the path of the thumbnail of the current recipe and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_file_item_thumbnail);
 
         // Set the audio status thumbnail to transparent, paused or finished
-        int completedTime = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-        int time = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-        if (completedTime >= time && time != 0) {
+        if (completedTime >= duration && duration != 0) {
             thumbnailIV.setImageResource(R.drawable.ic_checked);
         } else if (completedTime > 0) {
             thumbnailIV.setImageResource(R.drawable.ic_paused);
