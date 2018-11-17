@@ -57,7 +57,7 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Settings variables
     SharedPreferences mSharedPreferences;
-    boolean mAutoplay = true;
+    boolean mAutoplay;
 
     // The Sound Player
     SimpleSoundPlayer mPlayer;

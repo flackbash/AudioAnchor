@@ -13,6 +13,9 @@
     <string name="settings_autoplay_label">Autoplay</string>
     <string name="settings_autoplay_key" translatable="false">autoplay</string>
     <string name="settings_autoplay_default" translatable="false">false</string>
+    <string name="settings_progress_percentage_label">Show progress in percent</string>
+    <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
+    <string name="settings_progress_percentage_default">false</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
@@ -24,6 +27,7 @@
     <string name="choose_directory">Choose directory</string>
     <string name="settings">Settings</string>
     <string name="time_completed">%s / %s</string>
+    <string name="time_completed_percent">%d%% complete</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>

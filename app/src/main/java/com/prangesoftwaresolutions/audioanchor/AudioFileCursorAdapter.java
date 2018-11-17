@@ -1,12 +1,10 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,21 +34,6 @@ public class AudioFileCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        // Temporary Michi-Solution:
-        ContentValues values = new ContentValues();
-        // Retrieve audio duration from Metadata.
-        MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-        String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
-        metaRetriever.setDataSource(path);
-        String dur = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(dur));
-        metaRetriever.release();
-        // Insert the row into the database table
-        int id = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry._ID));
-        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
-        mContext.getContentResolver().update(uri, values, null, null);
-
-
         // Get the title of the current audio file and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_file_item_title);
         String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
@@ -60,10 +43,23 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         TextView durationTV = view.findViewById(R.id.audio_file_item_duration);
         int duration = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
         int completedTime = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-        String completedTimeStr = Utils.formatTime(completedTime, duration);
-        String durationStr = Utils.formatTime(duration, duration);
-        String timeString = mContext.getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
-        durationTV.setText(timeString);
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String prefKey = mContext.getString(R.string.settings_progress_percentage_key);
+        String prefDefault = mContext.getString(R.string.settings_progress_percentage_default);
+        boolean progressInPercent = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
+
+        String timeStr;
+        if (progressInPercent) {
+            int percent = Math.round(completedTime * 100 / duration);
+            timeStr = mContext.getResources().getString(R.string.time_completed_percent, percent);
+
+        } else {
+            String completedTimeStr = Utils.formatTime(completedTime, duration);
+            String durationStr = Utils.formatTime(duration, duration);
+            timeStr = mContext.getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
+        }
+        durationTV.setText(timeStr);
 
         // Get the path of the thumbnail of the current recipe and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_file_item_thumbnail);

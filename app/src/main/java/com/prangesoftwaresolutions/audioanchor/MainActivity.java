@@ -31,10 +31,13 @@ import java.io.FilenameFilter;
 import java.util.LinkedHashMap;
 
 // TODO: Don't include file extension in title --> get file metadata?
-// TODO: Show border around button play
 // TODO: Support subdirectories?
-// TODO: Show progress (and total time) in AlbumActivity
 // TODO: Show album progress in MainActivity
+// TODO: Option in settings if in autoplay play completed files as well
+// TODO: Temporary solution to add all durations to the database
+// TODO: Option in settings: don't delete deleted files from db
+// TODO: AlbumActivity: Scroll to first non-completed file
+// TODO: Option in settings: progress in percent or time
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
