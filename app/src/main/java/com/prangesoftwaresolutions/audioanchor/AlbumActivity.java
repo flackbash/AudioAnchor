@@ -6,10 +6,12 @@ import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -42,6 +44,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     TextView mAlbumInfoTitleTV;
     TextView mAlbumInfoTimeTV;
 
+    // Settings variables
+    boolean mProgressInPercent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +58,12 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
         getLoaderManager().initLoader(ALBUM_LOADER, null, this);
+
+        // Set up the shared preferences.
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefKey = getString(R.string.settings_progress_percentage_key);
+        String prefDefault = getString(R.string.settings_progress_percentage_default);
+        mProgressInPercent = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
 
         // Initialize the cursor adapter
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
@@ -270,10 +281,18 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         c.close();
 
         // Set the text for the album time TextView
-        String durationStr = Utils.formatTime(sumDuration, sumDuration);
-        String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
-        String timeStr = getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
+        String timeStr;
+        if (!mProgressInPercent) {
+            String durationStr = Utils.formatTime(sumDuration, sumDuration);
+            String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
+            timeStr = getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
+        } else {
+            int percent = Math.round(sumCompletedTime * 100 / sumDuration);
+            timeStr = getResources().getString(R.string.time_completed_percent, percent);
+        }
         mAlbumInfoTimeTV.setText(timeStr);
+
+
 
     }
 

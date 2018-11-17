@@ -4,4 +4,8 @@
         android:defaultValue="@string/settings_autoplay_default"
         android:key="@string/settings_autoplay_key"
         android:title="@string/settings_autoplay_label"/>
+    <SwitchPreference
+        android:defaultValue="@string/settings_progress_percentage_default"
+        android:key="@string/settings_progress_percentage_key"
+        android:title="@string/settings_progress_percentage_label"/>
 </PreferenceScreen>
