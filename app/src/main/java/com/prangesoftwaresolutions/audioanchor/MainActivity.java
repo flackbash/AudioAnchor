@@ -37,7 +37,6 @@ import java.util.LinkedHashMap;
 // TODO: Temporary solution to add all durations to the database
 // TODO: Option in settings: don't delete deleted files from db
 // TODO: AlbumActivity: Scroll to first non-completed file
-// TODO: Option in settings: progress in percent or time
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 

@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -287,7 +288,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
             timeStr = getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
         } else {
-            int percent = Math.round(sumCompletedTime * 100 / sumDuration);
+            int percent = Math.round(((float)sumCompletedTime / sumDuration) * 100);
             timeStr = getResources().getString(R.string.time_completed_percent, percent);
         }
         mAlbumInfoTimeTV.setText(timeStr);
