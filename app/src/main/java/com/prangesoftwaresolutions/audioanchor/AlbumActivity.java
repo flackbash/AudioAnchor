@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -68,7 +69,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         mProgressInPercent = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
         mKeepDeleted = pref.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
 
-
         // Initialize the cursor adapter
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
 
@@ -96,6 +96,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 startActivity(intent);
             }
         });
+
+        scrollToNotCompletedAudio(listView);
 
         updateAudioFileTable();
     }
@@ -297,9 +299,35 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             timeStr = getResources().getString(R.string.time_completed_percent, percent);
         }
         mAlbumInfoTimeTV.setText(timeStr);
+    }
 
+    private void scrollToNotCompletedAudio(ListView listView) {
+        SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
+        String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
+        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+        String[] selArgs = {Long.toString(mAlbumId)};
 
+        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
+                columns, sel, selArgs, null, null, null);
 
+        // Bail early if the cursor is null
+        if (c == null) {
+            return;
+        }
+
+        // Loop through the database rows and sum up the audio durations and completed time
+        int scrollTo = 0;
+        while (c.moveToNext()) {
+            int duration = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+            int completed = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+            if (completed < duration || duration == 0) {
+                break;
+            }
+            scrollTo += 1;
+        }
+        c.close();
+
+        listView.setSelection(Math.max(scrollTo - 1, 0));
     }
 
 }
