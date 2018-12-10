@@ -35,13 +35,15 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.LinkedHashMap;
 
-// TODO: Don't include file extension in title --> get file metadata?
+// TODO: Option in Settings: Show title (from Metadata)
 // TODO: Support subdirectories?
 // TODO: Show album progress in MainActivity
 // TODO: Option in settings if in autoplay play completed files as well
 // TODO: button to update all elements in the database
-// TODO: Option in settings: don't delete deleted files from db
+// TODO: Option in settings: Don't show deleted files in list
 // TODO: AlbumActivity: Scroll to first non-completed file
+// TODO: LockScreen Widget
+// TODO: GOTO option in PlayActivity
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Preferences
     private SharedPreferences mSharedPreferences;
+    private boolean mKeepDeleted;
 
     // Database variables
     private static final int AUDIO_LOADER = 0;
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Set up the shared preferences.
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mPrefDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
+        mKeepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
         getLoaderManager().initLoader(AUDIO_LOADER, null, this);
@@ -157,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     finish();
                 } else {
                     mListView.setAdapter(mCursorAdapter);
-                    
+
                     if (mPrefDirectory == null) {
                         showDirectorySelector();
                     } else {
@@ -291,15 +295,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         // Delete missing directories from the database
-        for (String title: albumTitles.keySet()) {
-            int id = albumTitles.get(title);
-            // Delete the album in the albums table
-            Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
-            getContentResolver().delete(uri, null, null);
-            // Delete all audios from the album in the audio_files table
-            String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-            String[] selArgs = {Long.toString(id)};
-            getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, sel, selArgs);
+        if(!mKeepDeleted) {
+            for (String title: albumTitles.keySet()) {
+                int id = albumTitles.get(title);
+                // Delete the album in the albums table
+                Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
+                getContentResolver().delete(uri, null, null);
+                // Delete all audios from the album in the audio_files table
+                String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+                String[] selArgs = {Long.toString(id)};
+                getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, sel, selArgs);
+            }
         }
     }
 

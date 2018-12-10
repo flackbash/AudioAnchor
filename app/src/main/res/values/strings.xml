@@ -17,6 +17,9 @@
     <string name="settings_progress_percentage_label">Show progress in percent</string>
     <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
     <string name="settings_progress_percentage_default">false</string>
+    <string name="settings_keep_deleted_label">Keep progress of deleted files in database</string>
+    <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
+    <string name="settings_keep_deleted_default" translatable="false">false</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
