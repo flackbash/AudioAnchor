@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -47,6 +46,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     // Settings variables
     boolean mProgressInPercent;
+    private boolean mKeepDeleted;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +66,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         String prefKey = getString(R.string.settings_progress_percentage_key);
         String prefDefault = getString(R.string.settings_progress_percentage_default);
         mProgressInPercent = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
+        mKeepDeleted = pref.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
+
 
         // Initialize the cursor adapter
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
@@ -199,10 +202,12 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         }
 
         // Delete missing audio files from the database
-        for (String title: audioTitles.keySet()) {
-            Integer id = audioTitles.get(title);
-            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
-            getContentResolver().delete(uri, null, null);
+        if (!mKeepDeleted) {
+            for (String title: audioTitles.keySet()) {
+                Integer id = audioTitles.get(title);
+                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
+                getContentResolver().delete(uri, null, null);
+            }
         }
     }
 

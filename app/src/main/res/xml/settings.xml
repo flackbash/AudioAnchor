@@ -8,4 +8,8 @@
         android:defaultValue="@string/settings_progress_percentage_default"
         android:key="@string/settings_progress_percentage_key"
         android:title="@string/settings_progress_percentage_label"/>
+    <SwitchPreference
+        android:defaultValue="@string/settings_keep_deleted_default"
+        android:key="@string/settings_keep_deleted_key"
+        android:title="@string/settings_keep_deleted_label"/>
 </PreferenceScreen>
