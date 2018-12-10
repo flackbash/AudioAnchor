@@ -1,5 +1,6 @@
 package com.prangesoftwaresolutions.audioanchor;
 
+import android.Manifest;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -8,10 +9,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,7 +39,7 @@ import java.util.LinkedHashMap;
 // TODO: Support subdirectories?
 // TODO: Show album progress in MainActivity
 // TODO: Option in settings if in autoplay play completed files as well
-// TODO: Temporary solution to add all durations to the database
+// TODO: button to update all elements in the database
 // TODO: Option in settings: don't delete deleted files from db
 // TODO: AlbumActivity: Scroll to first non-completed file
 
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // The audio storage directory
     private File mDirectory;
+    private String mPrefDirectory;
 
     // Preferences
     private SharedPreferences mSharedPreferences;
@@ -52,6 +58,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Layout variables
     TextView mEmptyTV;
+    ListView mListView;
+
+    // Permission request
+    private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Set up the shared preferences.
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String storageDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
+        mPrefDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
         getLoaderManager().initLoader(AUDIO_LOADER, null, this);
@@ -69,14 +79,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mCursorAdapter = new AlbumCursorAdapter(this, null);
 
         // Use a ListView and CursorAdapter to recycle space
-        ListView listView = findViewById(R.id.list);
-        listView.setAdapter(mCursorAdapter);
+        mListView = findViewById(R.id.list);
 
         // Set the EmptyView for the ListView
         mEmptyTV = findViewById(R.id.emptyList);
-        listView.setEmptyView(mEmptyTV);
+        mListView.setEmptyView(mEmptyTV);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
                 // Open the AlbumActivity for the clicked album
@@ -89,11 +98,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        if (storageDirectory == null) {
-            showDirectorySelector();
+        // Check if app has the necessary permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
         } else {
-            mDirectory = new File(storageDirectory);
-            updateAlbumTable();
+            mListView.setAdapter(mCursorAdapter);
+
+            if (mPrefDirectory == null) {
+                showDirectorySelector();
+            } else {
+                mDirectory = new File(mPrefDirectory);
+                updateAlbumTable();
+            }
         }
     }
 
@@ -125,6 +144,29 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(Loader<Cursor> loader) {
         // This is called when the last Cursor provided to onLoadFinished() is about to be closed.
         mCursorAdapter.swapCursor(null);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    // permission was not granted
+                    Toast.makeText(getApplicationContext(), R.string.permission_denied, Toast.LENGTH_LONG).show();
+                    finish();
+                } else {
+                    mListView.setAdapter(mCursorAdapter);
+                    
+                    if (mPrefDirectory == null) {
+                        showDirectorySelector();
+                    } else {
+                        mDirectory = new File(mPrefDirectory);
+                        updateAlbumTable();
+                    }
+                }
+            }
+        }
     }
 
     @Override
