@@ -5,6 +5,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -12,14 +13,19 @@ import android.graphics.Point;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -54,6 +60,7 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
     SeekBar mSeekBar;
     TextView mCompletedTimeTV;
     TextView mTimeTV;
+    TextView mSleepCountDownTV;
 
     // Settings variables
     SharedPreferences mSharedPreferences;
@@ -65,6 +72,9 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
     // SeekBar variables
     Handler mHandler;
     Runnable mRunnable;
+
+    // SleepTimer variables
+    CountDownTimer mSleepTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +105,7 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         mSeekBar = findViewById(R.id.play_seekbar);
         mCompletedTimeTV = findViewById(R.id.play_completed_time);
         mTimeTV = findViewById(R.id.play_time);
+        mSleepCountDownTV = findViewById(R.id.play_sleep_time);
 
         mPlayIV.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -177,8 +188,17 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_play, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_sleep_timer:
+                showSleepTimerDialog();
+                return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
@@ -352,4 +372,69 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         };
         mHandler.postDelayed(mRunnable,100);
     }
+
+    void showSleepTimerDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final View dialogView = this.getLayoutInflater().inflate(R.layout.sleep_timer, null);
+        builder.setView(dialogView);
+        final EditText setTime = dialogView.findViewById(R.id.sleep_timer_set_time);
+
+        builder.setTitle(R.string.sleep_timer);
+        builder.setMessage(R.string.dialog_msg_sleep_timer);
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
+            // User clicked the OK button so set the sleep timer
+            public void onClick(DialogInterface dialog, int id) {
+                // If a sleep timer was already set, cancel the previous one and start a new one
+                if (mSleepTimer != null) {
+                    mSleepTimer.cancel();
+                    mSleepCountDownTV.setVisibility(View.GONE);
+                    mPlayer.resetVolume();
+                }
+
+                String minutesString = setTime.getText().toString();
+                if (minutesString.isEmpty() || minutesString.equals("0")) {
+                    return;
+                }
+                final int minutes = Integer.parseInt(minutesString);
+                mSleepCountDownTV.setVisibility(View.VISIBLE);
+
+                mSleepTimer = new CountDownTimer(minutes*60*1000, 1000) {
+
+                    @Override
+                    public void onTick(long l) {
+                        String timeString = Utils.formatTime(l, minutes*60*1000);
+                        String sleepTimeLeft = getResources().getString(R.string.sleep_time_left, timeString);
+                        mSleepCountDownTV.setText(sleepTimeLeft);
+                        int totalSteps = 10;
+                        if ((l/1000) < totalSteps) {
+                            mPlayer.decreaseVolume((int) (totalSteps - (l/1000)), totalSteps);
+                        }
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        mPlayer.pause();
+                        mPlayer.resetVolume();
+                        mSleepCountDownTV.setVisibility(View.GONE);
+                        mPlayIV.setImageResource(R.drawable.play_button);
+                        updateAudioFileStatus();
+                    }
+                };
+                mSleepTimer.start();
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
 }
