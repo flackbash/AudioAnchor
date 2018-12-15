@@ -72,4 +72,36 @@ class Utils {
         }
         return output;
     }
+
+    static long getMillisFromString(String time) {
+        long millis;
+        String[] timeParts = time.split(":");
+        int length = timeParts.length;
+
+        // Return 0 if the string is malformatted
+        if (length != 2 && length != 3) {
+            throw new NumberFormatException("Illegal time format.");
+        }
+
+        for (String part : timeParts) {
+            if (part.length() != 2) {
+                throw new NumberFormatException("Illegal time format.");
+            }
+        }
+
+        int seconds = Integer.parseInt(timeParts[length-1]);
+        int minutes = Integer.parseInt(timeParts[length-2]);
+        if (seconds > 59 || minutes > 59) {
+            throw new NumberFormatException("Illegal time format.");
+        }
+
+        millis = minutes * 60 * 1000 + seconds * 1000;
+
+        if (length == 3) {
+            int hours = Integer.parseInt(timeParts[0]);
+            millis += hours * 60 * 60 * 1000;
+        }
+
+        return millis;
+    }
 }

@@ -19,7 +19,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -199,6 +198,9 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.menu_sleep_timer:
                 showSleepTimerDialog();
                 return true;
+            case R.id.menu_goto:
+                showGoToDialog();
+                return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
@@ -375,7 +377,7 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
 
     void showSleepTimerDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        final View dialogView = this.getLayoutInflater().inflate(R.layout.sleep_timer, null);
+        final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_sleep_timer, null);
         builder.setView(dialogView);
         final EditText setTime = dialogView.findViewById(R.id.sleep_timer_set_time);
 
@@ -421,6 +423,42 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
                     }
                 };
                 mSleepTimer.start();
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    void showGoToDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_goto, null);
+        builder.setView(dialogView);
+        final EditText setTime = dialogView.findViewById(R.id.goto_set_time);
+        int currentPosition = mPlayer.getCurrentPosition();
+        setTime.setText(Utils.formatTime(currentPosition, mTime));
+
+        builder.setTitle(R.string.go_to);
+        builder.setMessage(R.string.dialog_msg_goto);
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
+            // User clicked the OK button so set the sleep timer
+            public void onClick(DialogInterface dialog, int id) {
+                String millisString = setTime.getText().toString();
+                try {
+                    long millis = Utils.getMillisFromString(millisString);
+                    mPlayer.setCurrentPosition((int) millis);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
+                }
             }
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
