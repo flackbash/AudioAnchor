@@ -6,13 +6,43 @@
     android:gravity="center_horizontal">
 
     <EditText
-        android:id="@+id/goto_set_time"
+        android:id="@+id/goto_hours"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/play_album_font_size"
         android:inputType="time"
-        android:padding="@dimen/large_margin"
+        android:padding="@dimen/small_margin"
         android:gravity="center_horizontal"
-        android:text=""/>
+        android:maxLength="2"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/play_album_font_size"
+        android:gravity="center_horizontal"
+        android:text=":"/>
+    <EditText
+        android:id="@+id/goto_minutes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/play_album_font_size"
+        android:inputType="time"
+        android:padding="@dimen/small_margin"
+        android:gravity="center_horizontal"
+        android:maxLength="2"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/play_album_font_size"
+        android:gravity="center_horizontal"
+        android:text=":"/>
+    <EditText
+        android:id="@+id/goto_seconds"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/play_album_font_size"
+        android:inputType="time"
+        android:padding="@dimen/small_margin"
+        android:gravity="center_horizontal"
+        android:maxLength="2"/>
 
 </LinearLayout>
