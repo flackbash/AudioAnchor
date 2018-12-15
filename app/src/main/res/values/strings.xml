@@ -6,6 +6,7 @@
     <string name="no_audio_files">No audio files found in this album.</string>
     <string name="play_error">The selected audio file is not playable.</string>
     <string name="permission_denied">Necessary permission was not granted. Quit AudioAnchor.</string>
+    <string name="time_format_error">Please enter a valid time in the format mm:ss or hh:mm:ss.</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>
@@ -34,7 +35,7 @@
     <string name="time_completed_percent">%d%% complete</string>
     <string name="sleep_timer">Sleep timer</string>
     <string name="sleep_time_left">- %s</string>
-
+    <string name="go_to">Go to</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
@@ -42,5 +43,5 @@
     <string name="dialog_msg_change">Change</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Cancel</string>
-    <string name="play_activity_title">Playing</string>
+    <string name="dialog_msg_goto">Enter the time to which you want to jump.</string>
 </resources>
