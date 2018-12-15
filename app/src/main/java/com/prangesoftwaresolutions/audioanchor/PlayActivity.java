@@ -443,18 +443,29 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_goto, null);
         builder.setView(dialogView);
-        final EditText setTime = dialogView.findViewById(R.id.goto_set_time);
-        int currentPosition = mPlayer.getCurrentPosition();
-        setTime.setText(Utils.formatTime(currentPosition, mTime));
+
+        final EditText gotoHours = dialogView.findViewById(R.id.goto_hours);
+        final EditText gotoMinutes = dialogView.findViewById(R.id.goto_minutes);
+        final EditText gotoSeconds = dialogView.findViewById(R.id.goto_seconds);
+
+        int currPos = mPlayer.getCurrentPosition();
+        String[] currPosArr = Utils.formatTime(currPos, 3600000).split(":");
+        gotoHours.setText(currPosArr[0]);
+        gotoMinutes.setText(currPosArr[1]);
+        gotoSeconds.setText(currPosArr[2]);
 
         builder.setTitle(R.string.go_to);
         builder.setMessage(R.string.dialog_msg_goto);
         builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
             // User clicked the OK button so set the sleep timer
             public void onClick(DialogInterface dialog, int id) {
-                String millisString = setTime.getText().toString();
+                String hours = gotoHours.getText().toString();
+                String minutes = gotoMinutes.getText().toString();
+                String seconds = gotoSeconds.getText().toString();
+                String timeString = hours + ":" + minutes + ":" + seconds;
+
                 try {
-                    long millis = Utils.getMillisFromString(millisString);
+                    long millis = Utils.getMillisFromString(timeString);
                     mPlayer.setCurrentPosition((int) millis);
                 } catch (NumberFormatException e) {
                     Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
