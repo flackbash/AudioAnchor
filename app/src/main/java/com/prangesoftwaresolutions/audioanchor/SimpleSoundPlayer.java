@@ -2,6 +2,7 @@ package com.prangesoftwaresolutions.audioanchor;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -115,6 +116,20 @@ class SimpleSoundPlayer {
     void setCurrentPosition(int progress) {
         if (mMediaPlayer != null) {
             mMediaPlayer.seekTo(progress);
+        }
+    }
+
+    void decreaseVolume(int step, int totalSteps) {
+        float deltaVolume = (float) (1.0 / totalSteps);
+        float currVolume = (float) (1.0 - (step * deltaVolume));
+        if (mMediaPlayer != null) {
+            mMediaPlayer.setVolume(currVolume, currVolume);
+        }
+    }
+
+    void resetVolume() {
+        if (mMediaPlayer != null) {
+            mMediaPlayer.setVolume(1, 1);
         }
     }
 

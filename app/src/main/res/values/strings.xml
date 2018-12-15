@@ -32,10 +32,15 @@
     <string name="settings">Settings</string>
     <string name="time_completed">%s / %s</string>
     <string name="time_completed_percent">%d%% complete</string>
+    <string name="sleep_timer">Sleep timer</string>
+    <string name="sleep_time_left">- %s</string>
+
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
+    <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing.</string>
     <string name="dialog_msg_change">Change</string>
+    <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Cancel</string>
     <string name="play_activity_title">Playing</string>
 </resources>
