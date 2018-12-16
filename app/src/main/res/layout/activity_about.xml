@@ -7,17 +7,25 @@
     android:gravity="center">
 
     <ImageView
-        android:layout_width="128dp"
-        android:layout_height="128dp"
+        android:layout_width="@dimen/about_icon_height"
+        android:layout_height="@dimen/about_icon_height"
         android:layout_margin="@dimen/large_margin"
         android:src="@drawable/audioanchor_icon"
         />
 
     <TextView
+        android:id="@+id/about_text_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/list_item_font_size"
-        android:padding="@dimen/large_margin"
-        android:text="AudioAnchor 1.0.0"/>
+        android:padding="@dimen/large_margin"/>
+
+    <TextView
+        android:id="@+id/about_copyright_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/small_font_size"
+        android:padding="@dimen/small_margin"
+        android:text="@string/copyright"/>
 
 </LinearLayout>
