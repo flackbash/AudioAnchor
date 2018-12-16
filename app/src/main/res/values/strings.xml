@@ -37,6 +37,8 @@
     <string name="sleep_time_left">- %s</string>
     <string name="go_to">Go to</string>
     <string name="about">About</string>
+    <string name="about_text">%s %s</string>
+    <string name="copyright">Copyright © 2018 Natalie Prange</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
