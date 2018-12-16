@@ -41,9 +41,8 @@ import java.util.LinkedHashMap;
 // TODO: Option in settings if in autoplay play completed files as well
 // TODO: button to update all elements in the database
 // TODO: Option in settings: Don't show deleted files in list
-// TODO: AlbumActivity: Scroll to first non-completed file
 // TODO: LockScreen Widget
-// TODO: GOTO option in PlayActivity
+// TODO: Set icon background to white if a cover exists
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -189,6 +188,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 // Send an intent to open the Learn Settings
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
+                return true;
+            case R.id.menu_about:
+                Intent aboutIntent = new Intent(this, AboutActivity.class);
+                startActivity(aboutIntent);
                 return true;
         }
         return super.onOptionsItemSelected(item);
