@@ -36,6 +36,7 @@
     <string name="sleep_timer">Sleep timer</string>
     <string name="sleep_time_left">- %s</string>
     <string name="go_to">Go to</string>
+    <string name="about">About</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>

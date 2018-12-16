@@ -6,12 +6,20 @@
         android:icon="@drawable/directory_ic"
         android:orderInCategory="100"
         android:title="@string/choose_directory"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_settings"
         android:orderInCategory="101"
         android:title="@string/settings"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_about"
+        android:icon="@drawable/ic_about"
+        android:orderInCategory="102"
+        android:title="@string/about"
+        app:showAsAction="never" />
+
 </menu>
