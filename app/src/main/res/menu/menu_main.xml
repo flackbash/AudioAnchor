@@ -9,17 +9,30 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_export"
+        android:orderInCategory="101"
+        android:title="@string/export_db"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_import"
+        android:orderInCategory="102"
+        android:title="@string/import_db"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_settings"
-        android:orderInCategory="101"
+        android:orderInCategory="103"
         android:title="@string/settings"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_about"
         android:icon="@drawable/ic_about"
-        android:orderInCategory="102"
+        android:orderInCategory="104"
         android:title="@string/about"
         app:showAsAction="never" />
+
 
 </menu>
