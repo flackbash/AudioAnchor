@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public class AnchorDbHelper extends SQLiteOpenHelper {
-    private static final String DATABASE_NAME = "audio_anchor.db";
+    public static final String DATABASE_NAME = "audio_anchor.db";
 
     // Database version. Must be incremented when the database schema is changed.
     private static final int DATABASE_VERSION = 1;

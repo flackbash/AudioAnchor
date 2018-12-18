@@ -30,9 +30,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.data.AnchorDbHelper;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.nio.channels.FileChannel;
 import java.util.LinkedHashMap;
 
 // TODO: Option in Settings: Show title (from Metadata)
@@ -64,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Permission request
     private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0;
+    private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             mListView.setAdapter(mCursorAdapter);
 
             if (mPrefDirectory == null) {
-                showDirectorySelector();
+                showChangeDirectorySelector();
             } else {
                 mDirectory = new File(mPrefDirectory);
                 updateAlbumTable();
@@ -162,11 +167,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     mListView.setAdapter(mCursorAdapter);
 
                     if (mPrefDirectory == null) {
-                        showDirectorySelector();
+                        showChangeDirectorySelector();
                     } else {
                         mDirectory = new File(mPrefDirectory);
                         updateAlbumTable();
                     }
+                }
+            }
+            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    // permission was not granted
+                    Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
+                    finish();
+                } else {
+                    showExportDirectorySelector();
                 }
             }
         }
@@ -182,7 +197,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_choose_directory:
-                showDirectorySelector();
+                showChangeDirectorySelector();
+                return true;
+            case R.id.menu_export:
+                // Check if app has the necessary permissions
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                } else {
+                    showExportDirectorySelector();
+                }
+                return true;
+            case R.id.menu_import:
+                showImportFileSelector();
                 return true;
             case R.id.menu_settings:
                 // Send an intent to open the Learn Settings
@@ -197,8 +226,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return super.onOptionsItemSelected(item);
     }
 
-    private void showDirectorySelector() {
-        // Let the user select a file and import the recipes.
+    private void showChangeDirectorySelector() {
         File baseDirectory;
         if (mDirectory != null) {
             baseDirectory = mDirectory;
@@ -369,7 +397,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return titles;
         }
 
-        // Loop through the database rows and add the recipes to the ArrayList
+        // Loop through the database rows and add the album titles to the HashMap
         while (c.moveToNext()) {
             String title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
             Integer id = c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
@@ -378,5 +406,84 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         c.close();
         return titles;
+    }
+
+    private void showExportDirectorySelector() {
+        // Let the user select a directory in which to save the database
+        File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+        FileDialog fileDialog = new FileDialog(this, baseDirectory, null);
+        fileDialog.setSelectDirectoryOption(true);
+        fileDialog.addDirectoryListener(new FileDialog.DirectorySelectedListener() {
+            public void directorySelected(File directory) {
+                exportDatabase(directory);
+            }
+        });
+        fileDialog.showDialog();
+    }
+
+    void exportDatabase(File directory) {
+        try {
+            String databaseName = AnchorDbHelper.DATABASE_NAME;
+            File data = Environment.getDataDirectory();
+
+            if (directory.canWrite()) {
+                String currentDBPath = "//data//"+getPackageName()+"//databases//"+databaseName+"";
+                String backupDBPath = "audioanchor.db";
+                File currentDB = new File(data, currentDBPath);
+                File backupDB = new File(directory, backupDBPath);
+
+                if (currentDB.exists()) {
+                    FileChannel src = new FileInputStream(currentDB).getChannel();
+                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+
+                    String successStr = getResources().getString(R.string.export_success, backupDB.getAbsoluteFile());
+                    Toast.makeText(getApplicationContext(), successStr, Toast.LENGTH_LONG).show();
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), R.string.export_fail, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void showImportFileSelector() {
+        File baseDirectory = Environment.getExternalStorageDirectory();
+        FileDialog fileDialog = new FileDialog(this, baseDirectory, ".db");
+        fileDialog.addFileListener(new FileDialog.FileSelectedListener() {
+            @Override
+            public void fileSelected(File file) {
+                importDatabase(file);
+            }
+        });
+        fileDialog.showDialog();
+    }
+
+    void importDatabase(File dbFile) {
+        try {
+            String databaseName = AnchorDbHelper.DATABASE_NAME;
+            File data = Environment.getDataDirectory();
+
+            String newDBPath = "//data//"+getPackageName()+"//databases//"+databaseName+"";
+            File newDB = new File(data, newDBPath);
+
+            if (dbFile.exists()) {
+                FileChannel src = new FileInputStream(dbFile).getChannel();
+                FileChannel dst = new FileOutputStream(newDB).getChannel();
+                dst.transferFrom(src, 0, src.size());
+                src.close();
+                dst.close();
+
+                Toast.makeText(getApplicationContext(), R.string.import_success, Toast.LENGTH_LONG).show();
+
+                // Restart the CursorLoader so that the CursorAdapter is updated.
+                getLoaderManager().restartLoader(0, null, this);
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), R.string.import_fail, Toast.LENGTH_LONG).show();
+
+        }
     }
 }
