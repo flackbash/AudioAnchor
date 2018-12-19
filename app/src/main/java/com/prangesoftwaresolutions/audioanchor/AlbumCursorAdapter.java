@@ -30,16 +30,16 @@ public class AlbumCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        // Get the title of the current Recipe and set this text to the recipeTV
+        // Get the title of the current album and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_storage_item_title);
         String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
         titleTV.setText(title);
 
-        // Get the path of the thumbnail of the current recipe and set the src of the image view
+        // Get the path of the thumbnail of the current album and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
         String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
         if (path != null) {
-            int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.list_item_height);
+            int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
             BitmapUtils.setImage(thumbnailIV, path, reqSize);
         } else {
             thumbnailIV.setImageResource(R.drawable.empty_cover_grey_blue);

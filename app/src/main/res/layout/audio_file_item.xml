@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/audio_file_item_thumbnail"
-        android:layout_width="@dimen/list_item_height"
-        android:layout_height="@dimen/list_item_height"
+        android:layout_width="@dimen/audio_file_item_height"
+        android:layout_height="@dimen/audio_file_item_height"
         android:src="@drawable/ic_unchecked"/>
     <LinearLayout
         android:layout_width="wrap_content"
