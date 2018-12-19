@@ -47,6 +47,8 @@ import java.util.LinkedHashMap;
 // TODO: Option in settings: Don't show deleted files in list
 // TODO: LockScreen Widget
 // TODO: Set icon background to white if a cover exists
+// TODO: Add notification button to hopefully not loose progress in PlayActivity anymore
+// TODO: Don't save entire file path in the database, instead put it together from mDirectory, AlbumTitle and AudioFileTitle
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -213,6 +215,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.menu_import:
                 showImportFileSelector();
                 return true;
+            case R.id.menu_synchronize:
+                updateAlbumTable();
+                getLoaderManager().restartLoader(0, null, this);
+                Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
+                return true;
             case R.id.menu_settings:
                 // Send an intent to open the Learn Settings
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
@@ -373,12 +380,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             // Search for a cover in the album directory
             File albumDir = new File(mDirectory.getAbsolutePath() + File.separator + title);
             String coverPath = Utils.getImagePath(albumDir);
-            if (coverPath != null) {
-                // Update the album cover path in the albums table
-                ContentValues values = new ContentValues();
-                values.put(AnchorContract.AlbumEntry.COLUMN_COVER_PATH, coverPath);
-                getContentResolver().update(AnchorContract.AlbumEntry.CONTENT_URI, values, sel, selArgs);
-            }
+
+            // Update the album cover path in the albums table
+            ContentValues values = new ContentValues();
+            values.put(AnchorContract.AlbumEntry.COLUMN_COVER_PATH, coverPath);
+            getContentResolver().update(AnchorContract.AlbumEntry.CONTENT_URI, values, sel, selArgs);
         }
     }
 

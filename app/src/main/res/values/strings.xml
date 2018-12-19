@@ -12,6 +12,7 @@
     <string name="import_fail">Something went wrong. Import failed.</string>
     <string name="export_success">Exported database to %s</string>
     <string name="export_fail">Something went wrong. Export failed.</string>
+    <string name="synchronize_success">Synchronized directory.</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>
@@ -46,6 +47,7 @@
     <string name="copyright">Copyright © 2018 Natalie Prange</string>
     <string name="export_db">Export database</string>
     <string name="import_db">Import database</string>
+    <string name="synchronize">Synchronize</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
