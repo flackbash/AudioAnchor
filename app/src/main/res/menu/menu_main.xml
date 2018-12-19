@@ -21,16 +21,22 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_synchronize"
+        android:orderInCategory="103"
+        android:title="@string/synchronize"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_settings"
-        android:orderInCategory="103"
+        android:orderInCategory="104"
         android:title="@string/settings"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_about"
         android:icon="@drawable/ic_about"
-        android:orderInCategory="104"
+        android:orderInCategory="105"
         android:title="@string/about"
         app:showAsAction="never" />
 
