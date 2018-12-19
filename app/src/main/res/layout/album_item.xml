@@ -9,9 +9,9 @@
 
         <ImageView
             android:id="@+id/audio_storage_item_thumbnail"
-            android:layout_width="@dimen/list_item_height"
-            android:layout_height="@dimen/list_item_height"
-            android:background="@drawable/empty_cover_grey_blue"/>
+            android:layout_width="@dimen/album_item_height"
+            android:layout_height="@dimen/album_item_height"
+            android:src="@drawable/empty_cover_grey_blue"/>
         <TextView
             android:id="@+id/audio_storage_item_title"
             android:layout_width="match_parent"
