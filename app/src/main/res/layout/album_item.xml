@@ -16,7 +16,7 @@
             android:id="@+id/audio_storage_item_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/list_item_font_size"
+            android:textSize="@dimen/big_font_size"
             android:padding="@dimen/small_margin"/>
 
 </LinearLayout>
