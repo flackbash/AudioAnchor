@@ -552,6 +552,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
         }
 
+        Intent startActivityIntent = new Intent(this, PlayActivity.class);
+        startActivityIntent.setData(ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, activeAudio.getmId()));
+        startActivityIntent.putExtra("albumId", activeAudio.getAlbumId());
+        PendingIntent launchIntent = PendingIntent.getActivity(this, 0,
+                startActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         // Create a new Notification
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 // Hide the timestamp
@@ -570,6 +576,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Set Notification content information
                 .setContentText(activeAudio.getAlbumTitle())
                 .setContentTitle(activeAudio.getTitle())
+                // Set the intent for the activity that is launched on click
+                .setContentIntent(launchIntent)
                 // Set the visibility for the lock screen
                 .setVisibility(VISIBILITY_PUBLIC)
                 // Add playback actions
