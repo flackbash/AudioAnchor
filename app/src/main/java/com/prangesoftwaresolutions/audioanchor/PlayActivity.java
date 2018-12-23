@@ -1,28 +1,28 @@
 package com.prangesoftwaresolutions.audioanchor;
 
-import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
-import android.content.Loader;
-import android.content.SharedPreferences;
-import android.database.Cursor;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.graphics.Point;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.preference.PreferenceManager;
+import android.os.IBinder;
+import android.os.PersistableBundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Display;
+import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -30,24 +30,26 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
-import java.io.IOException;
+import java.util.HashMap;
 
 
-public class PlayActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class PlayActivity extends AppCompatActivity {
 
-    // The Uri of the selected audio file entry
-    Uri mCurrentUri;
-    private static final int PLAY_LOADER = 0;
+    public static final String Broadcast_PLAY_NEW_AUDIO = "com.prangesoftwaresolutions.audioanchor.PlayNewAudio";
+    public static final String Broadcast_PAUSE_AUDIO = "com.prangesoftwaresolutions.audioanchor.PauseAudio";
+
+    private MediaPlayerService mPlayer;
+    boolean serviceBound = false;
+    BroadcastReceiver mPlayStatusReceiver;
+    BroadcastReceiver mNewAudioFileReceiver;
 
     // Audio File variables
-    int mId;
-    String mTitle;
+    AudioFile mAudioFile;
     int mAlbumId;
-    String mPath;
-    int mCompletedTime;
-    int mTime;
+    private Uri mCurrentUri;
 
     // The Views
     ImageView mCoverIV;
@@ -61,13 +63,6 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
     TextView mTimeTV;
     TextView mSleepCountDownTV;
 
-    // Settings variables
-    SharedPreferences mSharedPreferences;
-    boolean mAutoplay;
-
-    // The Sound Player
-    SimpleSoundPlayer mPlayer;
-
     // SeekBar variables
     Handler mHandler;
     Runnable mRunnable;
@@ -79,21 +74,9 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play);
-
         // Get the current uri from the intent
         mCurrentUri = getIntent().getData();
-
-        // Set up the shared preferences.
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mAutoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
-
-        // Set up the audio player
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        mPlayer = new SimpleSoundPlayer(audioManager);
-        mHandler = new Handler();
-
-        // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
-        getLoaderManager().initLoader(PLAY_LOADER, null, this);
+        mAlbumId = getIntent().getIntExtra("albumId", -1);
 
         mCoverIV = findViewById(R.id.play_cover);
         mTitleTV = findViewById(R.id.play_audio_file_title);
@@ -106,18 +89,49 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         mTimeTV = findViewById(R.id.play_time);
         mSleepCountDownTV = findViewById(R.id.play_sleep_time);
 
+        mAudioFile = AudioFile.getAudioFile(this, mCurrentUri);
+        setNewAudioFile();
+        setAlbumCover();
+
+        mHandler = new Handler();
+
+        // Start the play service
+        startService(mAudioFile.getmId());
+
+        mPlayStatusReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String s = intent.getStringExtra(MediaPlayerService.SERVICE_MESSAGE_PLAY_STATUS);
+                if (s != null) {
+                    if (s.equals(MediaPlayerService.MSG_PLAY)) {
+                        mPlayIV.setImageResource(R.drawable.pause_button);
+                    } else if (s.equals(MediaPlayerService.MSG_PAUSE)) {
+                        mPlayIV.setImageResource(R.drawable.play_button);
+                    }
+                }
+            }
+        };
+
+        mNewAudioFileReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int audioIndex = intent.getIntExtra(MediaPlayerService.SERVICE_MESSAGE_NEW_AUDIO, -1);
+                if (audioIndex > -1) {
+                    loadAudioFile(audioIndex);
+                }
+            }
+        };
+
         mPlayIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 if (!mPlayer.isPlaying()) {
-                    if (mPlayer.play(mAutoplay)) {
-                        mPlayIV.setImageResource(R.drawable.pause_button);
-                    }
+                    playAudio();
                 } else {
-                    // Pause the media player if it is clicked and currently playing
-                    mPlayer.pause();
-                    mPlayIV.setImageResource(R.drawable.play_button);
+                    pauseAudio();
                 }
+
             }
         });
 
@@ -150,44 +164,40 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        String[] projection = {
-                AnchorContract.AudioEntry._ID,
-                AnchorContract.AudioEntry.COLUMN_TITLE,
-                AnchorContract.AudioEntry.COLUMN_ALBUM,
-                AnchorContract.AudioEntry.COLUMN_PATH,
-                AnchorContract.AudioEntry.COLUMN_TIME,
-                AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME};
-
-        return new CursorLoader(this, mCurrentUri, projection, null, null, null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
-        // Bail early if the cursor is null or there is less than 1 row in the cursor
-        if (c == null || c.getCount() < 1) {
-            return;
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(this).registerReceiver((mPlayStatusReceiver),
+                new IntentFilter(MediaPlayerService.SERVICE_PLAY_STATUS_CHANGE)
+        );
+        LocalBroadcastManager.getInstance(this).registerReceiver((mNewAudioFileReceiver),
+                new IntentFilter(MediaPlayerService.SERVICE_NEW_AUDIO)
+        );
+        if (mPlayer != null && mPlayer.isPlaying()) {
+            mPlayIV.setImageResource(R.drawable.pause_button);
+        } else{
+            mPlayIV.setImageResource(R.drawable.play_button);
         }
-
-        // Get the audio file details from the cursor
-        if (c.moveToFirst()) {
-            setNewAudioFile(c);
-
-            // Set Album Cover and Title
-            setAlbumInfo(mAlbumId);
+        if (mPlayer != null) {
+            mAudioFile = mPlayer.getCurrentAudioFile();
+            setNewAudioFile();
         }
-        c.close();
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    protected void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mPlayStatusReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mNewAudioFileReceiver);
+        super.onStop();
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_play, menu);
         return true;
     }
@@ -209,93 +219,129 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         return(super.onOptionsItemSelected(item));
     }
 
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        outState.putBoolean("serviceStatus", serviceBound);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        serviceBound = savedInstanceState.getBoolean("serviceStatus");
+    }
+
+    //Binding this Client to the AudioPlayer Service
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
+            mPlayer = binder.getService();
+            serviceBound = true;
+
+            // Perform actions that can only be performed once the service is connected
+            // Initialize the seek bar for the current audio file
+            initializeSeekBar();
+
+            // Initialize the mPlayer for the current audio file
+            mPlayer.loadAudioFile(mAudioFile.getPath(), mAudioFile.getCompletedTime());
+
+            // Update the time column of the audiofiles table if it has not yet been set
+            if (mAudioFile.getTime() == 0) {
+                mAudioFile.setTime(mPlayer.getDuration());
+                ContentValues values = new ContentValues();
+                values.put(AnchorContract.AudioEntry.COLUMN_TIME, mAudioFile.getTime());
+                getContentResolver().update(mCurrentUri, values, null, null);
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            serviceBound = false;
+        }
+    };
+
+    private void startService(int audioIndex) {
+        //Check is service is active
+        if (!serviceBound) {
+            storeAudioFiles(audioIndex);
+            Intent playerIntent = new Intent(this, MediaPlayerService.class);
+            startService(playerIntent);
+            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    private void playAudio() {
+        //Send a broadcast to the service -> PLAY_NEW_AUDIO
+        startService(mAudioFile.getmId());
+        Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+        sendBroadcast(broadcastIntent);
+    }
+
+    private void pauseAudio() {
+        //Send a broadcast to the service -> PLAY_NEW_AUDIO
+        Intent broadcastIntent = new Intent(Broadcast_PAUSE_AUDIO);
+        sendBroadcast(broadcastIntent);
+    }
+
+    private void storeAudioFiles(int audioIndex) {
+        //Store Serializable audioList to SharedPreferences
+        HashMap<Integer, AudioFile> audioList = AudioFile.getAllAudioFilesFromAlbum(this, mAlbumId);
+        StorageUtil storage = new StorageUtil(getApplicationContext());
+        storage.storeAudio(audioList);
+        storage.storeAudioIndex(audioIndex);
+    }
+
+    private void loadAudioFile(int audioIndex) {
+        //Load data from SharedPreferences
+        StorageUtil storage = new StorageUtil(getApplicationContext());
+        HashMap<Integer, AudioFile> audioMap = new HashMap<>(storage.loadAudio());
+        mAudioFile = audioMap.get(audioIndex);
+        setNewAudioFile();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (serviceBound) {
+            unbindService(serviceConnection);
+            //service is active
+            mPlayer.stopSelf();
+        }
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        updateAudioFileStatus();
-        mPlayer.releaseMediaPlayer();
     }
 
-
     /*
-    * Set up a new audio file from a given cursor. I.e. get audio file details, set up the Views,
-    * initialize the Player
-    */
-    void setNewAudioFile(Cursor c) {
-        mId = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-        mCurrentUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mId);
-        mTitle = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
-        mPath = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
-        mAlbumId = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_ALBUM));
-        mCompletedTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-        mTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-
-        // Initialize the player for the current audio file
-        try {
-            mPlayer.initialize(mPath, mCompletedTime);
-        } catch (IOException e) {
-            Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+     * Set up the views for the current audio file
+     */
+    void setNewAudioFile() {
+        // Set TextViews
+        mTitleTV.setText(mAudioFile.getTitle());
+        mTimeTV.setText(Utils.formatTime(mAudioFile.getTime(), mAudioFile.getTime()));
+        mAlbumTV.setText(mAudioFile.getAlbumTitle());
 
         // Update the time column of the audiofiles table if it has not yet been set
-        if (mTime == 0) {
-            mTime = mPlayer.getDuration();
+        if (mPlayer != null && mAudioFile.getTime() == 0) {
+            mAudioFile.setTime(mPlayer.getDuration());
+            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mAudioFile.getmId());
             ContentValues values = new ContentValues();
-            values.put(AnchorContract.AudioEntry.COLUMN_TIME, mTime);
-            getContentResolver().update(mCurrentUri, values, null, null);
+            values.put(AnchorContract.AudioEntry.COLUMN_TIME, mAudioFile.getTime());
+            getContentResolver().update(uri, values, null, null);
         }
-
-        // Set TextViews
-        mTitleTV.setText(mTitle);
-        mTimeTV.setText(Utils.formatTime(mTime, mTime));
-
-        // Create an OnCompletionListener to react when the audio file has finished playing
-        MediaPlayer.OnCompletionListener listener = new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                mPlayer.setCurrentPosition(mPlayer.getDuration());
-                Cursor c = null;
-                if (mAutoplay) {
-                    updateAudioFileStatus();
-                    c = getNextAudioFileCursor(mId);
-                    if (c != null) {
-                        setNewAudioFile(c);
-                        c.close();
-                        if (!mPlayer.play(mAutoplay)) {
-                            mPlayIV.setImageResource(R.drawable.play_button);
-                        }
-                    }
-                }
-                if (!mAutoplay || c == null){
-                    mPlayIV.setImageResource(R.drawable.play_button);
-                }
-            }
-        };
-        mPlayer.setOnCompletionListener(listener);
-
-        // Initialize the seek bar for the current audio file
-        initializeSeekBar();
     }
 
     /*
-    * Get the album information and set up the related Views
-    */
-    void setAlbumInfo(int albumId) {
+     * Set album cover view for the current cover path
+     */
+    void setAlbumCover() {
         // Set the album cover to the ImageView and the album title to the TextView
-        String[] proj = {AnchorContract.AlbumEntry.COLUMN_COVER_PATH, AnchorContract.AlbumEntry.COLUMN_TITLE};
-        String sel = AnchorContract.AlbumEntry._ID + "=?";
-        String[] selArgs = {Long.toString(albumId)};
-        Cursor ac = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI, proj, sel, selArgs, null);
-        if (ac == null || ac.getCount() < 1) {
-            return;
-        }
-        if (ac.moveToFirst()) {
-            String albumTitle = ac.getString(ac.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
-            mAlbumTV.setText(albumTitle);
-
-            String coverPath = ac.getString(ac.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
             Point size = new Point();
             WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
             Display display;
@@ -305,59 +351,12 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
                 display.getSize(size);
                 reqSize = java.lang.Math.max(size.x, size.y);
             }
-            BitmapUtils.setImage(mCoverIV, coverPath, reqSize);
-        }
-        ac.close();
+            BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
     }
 
     /*
-    * Get the cursor for the next audio file in the album
-    */
-    Cursor getNextAudioFileCursor(int currentId) {
-        String[] projection = {
-                AnchorContract.AudioEntry._ID,
-                AnchorContract.AudioEntry.COLUMN_TITLE,
-                AnchorContract.AudioEntry.COLUMN_ALBUM,
-                AnchorContract.AudioEntry.COLUMN_PATH,
-                AnchorContract.AudioEntry.COLUMN_TIME,
-                AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME};
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(mAlbumId)};
-        Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, null);
-
-        if (c == null || c.getCount() < 1) {
-            return null;
-        }
-
-        // Get the next audio file after the current in the same album
-        if (c.moveToFirst()) {
-            int id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-            boolean takeNext = (id == currentId);
-            while (c.moveToNext()) {
-                if (takeNext) {
-                    return c;
-                }
-                id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-                takeNext = (id == currentId);
-            }
-        }
-        return null;
-    }
-
-    /*
-    * Update the completed time of the current audio file in the audiofiles table of the database
-    */
-    void updateAudioFileStatus() {
-        // Update the time columns of the audiofiles table
-        ContentValues values = new ContentValues();
-        values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, mPlayer.getCurrentPosition());
-        getContentResolver().update(mCurrentUri, values, null, null);
-        getContentResolver().notifyChange(mCurrentUri, null);
-    }
-
-    /*
-    * Initialize the SeekBar
-    */
+     * Initialize the SeekBar
+     */
     void initializeSeekBar(){
         mSeekBar.setMax(mPlayer.getDuration()/1000);
 
@@ -367,13 +366,14 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
                 if(mPlayer!=null){
                     int currentPosition = mPlayer.getCurrentPosition();
                     mSeekBar.setProgress(currentPosition/1000);
-                    mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mTime));
+                    mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mAudioFile.getTime()));
                 }
                 mHandler.postDelayed(mRunnable,100);
             }
         };
         mHandler.postDelayed(mRunnable,100);
     }
+
 
     void showSleepTimerDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -390,7 +390,7 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
                 if (mSleepTimer != null) {
                     mSleepTimer.cancel();
                     mSleepCountDownTV.setVisibility(View.GONE);
-                    mPlayer.resetVolume();
+                    mPlayer.setVolume(1.0f);
                 }
 
                 String minutesString = setTime.getText().toString();
@@ -415,11 +415,9 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
 
                     @Override
                     public void onFinish() {
-                        mPlayer.pause();
-                        mPlayer.resetVolume();
+                        pauseAudio();
+                        mPlayer.setVolume(1.0f);
                         mSleepCountDownTV.setVisibility(View.GONE);
-                        mPlayIV.setImageResource(R.drawable.play_button);
-                        updateAudioFileStatus();
                     }
                 };
                 mSleepTimer.start();
@@ -485,5 +483,4 @@ public class PlayActivity extends AppCompatActivity implements LoaderManager.Loa
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
-
 }

@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">AudioAnchor</string>
+    <string name="channel_name">Show media controls</string>
+    <string name="channel_description">Notification channel to display the media controls.</string>
 
     <!-- Toast messages -->
     <string name="no_albums">No albums found in the specified directory.</string>
@@ -31,6 +33,7 @@
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
     <string name="directory_path" translatable="false">directory_path</string>
+    <string name="audio_file_uri" translatable="false">audio_file_uri</string>
 
     <!-- Layout Texts -->
     <string name="title">Title</string>
