@@ -28,6 +28,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
@@ -238,26 +239,35 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         switch (focusState) {
             case AudioManager.AUDIOFOCUS_GAIN:
                 // resume playback
-                if (mMediaPlayer == null) initMediaPlayer();
-                else if (!mMediaPlayer.isPlaying()) mMediaPlayer.start();
-                mMediaPlayer.setVolume(1.0f, 1.0f);
+                Log.e("BLABLABLA", "Audiofocus Gain");
+                if (mMediaPlayer == null) {
+                    initMediaPlayer();
+                    loadAudioFile(activeAudio.getPath(), activeAudio.getCompletedTime());
+                } else if (!mMediaPlayer.isPlaying()) {
+                    play();
+                }
+                setVolume(1.0f);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
                 // Lost focus for an unbounded amount of time: stop playback and release media player
-                stopMedia();
-                mMediaPlayer.release();
-                mMediaPlayer = null;
+                Log.e("BLABLABLA", "Audiofocus Loss");
+                pause();
+                buildNotification();
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                 // Lost focus for a short time, but we have to stop
                 // playback. We don't release the media player because playback
                 // is likely to resume
+                Log.e("BLABLABLA", "Audiofocus loss transient");
+
                 if (mMediaPlayer.isPlaying()) mMediaPlayer.pause();
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                Log.e("BLABLABLA", "Audiofocus loss can duck");
+
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
-                if (mMediaPlayer.isPlaying()) mMediaPlayer.setVolume(0.1f, 0.1f);
+                if (mMediaPlayer.isPlaying()) setVolume(0.1f);
                 break;
         }
     }
@@ -625,8 +635,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private BroadcastReceiver playNewAudio = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            play();
-            buildNotification();
+            if (requestAudioFocus()) {
+                play();
+                buildNotification();
+            }
         }
     };
 
@@ -668,7 +680,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             mMediaPlayer = new MediaPlayer();
         }
         try {
-            mMediaPlayer.stop();
             mMediaPlayer.reset();
             mMediaPlayer.setDataSource(path);
             mMediaPlayer.prepare();
@@ -679,19 +690,20 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    boolean play() {
-        if (!mMediaPlayer.isPlaying() && (mAutoplay || getCurrentPosition() != getDuration())) {
+    void play() {
+        if (mMediaPlayer != null && !mMediaPlayer.isPlaying() && (mAutoplay || getCurrentPosition() != getDuration())) {
             mMediaPlayer.start();
             sendPlayStatusResult(MSG_PLAY);
         }
-        return mMediaPlayer.isPlaying();
     }
 
     void stopMedia() {
         if (mMediaPlayer != null) {
             updateAudioFileStatus();
+            sendPlayStatusResult(MSG_PAUSE);
             mMediaPlayer.stop();
         }
+        buildNotification();
     }
 
     void pause() {
@@ -779,7 +791,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * Update the completed time of the current audio file in the audiofiles table of the database
      */
     void updateAudioFileStatus() {
-        // Update the time columns of the audiofiles table
+        // Update the current activeAudio
+        activeAudio.setCompletedTime(getCurrentPosition());
+
+        // Update the completedTime column of the audiofiles table
         Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, activeAudio.getmId());
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, getCurrentPosition());

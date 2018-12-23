@@ -68,6 +68,10 @@ class AudioFile implements Serializable {
         mTime = time;
     }
 
+    void setCompletedTime(int mCompletedTime) {
+        this.mCompletedTime = mCompletedTime;
+    }
+
     /*
      * Get the title of the current album
      */
