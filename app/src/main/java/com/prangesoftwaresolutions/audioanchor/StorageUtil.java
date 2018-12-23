@@ -1,0 +1,61 @@
+package com.prangesoftwaresolutions.audioanchor;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.HashMap;
+
+/**
+ * Based on a tutorial by Valdio Veliu. See https://github.com/sitepoint-editors/AudioPlayer
+ */
+class StorageUtil {
+
+    private final String STORAGE = "com.prangesoftwaresolutions.audioanchor.STORAGE";
+    private SharedPreferences preferences;
+    private Context context;
+
+    StorageUtil(Context context) {
+        this.context = context;
+    }
+
+    void storeAudio(HashMap<Integer, AudioFile> hashMap) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(hashMap);
+        editor.putString("audioHashMap", json);
+        editor.apply();
+    }
+
+    HashMap<Integer, AudioFile> loadAudio() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString("audioHashMap", null);
+        Type type = new TypeToken<HashMap<Integer, AudioFile>>() {}.getType();
+        return gson.fromJson(json, type);
+    }
+
+    void storeAudioIndex(int index) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("audioIndex", index);
+        editor.apply();
+    }
+
+    int loadAudioIndex() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        return preferences.getInt("audioIndex", -1);//return -1 if no data found
+    }
+
+    void clearCachedAudioPlaylist() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.commit();
+    }
+}

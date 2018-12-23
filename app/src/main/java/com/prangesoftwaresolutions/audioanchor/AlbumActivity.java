@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -93,7 +92,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, rowId);
                 Intent intent = new Intent(AlbumActivity.this, PlayActivity.class);
                 intent.setData(uri);
-                startActivity(intent);
+                intent.putExtra("albumId", (int)mAlbumId);
+                startActivity( intent );
             }
         });
 
