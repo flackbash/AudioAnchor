@@ -243,8 +243,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 if (mMediaPlayer == null) {
                     initMediaPlayer();
                     loadAudioFile(activeAudio.getPath(), activeAudio.getCompletedTime());
-                } else if (!mMediaPlayer.isPlaying()) {
-                    play();
                 }
                 setVolume(1.0f);
                 break;
