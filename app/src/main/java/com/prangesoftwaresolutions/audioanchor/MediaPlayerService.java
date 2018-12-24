@@ -71,6 +71,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     //Used to pause/resume MediaPlayer
     private int resumePosition;
+    private boolean resumeAfterCall = false;
 
     //AudioFocus
     private AudioManager audioManager;
@@ -320,6 +321,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     private void resumeMedia() {
         if (!mMediaPlayer.isPlaying()) {
+            Log.e("BLABLABLA", "resuming");
             mMediaPlayer.seekTo(resumePosition);
             mMediaPlayer.start();
         }
@@ -399,8 +401,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     //pause the MediaPlayer
                     case TelephonyManager.CALL_STATE_OFFHOOK:
                     case TelephonyManager.CALL_STATE_RINGING:
-                        if (mMediaPlayer != null) {
-                            pauseMedia();
+                        if (mMediaPlayer != null && !ongoingCall) {
+                            resumeAfterCall = mMediaPlayer.isPlaying();
+                            pause();
+                            buildNotification();
                             ongoingCall = true;
                         }
                         break;
@@ -409,9 +413,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                         if (mMediaPlayer != null) {
                             if (ongoingCall) {
                                 ongoingCall = false;
-                                resumeMedia();
+                                if (resumeAfterCall) {
+                                    play();
+                                    buildNotification();
+                                }
                             }
                         }
+                        resumeAfterCall = false;
                         break;
                 }
             }
