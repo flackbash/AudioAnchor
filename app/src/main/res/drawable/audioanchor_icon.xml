@@ -14,6 +14,6 @@
                 android:height="300dp"/>
         </shape>
     </item>
-    <item android:drawable="@drawable/audioanchor_white"/>
+    <item android:drawable="@drawable/audioanchor_icon_small"></item>
 </layer-list>
 

@@ -538,17 +538,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private void buildNotification() {
         createNotificationChannel();
 
-        int notificationAction = android.R.drawable.ic_media_pause;
+        int notificationAction = R.drawable.ic_media_pause;
         PendingIntent play_pauseAction;
+        String title = "pause";
 
         //Build a new notification according to the current state of the MediaPlayer
         if (isPlaying()) {
             //create the pause action
             play_pauseAction = playbackAction(1);
         } else {
-            notificationAction = android.R.drawable.ic_media_play;
+            notificationAction = R.drawable.ic_media_play;
             //create the play action
             play_pauseAction = playbackAction(0);
+            title = "play";
         }
 
         Bitmap notificationCover;
@@ -578,7 +580,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .setColor(getResources().getColor(R.color.colorAccent))
                 // Set the large and small icons
                 .setLargeIcon(notificationCover)
-                .setSmallIcon(R.drawable.ic_notification)
+                .setSmallIcon(R.drawable.ic_notification_new)
                 // Set Notification content information
                 .setContentText(activeAudio.getAlbumTitle())
                 .setContentTitle(activeAudio.getTitle())
@@ -587,9 +589,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Set the visibility for the lock screen
                 .setVisibility(VISIBILITY_PUBLIC)
                 // Add playback actions
-                .addAction(android.R.drawable.ic_media_previous, "skip backward", playbackAction(3))
-                .addAction(notificationAction, "pause", play_pauseAction)
-                .addAction(android.R.drawable.ic_media_next, "skip forward", playbackAction(2));
+                .addAction(R.drawable.ic_media_backward, "backward", playbackAction(3))
+                .addAction(notificationAction, title, play_pauseAction)
+                .addAction(R.drawable.ic_media_forward, "forward", playbackAction(2));
 
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notificationBuilder.build());
     }
