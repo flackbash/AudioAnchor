@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 AnchorContract.AlbumEntry.COLUMN_TITLE,
                 AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
 
-        String sortOrder = AnchorContract.AlbumEntry.COLUMN_TITLE + " ASC";
+        String sortOrder = "LOWER(" +AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
 
         return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, null, null, sortOrder);
     }
