@@ -40,15 +40,12 @@ import java.nio.channels.FileChannel;
 import java.util.LinkedHashMap;
 
 // TODO: Option in Settings: Show title (from Metadata)
+// TODO: Option in settings if in autoplay play completed files as well
+// TODO: Option in settings: Don't show deleted files in list
 // TODO: Support subdirectories?
 // TODO: Show album progress in MainActivity
-// TODO: Option in settings if in autoplay play completed files as well
-// TODO: button to update all elements in the database
-// TODO: Option in settings: Don't show deleted files in list
-// TODO: LockScreen Widget
-// TODO: Set icon background to white if a cover exists
-// TODO: Add notification button to hopefully not loose progress in PlayActivity anymore
 // TODO: Don't save entire file path in the database, instead put it together from mDirectory, AlbumTitle and AudioFileTitle
+// TODO: make controls on headset work
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -134,7 +131,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 AnchorContract.AlbumEntry.COLUMN_TITLE,
                 AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
 
-        return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, null, null, null);
+        String sortOrder = AnchorContract.AlbumEntry.COLUMN_TITLE + " ASC";
+
+        return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, null, null, sortOrder);
     }
 
     @Override

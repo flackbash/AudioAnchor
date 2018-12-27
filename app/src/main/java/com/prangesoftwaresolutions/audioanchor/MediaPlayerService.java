@@ -34,8 +34,6 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 
 import static android.support.v4.app.NotificationCompat.VISIBILITY_PUBLIC;
 
@@ -70,7 +68,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private static final String CHANNEL_ID = "com.prangesoftwaresolutions.audioanchor.NOTIFICATION_CHANNEL";
 
     //Used to pause/resume MediaPlayer
-    private int resumePosition;
     private boolean resumeAfterCall = false;
 
     //AudioFocus
@@ -81,7 +78,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     LocalBroadcastManager mBroadcaster;
 
     //List of available Audio files
-    private HashMap<Integer, AudioFile> mAudioMap;
+    private ArrayList<AudioFile> mAudioMap;
     private int mAudioIndex = -1;
     private AudioFile activeAudio; //an object on the currently playing audio
 
@@ -129,10 +126,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             try {
                 //Load data from SharedPreferences
                 StorageUtil storage = new StorageUtil(getApplicationContext());
-                mAudioMap = new HashMap<>(storage.loadAudio());
+                mAudioMap = new ArrayList<>(storage.loadAudio());
                 mAudioIndex = storage.loadAudioIndex();
 
-                if (mAudioMap.containsKey(mAudioIndex)) {
+                if (mAudioIndex < mAudioMap.size() && mAudioIndex != -1) {
                     //index is in a valid range
                     activeAudio = mAudioMap.get(mAudioIndex);
                 } else {
@@ -208,11 +205,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         boolean playingNext = false;
         if (mAutoplay) {
-            ArrayList<Integer> keys = new ArrayList<>(mAudioMap.keySet());
-            Collections.sort(keys);
-            int nextIndex = keys.indexOf(mAudioIndex) + 1;
-            if (nextIndex < keys.size()) {
-                mAudioIndex = keys.get(nextIndex);
+            if (mAudioIndex + 1 < mAudioMap.size()) {
+                mAudioIndex++;
                 new StorageUtil(this).storeAudioIndex(mAudioIndex);
                 activeAudio = mAudioMap.get(mAudioIndex);
                 sendNewAudioFile(mAudioIndex);
@@ -310,21 +304,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
         mMediaPlayer.prepareAsync();
         // mMediaPlayer.seekTo(activeAudio.getCompletedTime());
-    }
-
-    private void pauseMedia() {
-        if (mMediaPlayer.isPlaying()) {
-            mMediaPlayer.pause();
-            resumePosition = mMediaPlayer.getCurrentPosition();
-        }
-    }
-
-    private void resumeMedia() {
-        if (!mMediaPlayer.isPlaying()) {
-            Log.e("BLABLABLA", "resuming");
-            mMediaPlayer.seekTo(resumePosition);
-            mMediaPlayer.start();
-        }
     }
 
     private void skipToNext() {
@@ -561,7 +540,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
 
         Intent startActivityIntent = new Intent(this, PlayActivity.class);
-        startActivityIntent.setData(ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, activeAudio.getmId()));
+        startActivityIntent.setData(ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, activeAudio.getId()));
         startActivityIntent.putExtra("albumId", activeAudio.getAlbumId());
         PendingIntent launchIntent = PendingIntent.getActivity(this, 0,
                 startActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -726,7 +705,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
             sendPlayStatusResult(MSG_PAUSE);
-            resumePosition = mMediaPlayer.getCurrentPosition();
         }
     }
 
@@ -811,7 +789,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         activeAudio.setCompletedTime(getCurrentPosition());
 
         // Update the completedTime column of the audiofiles table
-        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, activeAudio.getmId());
+        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, activeAudio.getId());
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, getCurrentPosition());
         getContentResolver().update(uri, values, null, null);

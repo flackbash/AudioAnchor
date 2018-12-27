@@ -115,8 +115,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};
+        String sortOrder = AnchorContract.AudioEntry.COLUMN_TITLE + " ASC";
 
-        return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, null);
+        return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
     }
 
     @Override
