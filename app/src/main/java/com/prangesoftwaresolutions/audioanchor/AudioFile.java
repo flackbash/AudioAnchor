@@ -8,7 +8,7 @@ import android.net.Uri;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 class AudioFile implements Serializable {
 
@@ -32,7 +32,7 @@ class AudioFile implements Serializable {
         mCoverPath = coverPath;
     }
 
-    int getmId() {
+    int getId() {
         return mId;
     }
 
@@ -127,7 +127,7 @@ class AudioFile implements Serializable {
         return audioFile;
     }
 
-    static HashMap<Integer, AudioFile> getAllAudioFilesFromAlbum(Context context, int albumId) {
+    static ArrayList<AudioFile> getAllAudioFilesFromAlbum(Context context, int albumId, String sortOrder) {
         String[] projection = {
                 AnchorContract.AudioEntry._ID,
                 AnchorContract.AudioEntry.COLUMN_TITLE,
@@ -137,13 +137,13 @@ class AudioFile implements Serializable {
 
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(albumId)};
-        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, null);
+        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
 
         if (c == null || c.getCount() < 1) {
             throw new SQLException();
         }
 
-        HashMap<Integer, AudioFile> audioFiles = new HashMap<>();
+        ArrayList<AudioFile> audioFiles = new ArrayList<>();
         if (c.moveToFirst()) {
             // Album info is the same for all files given the query
             String[] albumInfo = getAlbumInfo(context, albumId);
@@ -153,7 +153,7 @@ class AudioFile implements Serializable {
                 int completedTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
                 int time = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
                 String path = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
-                audioFiles.put(id, new AudioFile(id, title, albumId, time, completedTime, path, albumInfo[0], albumInfo[1]));
+                audioFiles.add(new AudioFile(id, title, albumId, time, completedTime, path, albumInfo[0], albumInfo[1]));
             } while (c.moveToNext());
 
         } else {
@@ -161,5 +161,15 @@ class AudioFile implements Serializable {
         }
         c.close();
         return audioFiles;
+    }
+
+    static int getIndex(ArrayList<AudioFile> audioList, int id) {
+        for(int i = 0; i < audioList.size(); i++) {
+            AudioFile audioFile = audioList.get(i);
+            if(audioFile.getId() == id) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

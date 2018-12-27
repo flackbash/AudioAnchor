@@ -33,7 +33,7 @@ import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 
 public class PlayActivity extends AppCompatActivity {
@@ -96,7 +96,7 @@ public class PlayActivity extends AppCompatActivity {
         mHandler = new Handler();
 
         // Start the play service
-        startService(mAudioFile.getmId());
+        startService();
 
         mPlayStatusReceiver = new BroadcastReceiver() {
             @Override
@@ -118,6 +118,7 @@ public class PlayActivity extends AppCompatActivity {
                 int audioIndex = intent.getIntExtra(MediaPlayerService.SERVICE_MESSAGE_NEW_AUDIO, -1);
                 if (audioIndex > -1) {
                     loadAudioFile(audioIndex);
+                    initializeSeekBar();
                 }
             }
         };
@@ -184,6 +185,7 @@ public class PlayActivity extends AppCompatActivity {
         if (mPlayer != null) {
             mAudioFile = mPlayer.getCurrentAudioFile();
             setNewAudioFile();
+            initializeSeekBar();
         }
     }
 
@@ -263,10 +265,10 @@ public class PlayActivity extends AppCompatActivity {
         }
     };
 
-    private void startService(int audioIndex) {
+    private void startService() {
         //Check is service is active
         if (!serviceBound) {
-            storeAudioFiles(audioIndex);
+            storeAudioFiles();
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
@@ -275,7 +277,7 @@ public class PlayActivity extends AppCompatActivity {
 
     private void playAudio() {
         //Send a broadcast to the service -> PLAY_NEW_AUDIO
-        startService(mAudioFile.getmId());
+        startService();
         Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
         sendBroadcast(broadcastIntent);
     }
@@ -286,9 +288,11 @@ public class PlayActivity extends AppCompatActivity {
         sendBroadcast(broadcastIntent);
     }
 
-    private void storeAudioFiles(int audioIndex) {
+    private void storeAudioFiles() {
         //Store Serializable audioList to SharedPreferences
-        HashMap<Integer, AudioFile> audioList = AudioFile.getAllAudioFilesFromAlbum(this, mAlbumId);
+        String sortOrder = AnchorContract.AudioEntry.COLUMN_TITLE + " ASC";
+        ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesFromAlbum(this, mAlbumId, sortOrder);
+        int audioIndex = AudioFile.getIndex(audioList, mAudioFile.getId());
         StorageUtil storage = new StorageUtil(getApplicationContext());
         storage.storeAudio(audioList);
         storage.storeAudioIndex(audioIndex);
@@ -297,8 +301,8 @@ public class PlayActivity extends AppCompatActivity {
     private void loadAudioFile(int audioIndex) {
         //Load data from SharedPreferences
         StorageUtil storage = new StorageUtil(getApplicationContext());
-        HashMap<Integer, AudioFile> audioMap = new HashMap<>(storage.loadAudio());
-        mAudioFile = audioMap.get(audioIndex);
+        ArrayList<AudioFile> audioList = new ArrayList<>(storage.loadAudio());
+        mAudioFile = audioList.get(audioIndex);
         setNewAudioFile();
     }
 
@@ -330,7 +334,7 @@ public class PlayActivity extends AppCompatActivity {
         // Update the time column of the audiofiles table if it has not yet been set
         if (mPlayer != null && mAudioFile.getTime() == 0) {
             mAudioFile.setTime(mPlayer.getDuration());
-            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mAudioFile.getmId());
+            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mAudioFile.getId());
             ContentValues values = new ContentValues();
             values.put(AnchorContract.AudioEntry.COLUMN_TIME, mAudioFile.getTime());
             getContentResolver().update(uri, values, null, null);

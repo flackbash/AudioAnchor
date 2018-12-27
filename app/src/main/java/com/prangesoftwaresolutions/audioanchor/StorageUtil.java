@@ -7,7 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  * Based on a tutorial by Valdio Veliu. See https://github.com/sitepoint-editors/AudioPlayer
@@ -22,21 +22,21 @@ class StorageUtil {
         this.context = context;
     }
 
-    void storeAudio(HashMap<Integer, AudioFile> hashMap) {
+    void storeAudio(ArrayList<AudioFile> arrayList) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = preferences.edit();
         Gson gson = new Gson();
-        String json = gson.toJson(hashMap);
-        editor.putString("audioHashMap", json);
+        String json = gson.toJson(arrayList);
+        editor.putString("audioList", json);
         editor.apply();
     }
 
-    HashMap<Integer, AudioFile> loadAudio() {
+    ArrayList<AudioFile> loadAudio() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         Gson gson = new Gson();
-        String json = preferences.getString("audioHashMap", null);
-        Type type = new TypeToken<HashMap<Integer, AudioFile>>() {}.getType();
+        String json = preferences.getString("audioList", null);
+        Type type = new TypeToken<ArrayList<AudioFile>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
