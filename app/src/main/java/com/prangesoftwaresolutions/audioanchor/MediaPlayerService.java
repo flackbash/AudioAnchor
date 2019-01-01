@@ -29,6 +29,7 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
@@ -46,6 +47,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     public static final String ACTION_PLAY = "com.prangesoftwaresolutions.audioanchor.ACTION_PLAY";
     public static final String ACTION_PAUSE = "com.prangesoftwaresolutions.audioanchor.ACTION_PAUSE";
+    public static final String ACTION_TOGGLE_PAUSE = "com.prangesoftwaresolutions.audioanchor.ACTION_TOGGLE_PAUSE";
     public static final String ACTION_BACKWARD = "com.prangesoftwaresolutions.audioanchor.ACTION_BACKWARD";
     public static final String ACTION_FORWARD = "com.prangesoftwaresolutions.audioanchor.ACTION_FORWARD";
 
@@ -63,9 +65,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private MediaSessionCompat mediaSession;
     private MediaControllerCompat.TransportControls transportControls;
 
-    //AudioPlayer notification ID
+    //AudioPlayer notification IDs
     private static final int NOTIFICATION_ID = 101;
     private static final String CHANNEL_ID = "com.prangesoftwaresolutions.audioanchor.NOTIFICATION_CHANNEL";
+
+    // Notification builder
+    NotificationCompat.Builder mNotificationBuilder;
 
     //Used to pause/resume MediaPlayer
     private boolean resumeAfterCall = false;
@@ -122,6 +127,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     //The system calls this method when an activity, requests the service be started
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.e("BLABLABLA", "OnStartCommand called");
         if (mAudioMap == null || mAudioIndex == -1) {
             try {
                 //Load data from SharedPreferences
@@ -166,6 +172,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.e("BLABLABLA", "OnDestroy called");
+
         if (mMediaPlayer != null) {
             stopMedia();
             mMediaPlayer.release();
@@ -271,13 +279,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      */
     private boolean requestAudioFocus() {
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        int result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        int result = 0;
+        if (audioManager != null) {
+            result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        }
         return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
     }
 
-    private boolean removeAudioFocus() {
-        return AudioManager.AUDIOFOCUS_REQUEST_GRANTED ==
-                audioManager.abandonAudioFocus(this);
+    private void removeAudioFocus() {
+        audioManager.abandonAudioFocus(this);
     }
 
     /**
@@ -305,47 +315,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mMediaPlayer.prepareAsync();
         // mMediaPlayer.seekTo(activeAudio.getCompletedTime());
     }
-
-    private void skipToNext() {
-
-        if (mAudioIndex == mAudioMap.size() - 1) {
-            //if last in playlist
-            mAudioIndex = 0;
-            activeAudio = mAudioMap.get(mAudioIndex);
-        } else {
-            //get next in playlist
-            activeAudio = mAudioMap.get(++mAudioIndex);
-        }
-
-        //Update stored index
-        new StorageUtil(getApplicationContext()).storeAudioIndex(mAudioIndex);
-
-        stopMedia();
-        //reset mMediaPlayer
-        mMediaPlayer.reset();
-        initMediaPlayer();
-    }
-
-    private void skipToPrevious() {
-        if (mAudioIndex == 0) {
-            //if first in playlist
-            //set index to the last of mAudioMap
-            mAudioIndex = mAudioMap.size() - 1;
-            activeAudio = mAudioMap.get(mAudioIndex);
-        } else {
-            //get previous in playlist
-            activeAudio = mAudioMap.get(--mAudioIndex);
-        }
-
-        //Update stored index
-        new StorageUtil(getApplicationContext()).storeAudioIndex(mAudioIndex);
-
-        stopMedia();
-        //reset mMediaPlayer
-        mMediaPlayer.reset();
-        initMediaPlayer();
-    }
-
 
     /**
      * ACTION_AUDIO_BECOMING_NOISY -- change in audio outputs
@@ -417,14 +386,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         // Create a new MediaSession
-        mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioPlayer");
+        mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioAnchor");
         //Get MediaSessions transport controls
         transportControls = mediaSession.getController().getTransportControls();
         //set MediaSession -> ready to receive media commands
         mediaSession.setActive(true);
         //indicate that the MediaSession handles transport control commands
         // through its MediaSessionCompat.Callback.
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS);
 
         //Set mediaSession's MetaData
         updateMetaData();
@@ -435,7 +404,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             @Override
             public void onPlay() {
                 super.onPlay();
-
                 play();
                 buildNotification();
             }
@@ -443,7 +411,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             @Override
             public void onPause() {
                 super.onPause();
-
                 pause();
                 buildNotification();
             }
@@ -451,21 +418,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             @Override
             public void onSkipToNext() {
                 super.onSkipToNext();
-                /*
-                skipToNext();
-                updateMetaData();
-                buildNotification();
-                */
             }
 
             @Override
             public void onSkipToPrevious() {
                 super.onSkipToPrevious();
-                /*
-                skipToPrevious();
-                updateMetaData();
-                buildNotification();
-                */
             }
 
             @Override
@@ -479,6 +436,50 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             @Override
             public void onSeekTo(long position) {
                 super.onSeekTo(position);
+            }
+
+            @Override
+            public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
+                final KeyEvent event = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                if (event == null) {
+                    return false;
+                }
+
+                final int keycode = event.getKeyCode();
+                final int action = event.getAction();
+
+                if (action == KeyEvent.ACTION_DOWN) {
+                    if (event.getRepeatCount() == 0) {
+                        switch (keycode) {
+                            case KeyEvent.KEYCODE_MEDIA_STOP:
+                                pause();
+                                buildNotification();
+                                break;
+                            case KeyEvent.KEYCODE_HEADSETHOOK:
+                            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
+                                else play();
+                                buildNotification();
+                                break;
+                            case KeyEvent.KEYCODE_MEDIA_NEXT:
+                                forward(30);
+                                break;
+                            case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                                backward(30);
+                                break;
+                            case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                                pause();
+                                buildNotification();
+                                break;
+                            case KeyEvent.KEYCODE_MEDIA_PLAY:
+                                play();
+                                buildNotification();
+                                break;
+                        }
+                        return true;
+                    }
+                }
+                return false;
             }
         });
     }
@@ -546,7 +547,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 startActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Create a new Notification
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 // Hide the timestamp
                 .setShowWhen(false)
                 // Set the Notification style
@@ -572,9 +573,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .addAction(notificationAction, title, play_pauseAction)
                 .addAction(R.drawable.ic_media_forward, "forward", playbackAction(2));
 
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notificationBuilder.build());
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            notificationManager.notify(NOTIFICATION_ID, mNotificationBuilder.build());
+        }
     }
-
 
     private PendingIntent playbackAction(int actionNumber) {
         Intent playbackActionIntent = new Intent(this, MediaPlayerService.class);
@@ -616,6 +619,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             transportControls.play();
         } else if (actionString.equalsIgnoreCase(ACTION_PAUSE)) {
             transportControls.pause();
+        } else if (actionString.equalsIgnoreCase(ACTION_TOGGLE_PAUSE)) {
+            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) transportControls.pause();
+            else transportControls.play();
         } else if (actionString.equalsIgnoreCase(ACTION_FORWARD)) {
             forward(30);
         } else if (actionString.equalsIgnoreCase(ACTION_BACKWARD)) {
@@ -687,6 +693,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     void play() {
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying() && (mAutoplay || getCurrentPosition() != getDuration())) {
+            Log.e("BLABLABLABLA", "currentPos: " + getCurrentPosition());
             mMediaPlayer.start();
             sendPlayStatusResult(MSG_PLAY);
         }
@@ -705,6 +712,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
             sendPlayStatusResult(MSG_PAUSE);
+            Log.e("BLABLABLABLA", "currentPos: " + getCurrentPosition());
         }
     }
 
@@ -721,6 +729,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      */
     void backward(int seconds) {
         int newPos = Math.max(0,mMediaPlayer.getCurrentPosition() - seconds*1000);
+        Log.e("BLABLABLABLA", "New Pos: " + newPos);
         mMediaPlayer.seekTo(newPos);
     }
 
