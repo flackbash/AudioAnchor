@@ -4,6 +4,7 @@ import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -12,6 +13,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -103,6 +105,22 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 intent.setData(uri);
                 intent.putExtra("albumId", (int)mAlbumId);
                 startActivity( intent );
+            }
+        });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, l);
+
+                // Don't allow delete action if the audio file still exists
+                AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri);
+                if ((new File(audio.getPath())).exists()) {
+                    return false;
+                }
+
+                deleteAudioWithConfirmation(uri);
+                return true;
             }
         });
 
@@ -342,4 +360,31 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         listView.setSelection(Math.max(scrollTo - 1, 0));
     }
 
+    /**
+     * Show the delete audio confirmation dialog and let the user decide whether to delete the audio
+     */
+    private void deleteAudioWithConfirmation(final Uri audioUri) {
+        // Create an AlertDialog.Builder and set the message and click listeners
+        // for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_msg_delete_audio);
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Ok" button, so delete the audio.
+                getContentResolver().delete(audioUri, null, null);
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
 }
