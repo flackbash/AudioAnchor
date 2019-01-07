@@ -39,13 +39,13 @@ import java.io.FilenameFilter;
 import java.nio.channels.FileChannel;
 import java.util.LinkedHashMap;
 
-// TODO: Option in Settings: Show title (from Metadata)
-// TODO: Option in settings if in autoplay play completed files as well
+// TODO: Option in settings: Show title (from Metadata)
+// TODO: Option in settings: if in autoplay play completed files as well
 // TODO: Option in settings: Don't show deleted files in list
-// TODO: Support subdirectories?
+// TODO: Option in settings: Sort by
+// TODO: Support subdirectories? / Support multiple base directories
 // TODO: Show album progress in MainActivity
 // TODO: Don't save entire file path in the database, instead put it together from mDirectory, AlbumTitle and AudioFileTitle
-// TODO: make controls on headset work
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
