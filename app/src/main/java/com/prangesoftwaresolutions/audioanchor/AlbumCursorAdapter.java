@@ -1,7 +1,9 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,16 +13,22 @@ import android.widget.TextView;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
+import java.io.File;
+
 /**
  * CursorAdapter for the ListView in the Main Activity
  */
 
 public class AlbumCursorAdapter extends CursorAdapter {
     private Context mContext;
+    private String mDirectory;
 
     AlbumCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
         mContext = context;
+        // Set up the shared preferences.
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mDirectory = prefs.getString(mContext.getString(R.string.preference_filename), null);
     }
 
     @Override
@@ -43,6 +51,14 @@ public class AlbumCursorAdapter extends CursorAdapter {
             BitmapUtils.setImage(thumbnailIV, path, reqSize);
         } else {
             thumbnailIV.setImageResource(R.drawable.empty_cover_grey_blue);
+        }
+
+        // Show the deletable image if the file does not exist anymore
+        ImageView deletableIV = view.findViewById(R.id.album_item_deletable_img);
+        if (mDirectory != null && !(new File(mDirectory, title)).exists()) {
+            deletableIV.setImageResource(R.drawable.img_deletable);
+        } else {
+            deletableIV.setImageResource(android.R.color.transparent);
         }
     }
 }

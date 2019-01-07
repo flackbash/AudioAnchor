@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+
+import java.io.File;
 
 /**
  * CursorAdapter for the ListView in the Main Activity
@@ -72,6 +73,15 @@ public class AudioFileCursorAdapter extends CursorAdapter {
             thumbnailIV.setImageResource(R.drawable.ic_paused);
         } else {
             thumbnailIV.setImageResource(R.drawable.ic_unchecked);
+        }
+
+        // Show the deletable image if the file does not exist anymore
+        String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
+        ImageView deletableIV = view.findViewById(R.id.audio_file_item_deletable_img);
+        if (!(new File(path)).exists()) {
+            deletableIV.setImageResource(R.drawable.img_deletable);
+        } else {
+            deletableIV.setImageResource(android.R.color.transparent);
         }
 
     }
