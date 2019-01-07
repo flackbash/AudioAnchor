@@ -384,7 +384,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private void initMediaSession() {
         if (mediaSessionManager != null) return; //mediaSessionManager exists
 
-        mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
+        }
+
         // Create a new MediaSession
         mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioAnchor");
         //Get MediaSessions transport controls
