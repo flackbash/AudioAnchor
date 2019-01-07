@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
@@ -88,8 +89,16 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
-                // Open the PlayActivity for the clicked audio file
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, rowId);
+
+                // Check if the audio file exists
+                AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri);
+                if (!(new File(audio.getPath())).exists()) {
+                    Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                // Open the PlayActivity for the clicked audio file
                 Intent intent = new Intent(AlbumActivity.this, PlayActivity.class);
                 intent.setData(uri);
                 intent.putExtra("albumId", (int)mAlbumId);
@@ -192,6 +201,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         } else {
             fileList = new String[]{};
         }
+
+        if (fileList == null) return;
 
         LinkedHashMap<String, Integer> audioTitles = getAudioFileTitles();
 
