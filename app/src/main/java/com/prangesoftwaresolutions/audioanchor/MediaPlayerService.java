@@ -631,7 +631,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
 
     /**
-     * Play new Audio
+     * Play audio
      */
     private BroadcastReceiver playNewAudio = new BroadcastReceiver() {
         @Override
@@ -644,13 +644,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     };
 
     /**
-     * Play new Audio
+     * Pause Audio
      */
     private BroadcastReceiver pauseAudio = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //A PLAY_NEW_AUDIO action received
-            //reset mMediaPlayer to play the new Audio
             pause();
             buildNotification();
         }
