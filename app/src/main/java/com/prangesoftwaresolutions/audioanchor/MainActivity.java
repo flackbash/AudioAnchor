@@ -46,6 +46,7 @@ import java.util.LinkedHashMap;
 // TODO: Support subdirectories? / Support multiple base directories
 // TODO: Show album progress in MainActivity
 // TODO: Don't save entire file path in the database, instead put it together from mDirectory, AlbumTitle and AudioFileTitle
+// TODO: Mark files that do not exist anymore but are still in the database (or add a delete button)
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -102,6 +103,35 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 String albumPath = new File(mDirectory.getAbsolutePath() + File.separator + albumName).getAbsolutePath();
                 intent.putExtra(getString(R.string.directory_path), albumPath);
                 startActivity(intent);
+            }
+        });
+
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, l);
+
+                // Check if the audio file exists
+                String[] proj = new String[]{AnchorContract.AlbumEntry.COLUMN_TITLE};
+                Cursor c = getContentResolver().query(uri, proj, null, null, null);
+
+                if (c == null) return false;
+
+                String title = null;
+                if (c.moveToNext()) {
+                    title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
+                }
+                c.close();
+
+                if (title == null) return false;
+
+                // Do not allow the delete action if the file still exists
+                if ((new File(mDirectory, title)).exists()) {
+                    return false;
+                }
+
+                deleteAlbumWithConfirmation(l);
+                return true;
             }
         });
 
@@ -276,9 +306,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // for the positive and negative buttons on the dialog.
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_change_dir);
-        builder.setPositiveButton(R.string.dialog_msg_change, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Change" button, so change the directory.
+                // User clicked the "Ok" button, so change the directory.
                 getContentResolver().delete(AnchorContract.AlbumEntry.CONTENT_URI, null, null);
                 getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, null, null);
                 setDirectory(directory);
@@ -490,5 +520,39 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Toast.makeText(getApplicationContext(), R.string.import_fail, Toast.LENGTH_LONG).show();
 
         }
+    }
+
+    /**
+     * Show the delete album confirmation dialog and let the user decide whether to delete the album
+     */
+    private void deleteAlbumWithConfirmation(final long albumId) {
+        // Create an AlertDialog.Builder and set the message and click listeners
+        // for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_msg_delete_album);
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Ok" button, so delete the album.
+                Uri albumUri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, albumId);
+                getContentResolver().delete(albumUri, null, null);
+
+                // Delete all audios from the album in the audio_files table
+                String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+                String[] selArgs = {Long.toString(albumId)};
+                getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, sel, selArgs);
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 }
