@@ -11,28 +11,41 @@
         android:layout_width="@dimen/audio_file_item_height"
         android:layout_height="@dimen/audio_file_item_height"
         android:src="@drawable/ic_unchecked"/>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <TextView
-            android:id="@+id/audio_file_item_title"
-            android:layout_width="match_parent"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/medium_font_size"
-            android:paddingStart="@dimen/small_margin"
-            android:paddingEnd="@dimen/small_margin"
-            android:paddingTop="@dimen/small_margin"
-            android:text="@string/title"/>
-        <TextView
-            android:id="@+id/audio_file_item_duration"
-            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_centerVertical="true">
+            <TextView
+                android:id="@+id/audio_file_item_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/medium_font_size"
+                android:paddingStart="@dimen/small_margin"
+                android:paddingEnd="@dimen/small_margin"
+                android:paddingTop="@dimen/small_margin"
+                android:text="@string/title"/>
+            <TextView
+                android:id="@+id/audio_file_item_duration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/small_font_size"
+                android:paddingStart="@dimen/small_margin"
+                android:paddingEnd="@dimen/small_margin"
+                android:text="00:00 / 00:00"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/audio_file_item_deletable_img"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/small_font_size"
-            android:paddingStart="@dimen/small_margin"
-            android:paddingEnd="@dimen/small_margin"
-            android:text="00:00 / 00:00"/>
-    </LinearLayout>
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
+
 
 </LinearLayout>
 
