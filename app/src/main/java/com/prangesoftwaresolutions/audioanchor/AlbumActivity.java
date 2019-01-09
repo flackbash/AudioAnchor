@@ -225,12 +225,20 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         LinkedHashMap<String, Integer> audioTitles = getAudioFileTitles();
 
         // Insert new files into the database
+        boolean success = true;
         for (String file : fileList) {
             if (!audioTitles.containsKey(file)) {
-                insertAudioFile(file);
+                success = insertAudioFile(file);
+                if (!success) break;
             } else {
                 audioTitles.remove(file);
             }
+        }
+
+        if (!success) {
+            Toast.makeText(getApplicationContext(), R.string.audio_file_error, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
 
         // Delete missing audio files from the database
@@ -246,7 +254,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     /*
      * Insert a new row in the album database table
      */
-    private void insertAudioFile(String title) {
+    private boolean insertAudioFile(String title) {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_TITLE, title);
         String path = Utils.getPath(this, mDirectory.getName(), title);
@@ -255,13 +263,18 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Retrieve audio duration from Metadata.
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-        metaRetriever.setDataSource(path);
-        String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(duration));
-        metaRetriever.release();
+        try {
+            metaRetriever.setDataSource(path);
+            String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(duration));
+            metaRetriever.release();
+        } catch (java.lang.RuntimeException e) {
+            return false;
+        }
 
         // Insert the row into the database table
         getContentResolver().insert(AnchorContract.AudioEntry.CONTENT_URI, values);
+        return true;
     }
 
     /**
