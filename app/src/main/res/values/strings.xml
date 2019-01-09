@@ -15,6 +15,7 @@
     <string name="export_success">Exported database to %s</string>
     <string name="export_fail">Something went wrong. Export failed.</string>
     <string name="synchronize_success">Synchronized directory.</string>
+    <string name="audio_file_error">There is a problem with the audio files in this directory.</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>
