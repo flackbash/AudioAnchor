@@ -127,7 +127,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     //The system calls this method when an activity, requests the service be started
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e("BLABLABLA", "OnStartCommand called");
+        Log.e("OnStartCommand", "OnStartCommand called");
         if (mAudioMap == null || mAudioIndex == -1) {
             try {
                 //Load data from SharedPreferences
@@ -151,7 +151,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             stopSelf();
         }
 
-        if (mediaSessionManager == null) {
+        if (mediaSession == null) {
             initMediaSession();
             initMediaPlayer();
             buildNotification();
@@ -307,13 +307,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         try {
             // Set the data source to the mediaFile location
             mMediaPlayer.setDataSource(activeAudio.getPath());
-            // mMediaPlayer.prepare();
+            mMediaPlayer.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
             stopSelf();
         }
-        mMediaPlayer.prepareAsync();
-        // mMediaPlayer.seekTo(activeAudio.getCompletedTime());
     }
 
     /**
