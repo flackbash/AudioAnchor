@@ -51,7 +51,7 @@ public class AnchorProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         // Create and initialize a AnchorDbHelper object to gain access to the audios database.
-        mDbHelper = new AnchorDbHelper(getContext());
+        mDbHelper = AnchorDbHelper.getInstance(getContext());
         return true;
     }
 
