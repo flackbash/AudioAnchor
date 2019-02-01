@@ -14,6 +14,8 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
     // Database version. Must be incremented when the database schema is changed.
     private static final int DATABASE_VERSION = 1;
 
+    private static AnchorDbHelper mInstance = null;
+
     AnchorDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -42,5 +44,12 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
+    }
+
+    static AnchorDbHelper getInstance(Context context) {
+        if (mInstance == null) {
+            mInstance = new AnchorDbHelper(context.getApplicationContext());
+        }
+        return mInstance;
     }
 }
