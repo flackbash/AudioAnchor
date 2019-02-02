@@ -57,7 +57,9 @@ public class PlayActivity extends AppCompatActivity {
     TextView mAlbumTV;
     ImageView mPlayIV;
     ImageView mBackIV;
+    ImageView mBack10IV;
     ImageView mForwardIV;
+    ImageView mForward10IV;
     SeekBar mSeekBar;
     TextView mCompletedTimeTV;
     TextView mTimeTV;
@@ -83,7 +85,9 @@ public class PlayActivity extends AppCompatActivity {
         mAlbumTV = findViewById(R.id.play_album_title);
         mPlayIV = findViewById(R.id.play_play);
         mBackIV = findViewById(R.id.play_backward);
+        mBack10IV = findViewById(R.id.play_backward_10);
         mForwardIV = findViewById(R.id.play_forward);
+        mForward10IV = findViewById(R.id.play_forward_10);
         mSeekBar = findViewById(R.id.play_seekbar);
         mCompletedTimeTV = findViewById(R.id.play_completed_time);
         mTimeTV = findViewById(R.id.play_time);
@@ -142,11 +146,24 @@ public class PlayActivity extends AppCompatActivity {
                 mPlayer.backward(30);
             }
         });
+        mBack10IV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mPlayer.backward(10);
+            }
+        });
 
         mForwardIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mPlayer.forward(30);
+
+            }
+        });
+        mForward10IV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mPlayer.forward(10);
 
             }
         });

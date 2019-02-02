@@ -57,24 +57,44 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/play_button"
                 android:layout_centerHorizontal="true"
-                android:layout_marginStart="@dimen/standard_margin"
-                android:layout_marginEnd="@dimen/standard_margin"
+                android:layout_marginStart="@dimen/small_margin"
+                android:layout_marginEnd="@dimen/small_margin"
                 />
             <ImageView
                 android:id="@+id/play_forward"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/skip_button_height"
+                android:layout_height="@dimen/skip_button_height"
                 android:src="@drawable/forward_button"
-                android:layout_toEndOf="@+id/play_play"
-                android:layout_marginStart="@dimen/standard_margin"
+                android:layout_toEndOf="@+id/play_forward_10"
+                android:layout_marginStart="@dimen/small_margin"
+                android:layout_centerVertical="true"
                 />
             <ImageView
                 android:id="@+id/play_backward"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/skip_button_height"
+                android:layout_height="@dimen/skip_button_height"
                 android:src="@drawable/backward_button"
+                android:layout_toStartOf="@+id/play_backward_10"
+                android:layout_marginEnd="@dimen/small_margin"
+                android:layout_centerVertical="true"
+                />
+            <ImageView
+                android:id="@+id/play_backward_10"
+                android:layout_width="@dimen/skip_button_height_big"
+                android:layout_height="@dimen/skip_button_height_big"
+                android:src="@drawable/backward_10_button"
                 android:layout_toStartOf="@+id/play_play"
-                android:layout_marginEnd="@dimen/standard_margin"
+                android:layout_marginEnd="@dimen/small_margin"
+                android:layout_centerVertical="true"
+                />
+            <ImageView
+                android:id="@+id/play_forward_10"
+                android:layout_width="@dimen/skip_button_height_big"
+                android:layout_height="@dimen/skip_button_height_big"
+                android:src="@drawable/forward_10_button"
+                android:layout_toEndOf="@+id/play_play"
+                android:layout_marginStart="@dimen/small_margin"
+                android:layout_centerVertical="true"
                 />
 
         </RelativeLayout>
