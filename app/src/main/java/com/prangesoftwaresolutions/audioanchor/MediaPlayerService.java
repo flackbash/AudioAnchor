@@ -692,7 +692,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     void play() {
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying() && (mAutoplay || getCurrentPosition() != getDuration())) {
-            Log.e("BLABLABLABLA", "currentPos: " + getCurrentPosition());
             mMediaPlayer.start();
             sendPlayStatusResult(MSG_PLAY);
         }
@@ -711,7 +710,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
             sendPlayStatusResult(MSG_PAUSE);
-            Log.e("BLABLABLABLA", "currentPos: " + getCurrentPosition());
         }
     }
 
@@ -728,8 +726,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      */
     void backward(int seconds) {
         int newPos = Math.max(0,mMediaPlayer.getCurrentPosition() - seconds*1000);
-        Log.e("BLABLABLABLA", "New Pos: " + newPos);
         mMediaPlayer.seekTo(newPos);
+
     }
 
     /*
