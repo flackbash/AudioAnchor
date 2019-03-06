@@ -16,6 +16,7 @@
     <string name="export_fail">Something went wrong. Export failed.</string>
     <string name="synchronize_success">Synchronized directory.</string>
     <string name="audio_file_error">There is a problem with the audio files in this directory.</string>
+    <string name="empty_title_error">Please enter a title for your bookmark.</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>
@@ -46,6 +47,7 @@
     <string name="sleep_timer">Sleep timer</string>
     <string name="sleep_time_left">- %s</string>
     <string name="go_to">Go to</string>
+    <string name="set_bookmark">Set bookmark</string>
     <string name="about">About</string>
     <string name="about_text">%s %s</string>
     <string name="copyright">Copyright © 2018 Natalie Prange</string>
@@ -55,11 +57,12 @@
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
-    <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing.</string>
+    <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing:</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Cancel</string>
-    <string name="dialog_msg_goto">Enter the time to which you want to jump.</string>
+    <string name="dialog_msg_goto">Enter the time to which you want to jump:</string>
     <string name="dialog_msg_delete_album">Are you sure you want to delete the album and its contents from the database?</string>
     <string name="dialog_msg_delete_audio">Are you sure you want to delete this audio file from the database?</string>
+    <string name="dialog_msg_set_bookmark">Enter the name of the new bookmark:</string>
 
 </resources>

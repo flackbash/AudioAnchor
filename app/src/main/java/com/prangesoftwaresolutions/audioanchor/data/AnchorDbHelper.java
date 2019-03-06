@@ -12,7 +12,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "audio_anchor.db";
 
     // Database version. Must be incremented when the database schema is changed.
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     private static AnchorDbHelper mInstance = null;
 
@@ -37,13 +37,27 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 + AnchorContract.AlbumEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + AnchorContract.AlbumEntry.COLUMN_COVER_PATH + " TEXT);";
 
+        // Create a String that contains the SQL statement to create the bookmark table
+        String SQL_CREATE_BOOKMARK_TABLE = "CREATE TABLE " + AnchorContract.BookmarkEntry.TABLE_NAME + " ("
+                + AnchorContract.BookmarkEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + AnchorContract.BookmarkEntry.COLUMN_TITLE + " TEXT NOT NULL, "
+                + AnchorContract.BookmarkEntry.COLUMN_POSITION + " INTEGER, "
+                + AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + " INTEGER);";
+
         db.execSQL(SQL_CREATE_AUDIO_FILE_TABLE);
         db.execSQL(SQL_CREATE_ALBUM_TABLE);
+        db.execSQL(SQL_CREATE_BOOKMARK_TABLE);
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
+    public void onUpgrade(SQLiteDatabase db, int i, int i1) {
+        // Create a String that contains the SQL statement to create the bookmark table
+        String SQL_CREATE_BOOKMARK_TABLE = "CREATE TABLE IF NOT EXISTS " + AnchorContract.BookmarkEntry.TABLE_NAME + " ("
+                + AnchorContract.BookmarkEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + AnchorContract.BookmarkEntry.COLUMN_TITLE + " TEXT NOT NULL, "
+                + AnchorContract.BookmarkEntry.COLUMN_POSITION + " INTEGER, "
+                + AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + " INTEGER);";
+        db.execSQL(SQL_CREATE_BOOKMARK_TABLE);
     }
 
     static AnchorDbHelper getInstance(Context context) {

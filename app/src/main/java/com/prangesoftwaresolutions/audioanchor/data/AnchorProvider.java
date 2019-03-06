@@ -32,6 +32,10 @@ public class AnchorProvider extends ContentProvider {
     private static final int ALBUM_ID = 201;
     private static final int ALBUM_DISTINCT = 210;
 
+    private static final int BOOKMARK = 300;
+    private static final int BOOKMARK_ID = 301;
+    private static final int BOOKMARK_DISTINCT = 310;
+
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
@@ -43,6 +47,10 @@ public class AnchorProvider extends ContentProvider {
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_ALBUM, ALBUM);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_ALBUM + "/#", ALBUM_ID);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_ALBUM_DISTINCT, ALBUM_DISTINCT);
+        // URIs for the bookmarks table
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK, BOOKMARK);
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK + "/#", BOOKMARK_ID);
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK_DISTINCT, BOOKMARK_DISTINCT);
     }
 
     /**
@@ -80,6 +88,11 @@ public class AnchorProvider extends ContentProvider {
                 cursor = database.query(AnchorContract.AlbumEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
+            case BOOKMARK:
+                // Query the album table with the given parameters
+                cursor = database.query(AnchorContract.BookmarkEntry.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
             case AUDIO_DISTINCT:
                 qb = new SQLiteQueryBuilder();
                 qb.setDistinct(true);
@@ -90,6 +103,12 @@ public class AnchorProvider extends ContentProvider {
                 qb = new SQLiteQueryBuilder();
                 qb.setDistinct(true);
                 qb.setTables(AnchorContract.AlbumEntry.TABLE_NAME);
+                cursor = qb.query(database, projection, selection, selectionArgs, null, null, sortOrder);
+                break;
+            case BOOKMARK_DISTINCT:
+                qb = new SQLiteQueryBuilder();
+                qb.setDistinct(true);
+                qb.setTables(AnchorContract.BookmarkEntry.TABLE_NAME);
                 cursor = qb.query(database, projection, selection, selectionArgs, null, null, sortOrder);
                 break;
             case AUDIO_ID:
@@ -108,6 +127,15 @@ public class AnchorProvider extends ContentProvider {
 
                 // Perform query on the recipe table for the given recipe id.
                 cursor = database.query(AnchorContract.AlbumEntry.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
+            case BOOKMARK_ID:
+                // Query a single row given by the ID in the URI
+                selection = AnchorContract.AlbumEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+
+                // Perform query on the recipe table for the given recipe id.
+                cursor = database.query(AnchorContract.BookmarkEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
             default:
@@ -130,10 +158,14 @@ public class AnchorProvider extends ContentProvider {
                 return AnchorContract.AudioEntry.CONTENT_LIST_TYPE;
             case ALBUM:
                 return AnchorContract.AlbumEntry.CONTENT_LIST_TYPE;
+            case BOOKMARK:
+                return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
             case AUDIO_ID:
                 return AnchorContract.AudioEntry.CONTENT_ITEM_TYPE;
             case ALBUM_ID:
                 return AnchorContract.AlbumEntry.CONTENT_ITEM_TYPE;
+            case BOOKMARK_ID:
+                return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
         }
@@ -151,6 +183,8 @@ public class AnchorProvider extends ContentProvider {
                 return insertAudioFile(uri, contentValues);
             case ALBUM:
                 return insertAlbum(uri, contentValues);
+            case BOOKMARK:
+                return insertBookmark(uri, contentValues);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
@@ -209,6 +243,32 @@ public class AnchorProvider extends ContentProvider {
     }
 
     /**
+     * Insert new bookmark with the given ContentValues into the database.
+     */
+    private Uri insertBookmark(Uri uri, ContentValues values) {
+        // Sanity check values
+        if (!sanityCheckBookmark(values)) {
+            throw new IllegalArgumentException("Sanity check failed: corrupted content values");
+        }
+
+        // Get writable database
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        long id = db.insert(AnchorContract.BookmarkEntry.TABLE_NAME, null, values);
+
+        if (id == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + uri);
+            return null;
+        }
+
+        // Notify all listeners that the data at the given URI has changed
+        getContext().getContentResolver().notifyChange(uri, null);
+
+        // Return the new URI with the appended ID
+        return ContentUris.withAppendedId(uri, id);
+    }
+
+    /**
      * Delete the data at the given selection and selection arguments.
      */
     @Override
@@ -226,6 +286,10 @@ public class AnchorProvider extends ContentProvider {
                 // Delete all rows that match the selection and selection args
                 getContext().getContentResolver().notifyChange(uri, null);
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
+            case BOOKMARK:
+                // Delete all rows that match the selection and selection args
+                getContext().getContentResolver().notifyChange(uri, null);
+                return database.delete(AnchorContract.BookmarkEntry.TABLE_NAME, selection, selectionArgs);
             case AUDIO_ID:
                 // Delete a single row given by the ID in the URI
                 selection = AnchorContract.AudioEntry._ID + "=?";
@@ -238,6 +302,12 @@ public class AnchorProvider extends ContentProvider {
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 getContext().getContentResolver().notifyChange(uri, null);
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
+            case BOOKMARK_ID:
+                // Delete a single row given by the ID in the URI
+                selection = AnchorContract.BookmarkEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                getContext().getContentResolver().notifyChange(uri, null);
+                return database.delete(AnchorContract.BookmarkEntry.TABLE_NAME, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
         }
@@ -253,6 +323,9 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM:
                 // Delete all rows that match the selection and selection args
                 return updateAlbum(uri, values, selection, selectionArgs);
+            case BOOKMARK:
+                // Delete all rows that match the selection and selection args
+                return updateBookmark(uri, values, selection, selectionArgs);
             case AUDIO_ID:
                 // Delete a single row given by the ID in the URI
                 selection = AnchorContract.AudioEntry._ID + "=?";
@@ -262,7 +335,12 @@ public class AnchorProvider extends ContentProvider {
                 // Delete a single row given by the ID in the URI
                 selection = AnchorContract.AlbumEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return updateAudioFile(uri, values, selection, selectionArgs);
+                return updateAlbum(uri, values, selection, selectionArgs);
+            case BOOKMARK_ID:
+                // Delete a single row given by the ID in the URI
+                selection = AnchorContract.BookmarkEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return updateBookmark(uri, values, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException("Update is not supported for " + uri);
         }
@@ -327,6 +405,35 @@ public class AnchorProvider extends ContentProvider {
     }
 
     /**
+     * Update album in the database with the given ContentValues.
+     */
+    private int updateBookmark(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        // If there are no values to update, then don't try to update the database
+        if (values.size() == 0) {
+            return 0;
+        }
+
+        // Sanity check values
+        if (!sanityCheckBookmark(values)) {
+            throw new IllegalArgumentException("Sanity check failed: corrupted content values");
+        }
+
+        // Get writable database
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Update the table
+        int rowsUpdated = db.update(AnchorContract.BookmarkEntry.TABLE_NAME, values, selection, selectionArgs);
+
+        // If 1 or more rows were updated, then notify all listeners that the data at the
+        // given URI has changed
+        if (rowsUpdated != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return rowsUpdated;
+    }
+
+    /**
      * Checks ContentValues for validity.
      */
     private boolean sanityCheckAudioFile(ContentValues values) {
@@ -376,6 +483,35 @@ public class AnchorProvider extends ContentProvider {
         // Check whether the title will be updated and that the new title is not null
         if (values.containsKey(AnchorContract.AlbumEntry.COLUMN_TITLE)) {
             String val = values.getAsString(AnchorContract.AlbumEntry.COLUMN_TITLE);
+            if (val == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     * Checks ContentValues for validity.
+     */
+    private boolean sanityCheckBookmark(ContentValues values) {
+        // Check whether the title will be updated and that the new title is not null
+        if (values.containsKey(AnchorContract.BookmarkEntry.COLUMN_TITLE)) {
+            String val = values.getAsString(AnchorContract.BookmarkEntry.COLUMN_TITLE);
+            if (val == null) {
+                return false;
+            }
+        }
+        // Check whether the position will be updated and that the new position is not null
+        if (values.containsKey(AnchorContract.BookmarkEntry.COLUMN_POSITION)) {
+            String val = values.getAsString(AnchorContract.BookmarkEntry.COLUMN_POSITION);
+            if (val == null) {
+                return false;
+            }
+        }
+        // Check whether the audio file id will be updated and that the new id is not null
+        if (values.containsKey(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE)) {
+            String val = values.getAsString(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE);
             if (val == null) {
                 return false;
             }
