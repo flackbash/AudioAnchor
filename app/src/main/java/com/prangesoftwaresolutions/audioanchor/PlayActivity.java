@@ -19,6 +19,7 @@ import android.os.PersistableBundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.Menu;
@@ -517,23 +518,41 @@ public class PlayActivity extends AppCompatActivity {
         builder.setView(dialogView);
 
         final EditText bookmarkTitleET = dialogView.findViewById(R.id.bookmark_title_et);
+        final EditText gotoHours = dialogView.findViewById(R.id.goto_hours);
+        final EditText gotoMinutes = dialogView.findViewById(R.id.goto_minutes);
+        final EditText gotoSeconds = dialogView.findViewById(R.id.goto_seconds);
+
+        int currPos = mPlayer.getCurrentPosition();
+        String[] currPosArr = Utils.formatTime(currPos, 3600000).split(":");
+        gotoHours.setText(currPosArr[0]);
+        gotoMinutes.setText(currPosArr[1]);
+        gotoSeconds.setText(currPosArr[2]);
 
         builder.setTitle(R.string.set_bookmark);
-        builder.setMessage(R.string.dialog_msg_set_bookmark);
         builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
             // User clicked the OK button so save the bookmark
             public void onClick(DialogInterface dialog, int id) {
                 String title = bookmarkTitleET.getText().toString();
+
+                String hours = gotoHours.getText().toString();
+                String minutes = gotoMinutes.getText().toString();
+                String seconds = gotoSeconds.getText().toString();
+                String timeString = hours + ":" + minutes + ":" + seconds;
+
                 if (title.isEmpty()) {
                     Toast.makeText(getApplicationContext(), R.string.empty_title_error, Toast.LENGTH_SHORT).show();
                 } else {
-                    int audioFileId = mAudioFile.getId();
-                    int position = mPlayer.getCurrentPosition();
-                    ContentValues values = new ContentValues();
-                    values.put(AnchorContract.BookmarkEntry.COLUMN_TITLE, title);
-                    values.put(AnchorContract.BookmarkEntry.COLUMN_POSITION, position);
-                    values.put(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE, audioFileId);
-                    Uri uri = getContentResolver().insert(AnchorContract.BookmarkEntry.CONTENT_URI, values);
+                    try {
+                        long millis = Utils.getMillisFromString(timeString);
+                        int audioFileId = mAudioFile.getId();
+                        ContentValues values = new ContentValues();
+                        values.put(AnchorContract.BookmarkEntry.COLUMN_TITLE, title);
+                        values.put(AnchorContract.BookmarkEntry.COLUMN_POSITION, millis);
+                        values.put(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE, audioFileId);
+                        getContentResolver().insert(AnchorContract.BookmarkEntry.CONTENT_URI, values);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
