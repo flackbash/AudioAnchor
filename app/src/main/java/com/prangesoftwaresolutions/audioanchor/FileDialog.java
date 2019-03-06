@@ -140,7 +140,10 @@ public class FileDialog {
                 }
             };
             String[] fileList1 = path.list(filter);
-            Collections.addAll(r, fileList1);
+            // TODO: This should not probably not happen. Right now not all directories are always shown
+            if (fileList1 != null) {
+                Collections.addAll(r, fileList1);
+            }
         }
         fileList = r.toArray(new String[]{});
     }
