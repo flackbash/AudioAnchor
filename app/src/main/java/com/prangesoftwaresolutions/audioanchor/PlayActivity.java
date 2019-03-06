@@ -230,6 +230,9 @@ public class PlayActivity extends AppCompatActivity {
             case R.id.menu_goto:
                 showGoToDialog();
                 return true;
+            case R.id.menu_set_bookmark:
+                showSetBookmarkDialog();
+                return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
@@ -395,7 +398,6 @@ public class PlayActivity extends AppCompatActivity {
         mHandler.postDelayed(mRunnable,100);
     }
 
-
     void showSleepTimerDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_sleep_timer, null);
@@ -488,6 +490,50 @@ public class PlayActivity extends AppCompatActivity {
                     mPlayer.setCurrentPosition((int) millis);
                 } catch (NumberFormatException e) {
                     Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /*
+     * Show a dialog that lets the user specify a title for the bookmark. Let the user confirm
+     * that they want to create the bookmark and save the bookmark.
+     */
+    void showSetBookmarkDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_bookmark, null);
+        builder.setView(dialogView);
+
+        final EditText bookmarkTitleET = dialogView.findViewById(R.id.bookmark_title_et);
+
+        builder.setTitle(R.string.set_bookmark);
+        builder.setMessage(R.string.dialog_msg_set_bookmark);
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
+            // User clicked the OK button so save the bookmark
+            public void onClick(DialogInterface dialog, int id) {
+                String title = bookmarkTitleET.getText().toString();
+                if (title.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), R.string.empty_title_error, Toast.LENGTH_SHORT).show();
+                } else {
+                    int audioFileId = mAudioFile.getId();
+                    int position = mPlayer.getCurrentPosition();
+                    ContentValues values = new ContentValues();
+                    values.put(AnchorContract.BookmarkEntry.COLUMN_TITLE, title);
+                    values.put(AnchorContract.BookmarkEntry.COLUMN_POSITION, position);
+                    values.put(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE, audioFileId);
+                    Uri uri = getContentResolver().insert(AnchorContract.BookmarkEntry.CONTENT_URI, values);
                 }
             }
         });

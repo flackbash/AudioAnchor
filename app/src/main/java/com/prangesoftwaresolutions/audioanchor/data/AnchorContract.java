@@ -18,6 +18,8 @@ public class AnchorContract {
     static final String PATH_AUDIO_FILES_DISTINCT = "audio_distinct";
     static final String PATH_ALBUM = "album";
     static final String PATH_ALBUM_DISTINCT = "album_distinct";
+    static final String PATH_BOOKMARK = "bookmark";
+    static final String PATH_BOOKMARK_DISTINCT = "bookmark_distinct";
 
     // Class for the Audio File Table
     public static abstract class AudioEntry implements BaseColumns {
@@ -50,11 +52,11 @@ public class AnchorContract {
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_ALBUM);
         public static final Uri CONTENT_URI_DISTINCT = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_ALBUM_DISTINCT);
 
-        // The MIME type of the CONTENT_URI for a list of audios.
+        // The MIME type of the CONTENT_URI for a list of albums.
         static final String CONTENT_LIST_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ALBUM;
 
-        // The MIME type of the CONTENT_URI for a single audio.
+        // The MIME type of the CONTENT_URI for a single album.
         static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ALBUM_DISTINCT;
 
@@ -64,5 +66,28 @@ public class AnchorContract {
         public static final String _ID = BaseColumns._ID;
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_COVER_PATH = "cover_path";
+    }
+
+    // Class for the Bookmark Table
+    public static abstract class BookmarkEntry implements BaseColumns {
+        // Content URI for the bookmark table
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_BOOKMARK);
+        public static final Uri CONTENT_URI_DISTINCT = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_BOOKMARK_DISTINCT);
+
+        // The MIME type of the CONTENT_URI for a list of bookmarks.
+        static final String CONTENT_LIST_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_BOOKMARK;
+
+        // The MIME type of the CONTENT_URI for a single bookmark.
+        static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_BOOKMARK_DISTINCT;
+
+        public static final String TABLE_NAME = "bookmarks";
+
+        // The Columns
+        public static final String _ID = BaseColumns._ID;
+        public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_POSITION = "position";
+        public static final String COLUMN_AUDIO_FILE = "audio_file";
     }
 }
