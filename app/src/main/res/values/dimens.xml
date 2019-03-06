@@ -20,5 +20,6 @@
     <dimen name="default_device_width">400dp</dimen>
     <dimen name="skip_button_height_big">56dp</dimen>
     <dimen name="skip_button_height">48dp</dimen>
+    <dimen name="standard_text_view_width">128dp</dimen>
 
 </resources>
