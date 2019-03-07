@@ -204,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         updateAlbumTable();
                     }
                 }
+                break;
             }
             case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
                 // If request is cancelled, the result arrays are empty.
@@ -214,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 } else {
                     showExportDirectorySelector();
                 }
+                break;
             }
         }
     }
