@@ -228,7 +228,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_choose_directory:
-                showChangeDirectorySelector();
+                // Check if app has the necessary permissions
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                } else {
+                    showChangeDirectorySelector();
+                }
                 return true;
             case R.id.menu_export:
                 // Check if app has the necessary permissions
