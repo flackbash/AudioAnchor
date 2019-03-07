@@ -19,5 +19,11 @@
         android:icon="@drawable/ic_bookmark"
         android:orderInCategory="102"
         android:title="@string/set_bookmark"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_show_bookmarks"
+        android:icon="@drawable/ic_bookmark"
+        android:orderInCategory="103"
+        android:title="@string/bookmarks"
         app:showAsAction="never" />
 </menu>
