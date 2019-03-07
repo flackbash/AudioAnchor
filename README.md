@@ -1,11 +1,11 @@
 # AudioAnchor
-*Android audio player that tracks the listening process of your audio books and podcasts*
+*Android audio player that tracks the listening progress of your audio books and podcasts*
 
 <a href="https://f-droid.org/en/packages/com.prangesoftwaresolutions.audioanchor/" target="_blank">
 <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="90"/></a>
 
 ## Features
-AudioAnchor offers a clean and intuitive interface for listening to audio files while keeping track of the listening process.\
+AudioAnchor offers a clean and intuitive interface for listening to audio files while keeping track of the listening progress.\
 Additional features include:
 - lock screen media controls
 - sleep timer
