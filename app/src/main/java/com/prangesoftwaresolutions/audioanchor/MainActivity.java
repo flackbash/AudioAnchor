@@ -273,12 +273,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void showChangeDirectorySelector() {
-        File baseDirectory;
-        if (mDirectory != null) {
-            baseDirectory = mDirectory;
-        } else {
-            baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-        }
+        // TODO: once the navigation bug is fixed the baseDirectory can be set to mDirectory if it's not null
+        File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
         FileDialog fileDialog = new FileDialog(this, baseDirectory, null);
         fileDialog.setSelectDirectoryOption(true);
         fileDialog.addDirectoryListener(new FileDialog.DirectorySelectedListener() {
