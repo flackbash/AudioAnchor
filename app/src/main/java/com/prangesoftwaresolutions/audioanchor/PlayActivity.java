@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,14 +20,15 @@ import android.os.PersistableBundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -233,6 +235,9 @@ public class PlayActivity extends AppCompatActivity {
                 return true;
             case R.id.menu_set_bookmark:
                 showSetBookmarkDialog();
+                return true;
+            case R.id.menu_show_bookmarks:
+                showShowBookmarksDialog();
                 return true;
             case android.R.id.home:
                 onBackPressed();
@@ -568,5 +573,72 @@ public class PlayActivity extends AppCompatActivity {
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    /*
+     * Show a dialog that shows all bookmarks for the current audio file. If the user clicks on a
+     * book mark, the current position of the player is set to that bookmark.
+     */
+    void showShowBookmarksDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_bookmarks, null);
+        builder.setView(dialogView);
+
+        ListView bookmarkList = dialogView.findViewById(R.id.list_bookmarks);
+
+        // Get the cursor adapter and set it to the list view
+        Cursor c = getBookmarks();
+        BookmarkCursorAdapter adapter = new BookmarkCursorAdapter(this, c, mAudioFile.getTime());
+        bookmarkList.setAdapter(adapter);
+
+        // Set the EmptyView for the ListView
+        TextView emptyTV = dialogView.findViewById(R.id.emptyList_album);
+        bookmarkList.setEmptyView(emptyTV);
+
+        // Implement onItemClickListener for the list view
+        bookmarkList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
+                // Set the current position of the player to the clicked bookmark
+                TextView positionTV = view.findViewById(R.id.bookmark_position_tv);
+                String positionString = positionTV.getText().toString();
+                int millis = (int)Utils.getMillisFromString(positionString);
+                mPlayer.setCurrentPosition(millis);
+
+                // Notify the user about the time jump via a toast
+                TextView nameTV = view.findViewById(R.id.bookmark_title_tv);
+                String name = nameTV.getText().toString();
+                String jumpToast = getResources().getString(R.string.jumped_to_bookmark, name, positionString);
+                Toast.makeText(getApplicationContext(), jumpToast, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setTitle(R.string.bookmarks);
+        builder.setPositiveButton(R.string.dialog_msg_close, new DialogInterface.OnClickListener() {
+            // User clicked the OK button so set the sleep timer
+            public void onClick(DialogInterface dialog, int id) {
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /*
+     * Get a cursor with all bookmarks for the current audio file
+     */
+    Cursor getBookmarks() {
+        String[] projection = {
+                AnchorContract.BookmarkEntry._ID,
+                AnchorContract.BookmarkEntry.COLUMN_TITLE,
+                AnchorContract.BookmarkEntry.COLUMN_POSITION};
+
+        String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
+        String[] selArgs = {Long.toString(mAudioFile.getId())};
+        return getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, projection, sel, selArgs, null);
     }
 }

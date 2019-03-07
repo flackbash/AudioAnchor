@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:drawSelectorOnTop="true"
+    android:gravity="center_vertical"
+    android:padding="@dimen/small_margin">
+
+    <TextView
+        android:id="@+id/bookmark_title_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/medium_font_size"
+        android:text="bookmark1"/>
+    <TextView
+        android:id="@+id/bookmark_position_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/small_font_size"
+        android:text="02:28:12"/>
+
+</LinearLayout>
+
