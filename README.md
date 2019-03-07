@@ -1,6 +1,9 @@
 # AudioAnchor
 *Android audio player that tracks the listening process of your audio books and podcasts*
 
+<a href="https://f-droid.org/en/packages/com.prangesoftwaresolutions.audioanchor/" target="_blank">
+<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="90"/></a>
+
 ## Features
 AudioAnchor offers a clean and intuitive interface for listening to audio files while keeping track of the listening process.\
 Additional features include:
@@ -9,8 +12,9 @@ Additional features include:
 - export / import listening progress as sql database
 
 ## Install
-Simply download the latest apk from [releases](https://github.com/flackbash/AudioAnchor/releases) and execute it on your Android device.\
-The latest release of AudioAnchor runs on devices with Android API level 19 (= Android 4.4 KitKat) and higher.
+The best way is to install [F-Droid](https://f-droid.org/en/) on your Android device, search for AudioAnchor and install the app from there. This way, AudioAnchor will automatically be kept up to date on your device.\
+Alternatively, you can download the latest apk from [F-Droid](https://f-droid.org/en/packages/com.prangesoftwaresolutions.audioanchor/) (or from [releases](https://github.com/flackbash/AudioAnchor/releases)) and execute it on your device.\
+The latest release runs on devices with Android API level 19 (= Android 4.4 KitKat) and higher.
 
 ## Usage
 Create a parent directory and put your audio files into direct subdirectories (in the following referred to as "albums") of that parent directory.
