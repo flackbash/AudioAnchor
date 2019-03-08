@@ -50,13 +50,14 @@
     <string name="sleep_time_left">- %s</string>
     <string name="go_to">Go to</string>
     <string name="set_bookmark">Set bookmark</string>
+    <string name="edit_bookmark">Edit bookmark</string>
     <string name="about">About</string>
     <string name="about_text">%s %s</string>
     <string name="copyright">Copyright © 2018 Natalie Prange</string>
     <string name="export_db">Export database</string>
     <string name="import_db">Import database</string>
     <string name="synchronize">Synchronize</string>
-    <string name="set_bookmark_name">Enter the name of the new bookmark</string>
+    <string name="set_bookmark_name">Enter the name of the bookmark</string>
     <string name="set_bookmark_at">Set bookmark at</string>
     <string name="no_bookmarks">There are no bookmarks for this audio file yet</string>
     <string name="bookmarks">Bookmarks</string>
@@ -67,6 +68,7 @@
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Cancel</string>
     <string name="dialog_msg_close">Close</string>
+    <string name="dialog_msg_delete">Delete</string>
     <string name="dialog_msg_goto">Enter the time to which you want to jump:</string>
     <string name="dialog_msg_delete_album">Are you sure you want to delete the album and its contents from the database?</string>
     <string name="dialog_msg_delete_audio">Are you sure you want to delete this audio file from the database?</string>
