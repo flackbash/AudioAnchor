@@ -75,6 +75,10 @@ public class PlayActivity extends AppCompatActivity {
     // SleepTimer variables
     CountDownTimer mSleepTimer;
 
+    // Bookmark Adapter and Bookmark ListView
+    BookmarkCursorAdapter mBookmarkAdapter;
+    ListView mBookmarkListView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -584,19 +588,19 @@ public class PlayActivity extends AppCompatActivity {
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_bookmarks, null);
         builder.setView(dialogView);
 
-        ListView bookmarkList = dialogView.findViewById(R.id.list_bookmarks);
+        mBookmarkListView = dialogView.findViewById(R.id.list_bookmarks);
 
         // Get the cursor adapter and set it to the list view
         Cursor c = getBookmarks();
-        BookmarkCursorAdapter adapter = new BookmarkCursorAdapter(this, c, mAudioFile.getTime());
-        bookmarkList.setAdapter(adapter);
+        mBookmarkAdapter = new BookmarkCursorAdapter(this, c, mAudioFile.getTime());
+        mBookmarkListView.setAdapter(mBookmarkAdapter);
 
         // Set the EmptyView for the ListView
         TextView emptyTV = dialogView.findViewById(R.id.emptyList_album);
-        bookmarkList.setEmptyView(emptyTV);
+        mBookmarkListView.setEmptyView(emptyTV);
 
         // Implement onItemClickListener for the list view
-        bookmarkList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mBookmarkListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
                 // Set the current position of the player to the clicked bookmark
@@ -610,6 +614,15 @@ public class PlayActivity extends AppCompatActivity {
                 String name = nameTV.getText().toString();
                 String jumpToast = getResources().getString(R.string.jumped_to_bookmark, name, positionString);
                 Toast.makeText(getApplicationContext(), jumpToast, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        mBookmarkListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Uri uri = ContentUris.withAppendedId(AnchorContract.BookmarkEntry.CONTENT_URI, l);
+                deleteBookmarkWithConfirmation(uri);
+                return true;
             }
         });
 
@@ -640,5 +653,37 @@ public class PlayActivity extends AppCompatActivity {
         String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
         String[] selArgs = {Long.toString(mAudioFile.getId())};
         return getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, projection, sel, selArgs, null);
+    }
+
+    /**
+     * Show the delete bookmark confirmation dialog and let the user decide whether to delete the bookmark
+     */
+    void deleteBookmarkWithConfirmation(final Uri uri) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_msg_delete_bookmark);
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Ok" button, so delete the bookmark.
+                getContentResolver().delete(uri, null, null);
+                // Reload the ListView
+                Cursor c = getBookmarks();
+                mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
+                mBookmarkListView.setAdapter(mBookmarkAdapter);
+                // Notify the user about the deletion
+                Toast.makeText(getApplicationContext(), R.string.bookmark_deleted, Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 }
