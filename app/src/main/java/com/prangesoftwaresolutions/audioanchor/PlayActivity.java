@@ -238,7 +238,7 @@ public class PlayActivity extends AppCompatActivity {
                 showGoToDialog();
                 return true;
             case R.id.menu_set_bookmark:
-                showSetBookmarkDialog();
+                showSetBookmarkDialog(null);
                 return true;
             case R.id.menu_show_bookmarks:
                 showShowBookmarksDialog();
@@ -520,8 +520,10 @@ public class PlayActivity extends AppCompatActivity {
     /*
      * Show a dialog that lets the user specify a title for the bookmark. Let the user confirm
      * that they want to create the bookmark and save the bookmark.
+     * If uri is null, a new bookmark is created. Otherwise the bookmark with the corresponding uri
+     * is updated.
      */
-    void showSetBookmarkDialog() {
+    void showSetBookmarkDialog(final Uri uri) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_bookmark, null);
         builder.setView(dialogView);
@@ -531,13 +533,34 @@ public class PlayActivity extends AppCompatActivity {
         final EditText gotoMinutes = dialogView.findViewById(R.id.goto_minutes);
         final EditText gotoSeconds = dialogView.findViewById(R.id.goto_seconds);
 
-        int currPos = mPlayer.getCurrentPosition();
+        int currPos;
+        if (uri != null) {
+            builder.setTitle(R.string.edit_bookmark);
+            // Get the position of the bookmark
+            String[] projection = {
+                    AnchorContract.BookmarkEntry.COLUMN_TITLE,
+                    AnchorContract.BookmarkEntry.COLUMN_POSITION};
+            Cursor c = getContentResolver().query(uri, projection, null, null, null);
+            if (c != null) {
+                c.moveToFirst();
+                currPos = c.getInt(c.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_POSITION));
+                String title = c.getString(c.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_TITLE));
+                bookmarkTitleET.setText(title);
+                c.close();
+            } else {
+                currPos = 0;
+            }
+        } else {
+            builder.setTitle(R.string.set_bookmark);
+            currPos = mPlayer.getCurrentPosition();
+        }
+
+        // Set the edit text views to the current position
         String[] currPosArr = Utils.formatTime(currPos, 3600000).split(":");
         gotoHours.setText(currPosArr[0]);
         gotoMinutes.setText(currPosArr[1]);
         gotoSeconds.setText(currPosArr[2]);
 
-        builder.setTitle(R.string.set_bookmark);
         builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
             // User clicked the OK button so save the bookmark
             public void onClick(DialogInterface dialog, int id) {
@@ -558,13 +581,33 @@ public class PlayActivity extends AppCompatActivity {
                         values.put(AnchorContract.BookmarkEntry.COLUMN_TITLE, title);
                         values.put(AnchorContract.BookmarkEntry.COLUMN_POSITION, millis);
                         values.put(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE, audioFileId);
-                        getContentResolver().insert(AnchorContract.BookmarkEntry.CONTENT_URI, values);
+                        if (uri != null) {
+                            // Update the bookmark in the bookmarks table
+                            String sel = AnchorContract.BookmarkEntry._ID + "=?";
+                            String[] selArgs = {Long.toString(ContentUris.parseId(uri))};
+                            getContentResolver().update(uri, values, sel, selArgs);
+
+                            // Reload the ListView
+                            Cursor c = getBookmarks();
+                            mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
+                            mBookmarkListView.setAdapter(mBookmarkAdapter);
+                        } else {
+                            getContentResolver().insert(AnchorContract.BookmarkEntry.CONTENT_URI, values);
+                        }
                     } catch (NumberFormatException e) {
                         Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
         });
+        if (uri != null) {
+            builder.setNeutralButton(R.string.dialog_msg_delete, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User clicked the "Delete" button, so delete the bookmark
+                    deleteBookmarkWithConfirmation(uri);
+                }
+            });
+        }
         builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked the "Cancel" button, so dismiss the dialog
@@ -621,7 +664,7 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Uri uri = ContentUris.withAppendedId(AnchorContract.BookmarkEntry.CONTENT_URI, l);
-                deleteBookmarkWithConfirmation(uri);
+                showSetBookmarkDialog(uri);
                 return true;
             }
         });
@@ -652,7 +695,8 @@ public class PlayActivity extends AppCompatActivity {
 
         String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
         String[] selArgs = {Long.toString(mAudioFile.getId())};
-        return getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, projection, sel, selArgs, null);
+        String sortOrder = AnchorContract.BookmarkEntry.COLUMN_POSITION + " ASC";
+        return getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
     }
 
     /**
@@ -665,12 +709,11 @@ public class PlayActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked the "Ok" button, so delete the bookmark.
                 getContentResolver().delete(uri, null, null);
+
                 // Reload the ListView
                 Cursor c = getBookmarks();
                 mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
                 mBookmarkListView.setAdapter(mBookmarkAdapter);
-                // Notify the user about the deletion
-                Toast.makeText(getApplicationContext(), R.string.bookmark_deleted, Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
