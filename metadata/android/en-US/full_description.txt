@@ -1,0 +1,12 @@
+''AudioAnchor'' is an audio player that tracks the listening progress of your
+audio books and podcasts.
+
+'''Features:'''
+
+AudioAnchor offers a clean and intuitive interface for listening to audio 
+files while keeping track of the listening process. Additional features
+include:
+
+* set bookmarks
+* export and import your listening progress as sql database
+* sleep timer
