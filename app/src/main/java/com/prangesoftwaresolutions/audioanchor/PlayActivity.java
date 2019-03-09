@@ -639,7 +639,7 @@ public class PlayActivity extends AppCompatActivity {
         mBookmarkListView.setAdapter(mBookmarkAdapter);
 
         // Set the EmptyView for the ListView
-        TextView emptyTV = dialogView.findViewById(R.id.emptyList_album);
+        TextView emptyTV = dialogView.findViewById(R.id.emptyView_bookmarks);
         mBookmarkListView.setEmptyView(emptyTV);
 
         // Implement onItemClickListener for the list view

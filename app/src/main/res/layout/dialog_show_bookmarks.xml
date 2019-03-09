@@ -11,11 +11,10 @@
         android:layout_margin="@dimen/standard_margin"/>
 
     <TextView
-        android:id="@+id/emptyList_bookmarks"
+        android:id="@+id/emptyView_bookmarks"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_below="@id/list_bookmarks"
         android:textAlignment="center"
         android:layout_margin="@dimen/standard_margin"
         android:textAppearance="?android:textAppearanceMedium"
