@@ -7,14 +7,15 @@
 ## Features
 AudioAnchor offers a clean and intuitive interface for listening to audio files while keeping track of the listening progress.\
 Additional features include:
-- lock screen media controls
+- set bookmarks
+- export and import listening progress as sql database
 - sleep timer
-- export / import listening progress as sql database
+- lock screen media controls (for Android 5.0 Lollipop and higher)
 
 ## Install
 The best way is to install [F-Droid](https://f-droid.org/en/) on your Android device, search for AudioAnchor and install the app from there. This way, AudioAnchor will automatically be kept up to date on your device.\
 Alternatively, you can download the latest apk from [F-Droid](https://f-droid.org/en/packages/com.prangesoftwaresolutions.audioanchor/) (or from [releases](https://github.com/flackbash/AudioAnchor/releases)) and execute it on your device.\
-The latest release runs on devices with Android API level 19 (= Android 4.4 KitKat) and higher.
+The latest release runs on devices with Android API level 19 (Android 4.4 KitKat) and higher.
 
 ## Usage
 Create a parent directory and put your audio files into direct subdirectories (in the following referred to as "albums") of that parent directory.
