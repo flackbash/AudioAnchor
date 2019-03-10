@@ -21,5 +21,6 @@
     <dimen name="skip_button_height_big">56dp</dimen>
     <dimen name="skip_button_height">48dp</dimen>
     <dimen name="standard_text_view_width">128dp</dimen>
+    <dimen name="minutes_min_width">56dp</dimen>
 
 </resources>

@@ -11,7 +11,8 @@
         android:layout_height="wrap_content"
         android:textSize="@dimen/medium_font_size"
         android:inputType="number"
-        android:padding="@dimen/large_margin"
-        android:gravity="center_horizontal"/>
+        android:minWidth="@dimen/minutes_min_width"
+        android:gravity="center_horizontal"
+        android:maxLength="3"/>
 
 </LinearLayout>
