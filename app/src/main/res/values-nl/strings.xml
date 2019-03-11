@@ -1,0 +1,77 @@
+<resources>
+    <string name="app_name" translatable="false">AudioAnchor</string>
+    <string name="channel_name">Mediabediening tonen</string>
+    <string name="channel_description">Meldingskanaal om de mediabediening te tonen.</string>
+
+    <!-- Toast messages -->
+    <string name="no_albums">Geen albums aangetroffen in de opgegeven map.</string>
+    <string name="no_audio_files">Geen audiobestanden aangetroffen in dit album.</string>
+    <string name="play_error">Het gekozen audiobestand is niet-afspeelbaar. Wellicht bestaat het bestand niet meer.</string>
+    <string name="permission_denied">De vereiste machtiging is niet verleend. Sluit AudioAnchor af.</string>
+    <string name="write_permission_denied">De vereiste machtiging is niet verleend. Het exporteren kan niet worden uitgevoerd.</string>
+    <string name="time_format_error">Voer een geldige tijd in in de opmaak hh:mm:ss.</string>
+    <string name="import_success">Importeren voltooid :)</string>
+    <string name="import_fail">Er is iets misgegaan; het importeren is mislukt.</string>
+    <string name="export_success">De databank is geëxporteerd naar %s</string>
+    <string name="export_fail">Er is iets misgegaan; het exporteren is mislukt.</string>
+    <string name="synchronize_success">De map is gesynchroniseerd.</string>
+    <string name="audio_file_error">Er is iets mis met de audiobestanden in deze map.</string>
+    <string name="empty_title_error">Voer een naam in voor de bladwijzer.</string>
+    <string name="jumped_to_bookmark">Doorgespoeld naar bladwijzer \"%s\" op %s</string>
+    <string name="bookmark_deleted">Bladwijzer is verwijderd</string>
+
+    <!-- SharedPreferences Strings -->
+    <string name="preference_filename" translatable="false">storage_directory</string>
+
+    <!-- Settings strings -->
+    <string name="settings_autoplay_label">Automatisch afspelen</string>
+    <string name="settings_autoplay_key" translatable="false">autoplay</string>
+    <string name="settings_autoplay_default" translatable="false">false</string>
+    <string name="settings_progress_percentage_label">Procentuele voortgang tonen</string>
+    <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
+    <string name="settings_progress_percentage_default">false</string>
+    <string name="settings_keep_deleted_label">Voortgang van verwijderde bestanden behouden in databank</string>
+    <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
+    <string name="settings_keep_deleted_default" translatable="false">false</string>
+
+    <!-- Intent data Strings -->
+    <string name="album_id" translatable="false">album_id</string>
+    <string name="directory_path" translatable="false">directory_path</string>
+    <string name="audio_file_uri" translatable="false">audio_file_uri</string>
+
+    <!-- Layout Texts -->
+    <string name="title">Titel</string>
+    <string name="album">Album</string>
+    <string name="choose_directory">Kies een map</string>
+    <string name="settings">Instellingen</string>
+    <string name="time_completed">%s / %s</string>
+    <string name="time_completed_percent">%d%% voltooid</string>
+    <string name="sleep_timer">Slaaptimer</string>
+    <string name="sleep_time_left">- %s</string>
+    <string name="go_to">Ga naar</string>
+    <string name="set_bookmark">Bladwijzer instellen</string>
+    <string name="edit_bookmark">Bladwijzer bewerken</string>
+    <string name="about">Over</string>
+    <string name="about_text">%s %s</string>
+    <string name="copyright">Auteursrecht © 2018 Natalie Prange</string>
+    <string name="export_db">Databank exporteren</string>
+    <string name="import_db">Databank importeren</string>
+    <string name="synchronize">Synchroniseren</string>
+    <string name="set_bookmark_name">Voer de naam in van de bladwijzer</string>
+    <string name="set_bookmark_at">Bladwijzer instellen op</string>
+    <string name="no_bookmarks">Er zijn nog een bladwijzers voor dit audiobestand</string>
+    <string name="bookmarks">Bladwijzers</string>
+
+    <!-- Dialog strings -->
+    <string name="dialog_msg_change_dir">Door de map te wijzigen worden alle opgeslagen statussen van afgespeelde audiobestanden gewist. Weet je het zeker?</string>
+    <string name="dialog_msg_sleep_timer">Voer het aantal minuten in dat de speler moet bljven afspelen:</string>
+    <string name="dialog_msg_ok">Oké</string>
+    <string name="dialog_msg_cancel">Annuleren</string>
+    <string name="dialog_msg_close">Sluiten</string>
+    <string name="dialog_msg_delete">Verwijderen</string>
+    <string name="dialog_msg_goto">Voer de tijd in waarnaar je wilt doorspoelen:</string>
+    <string name="dialog_msg_delete_album">Weet je zeker dat je het album en alle inhoud ervan wilt verwijderen uit de databank?</string>
+    <string name="dialog_msg_delete_audio">Weet je zeker dat dit audiobestand wilt verwijderen uit de databank?</string>
+    <string name="dialog_msg_delete_bookmark">Wil je deze bladwijzer verwijderen?</string>
+
+</resources>
