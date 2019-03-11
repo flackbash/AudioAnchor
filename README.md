@@ -24,7 +24,7 @@ When you are first starting AudioAnchor, the app will prompt you to select the p
 Once the parent directory is selected, all your albums will show in a list.\
 Add cover images to the subdirectories to have a neat looking app as shown in the screenshots below.
 <pre>
-        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/MainActivity.jpg" height="400"/>        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/AlbumActivityLOTR.jpg" height="400"/>        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/PlayActivityLOTR.jpg" height="400"/>
+        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/01MainActivity.jpg" height="400"/>        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/10AlbumActivityLOTR.jpg" height="400"/>        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/20PlayActivityLOTR.jpg" height="400"/>
 </pre>
 
 Browse and play your audio files just as you would in any other audio player.
