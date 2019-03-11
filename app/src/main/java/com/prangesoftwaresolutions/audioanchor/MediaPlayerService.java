@@ -165,6 +165,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     @Override
     public boolean onUnbind(Intent intent) {
         mediaSession.release();
+        Log.e("MediaPlayerService", "OnUnbind called");
         removeNotification();
         return super.onUnbind(intent);
     }
@@ -172,7 +173,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.e("BLABLABLA", "OnDestroy called");
+        Log.e("MediaPlayerService", "OnDestroy called");
 
         if (mMediaPlayer != null) {
             stopMedia();
@@ -237,12 +238,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     @Override
     public void onAudioFocusChange(int focusState) {
-
+        Log.e("MediaPlayerService", "AudioFocusChange");
         //Invoked when the audio focus of the system is updated.
         switch (focusState) {
             case AudioManager.AUDIOFOCUS_GAIN:
                 // resume playback
-                Log.e("BLABLABLA", "Audiofocus Gain");
+                Log.e("MediaPlayerService", "Audiofocus Gain");
                 if (mMediaPlayer == null) {
                     initMediaPlayer();
                     loadAudioFile(activeAudio.getPath(), activeAudio.getCompletedTime());
@@ -251,7 +252,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
                 // Lost focus for an unbounded amount of time: stop playback and release media player
-                Log.e("BLABLABLA", "Audiofocus Loss");
+                Log.e("MediaPlayerService", "Audiofocus Loss");
                 pause();
                 buildNotification();
                 break;
@@ -259,12 +260,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Lost focus for a short time, but we have to stop
                 // playback. We don't release the media player because playback
                 // is likely to resume
-                Log.e("BLABLABLA", "Audiofocus loss transient");
+                Log.e("MediaPlayerService", "Audiofocus loss transient");
 
                 if (mMediaPlayer.isPlaying()) mMediaPlayer.pause();
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                Log.e("BLABLABLA", "Audiofocus loss can duck");
+                Log.e("MediaPlayerService", "Audiofocus loss can duck");
 
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
@@ -429,6 +430,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             @Override
             public void onStop() {
                 super.onStop();
+                Log.e("MediaPlayerService", "onStop called");
                 removeNotification();
                 //Stop the service
                 stopSelf();
