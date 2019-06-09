@@ -10,7 +10,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -385,7 +388,25 @@ public class PlayActivity extends AppCompatActivity {
                 display.getSize(size);
                 reqSize = java.lang.Math.max(size.x, size.y);
             }
-            BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
+
+            // Taken from https://stackoverflow.com/a/21549403
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(mAudioFile.getPath());
+
+            byte [] data = mmr.getEmbeddedPicture();
+
+            // convert the byte array to a bitmap
+            if(data != null)
+            {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                mCoverIV.setImageBitmap(bitmap);
+            }
+            else
+            {
+                BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
+            }
+            mCoverIV.setAdjustViewBounds(true);
+
     }
 
     /*
