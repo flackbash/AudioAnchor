@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.session.MediaSessionManager;
 import android.net.Uri;
@@ -537,10 +538,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
 
         Bitmap notificationCover;
-        if (activeAudio.getCoverPath() == null) {
-            notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
-        } else {
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(activeAudio.getPath());
+        byte [] coverData = mmr.getEmbeddedPicture();
+
+        if (coverData != null) {
+            notificationCover = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
+        } else if (activeAudio.getCoverPath() != null){
             notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
+        } else {
+            notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
         }
 
         Intent startActivityIntent = new Intent(this, PlayActivity.class);
