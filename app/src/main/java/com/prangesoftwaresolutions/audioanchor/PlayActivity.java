@@ -413,10 +413,11 @@ public class PlayActivity extends AppCompatActivity {
                 {
                     BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
                 }
-                mCoverIV.setAdjustViewBounds(true);
             } else {
                 BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
             }
+
+            mCoverIV.setAdjustViewBounds(true);
 
     }
 
