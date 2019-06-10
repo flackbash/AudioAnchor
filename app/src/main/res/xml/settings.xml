@@ -12,4 +12,8 @@
         android:defaultValue="@string/settings_keep_deleted_default"
         android:key="@string/settings_keep_deleted_key"
         android:title="@string/settings_keep_deleted_label"/>
+    <SwitchPreference
+        android:defaultValue="@string/settings_cover_from_metadata_default"
+        android:key="@string/settings_cover_from_metadata_key"
+        android:title="@string/settings_cover_from_metadata_label"/>
 </PreferenceScreen>
