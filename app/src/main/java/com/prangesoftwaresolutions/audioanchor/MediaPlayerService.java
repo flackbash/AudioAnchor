@@ -96,6 +96,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // Autoplay flag
     private boolean mAutoplay;
 
+    // Flag for fetching images from metadata
+    private boolean mCoverImagesFromMetadata;
+
     /**
      * Service lifecycle methods
      */
@@ -112,6 +115,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Set up the shared preferences.
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mAutoplay = sharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
+        mCoverImagesFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
 
         // Perform one-time setup procedures
         // Manage incoming phone calls during playback.
@@ -538,17 +542,27 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
 
         Bitmap notificationCover;
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(activeAudio.getPath());
-        byte [] coverData = mmr.getEmbeddedPicture();
 
-        if (coverData != null) {
-            notificationCover = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
-        } else if (activeAudio.getCoverPath() != null){
-            notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
+        if(mCoverImagesFromMetadata){
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(activeAudio.getPath());
+            byte [] coverData = mmr.getEmbeddedPicture();
+
+            if (coverData != null) {
+                notificationCover = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
+            } else if (activeAudio.getCoverPath() != null){
+                notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
+            } else {
+                notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
+            }
         } else {
-            notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
+            if (activeAudio.getCoverPath() != null){
+                notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
+            } else {
+                notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
+            }
         }
+
 
         Intent startActivityIntent = new Intent(this, PlayActivity.class);
         startActivityIntent.setData(ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, activeAudio.getId()));

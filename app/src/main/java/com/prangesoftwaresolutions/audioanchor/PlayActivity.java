@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,6 +21,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PersistableBundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -82,6 +84,9 @@ public class PlayActivity extends AppCompatActivity {
     BookmarkCursorAdapter mBookmarkAdapter;
     ListView mBookmarkListView;
 
+    // Flag for fetching images from metadata
+    private boolean mCoverImagesFromMetadata;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +107,9 @@ public class PlayActivity extends AppCompatActivity {
         mCompletedTimeTV = findViewById(R.id.play_completed_time);
         mTimeTV = findViewById(R.id.play_time);
         mSleepCountDownTV = findViewById(R.id.play_sleep_time);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mCoverImagesFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
 
         mAudioFile = AudioFile.getAudioFile(this, mCurrentUri);
         setNewAudioFile();
@@ -389,23 +397,26 @@ public class PlayActivity extends AppCompatActivity {
                 reqSize = java.lang.Math.max(size.x, size.y);
             }
 
-            // Taken from https://stackoverflow.com/a/21549403
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            mmr.setDataSource(mAudioFile.getPath());
+            if (mCoverImagesFromMetadata) {
+                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+                mmr.setDataSource(mAudioFile.getPath());
 
-            byte [] data = mmr.getEmbeddedPicture();
+                byte [] coverData = mmr.getEmbeddedPicture();
 
-            // convert the byte array to a bitmap
-            if(data != null)
-            {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                mCoverIV.setImageBitmap(bitmap);
-            }
-            else
-            {
+                // convert the byte array to a bitmap
+                if(coverData != null)
+                {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
+                    mCoverIV.setImageBitmap(bitmap);
+                }
+                else
+                {
+                    BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
+                }
+                mCoverIV.setAdjustViewBounds(true);
+            } else {
                 BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
             }
-            mCoverIV.setAdjustViewBounds(true);
 
     }
 
