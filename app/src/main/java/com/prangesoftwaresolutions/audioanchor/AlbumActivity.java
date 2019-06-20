@@ -208,7 +208,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             public boolean accept(File dir, String filename) {
                 File sel = new File(dir, filename);
                 // Only list files that are readable and audio files
-                return sel.getName().endsWith(".mp3") || sel.getName().endsWith(".wma") || sel.getName().endsWith(".ogg") || sel.getName().endsWith(".wav") || sel.getName().endsWith(".flac") || sel.getName().endsWith(".m4a");
+                return sel.getName().endsWith(".mp3") || sel.getName().endsWith(".wma") || sel.getName().endsWith(".ogg") || sel.getName().endsWith(".wav") || sel.getName().endsWith(".flac") || sel.getName().endsWith(".m4a") || sel.getName().endsWith(".m4b");
             }
         };
 
