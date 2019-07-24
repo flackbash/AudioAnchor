@@ -349,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         };
 
         String[] directoryList;
-        if (mDirectory != null) {
+        if (mDirectory != null && mDirectory.isDirectory()) {
             directoryList = mDirectory.list(filter);
         } else {
             directoryList = new String[]{};
