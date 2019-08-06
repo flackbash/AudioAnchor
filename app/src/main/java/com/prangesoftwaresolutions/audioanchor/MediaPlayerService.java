@@ -480,7 +480,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                                 buildNotification();
                                 break;
                             case KeyEvent.KEYCODE_MEDIA_PLAY:
-                                play();
+                                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
+                                else play();
                                 buildNotification();
                                 break;
                         }
