@@ -425,12 +425,16 @@ public class PlayActivity extends AppCompatActivity {
      * Initialize the SeekBar
      */
     void initializeSeekBar(){
-        mSeekBar.setMax(mPlayer.getDuration()/1000);
-
         mRunnable = new Runnable() {
+            boolean firstRun = true;
+            
             @Override
             public void run() {
                 if(mPlayer!=null){
+                    if(firstRun) {
+                        mSeekBar.setMax(mPlayer.getDuration()/1000);
+                        firstRun = false;
+                    }
                     int currentPosition = mPlayer.getCurrentPosition();
                     mSeekBar.setProgress(currentPosition/1000);
                     mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mAudioFile.getTime()));
