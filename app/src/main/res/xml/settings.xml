@@ -16,4 +16,29 @@
         android:defaultValue="@string/settings_cover_from_metadata_default"
         android:key="@string/settings_cover_from_metadata_key"
         android:title="@string/settings_cover_from_metadata_label"/>
+
+    <PreferenceCategory
+        android:key="@string/settings_sleep_key"
+        android:title="@string/settings_sleep_label">
+
+        <EditTextPreference
+            android:defaultValue="@string/settings_sleep_fadeout_default"
+            android:inputType="number"
+            android:key="@string/settings_sleep_fadeout_key"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:maxLength="3"
+            android:title="@string/settings_sleep_fadeout_label" />
+        <SwitchPreference
+            android:defaultValue="@string/settings_shake_default"
+            android:key="@string/settings_shake_key"
+            android:title="@string/settings_shake_label" />
+        <SeekBarPreference
+            android:defaultValue="@string/settings_shake_sensitivity_default"
+            android:max="@string/settings_shake_sensitivity_max"
+            android:key="@string/settings_shake_sensitivity_key"
+            android:title="@string/settings_shake_sensitivity_label"
+            />
+    </PreferenceCategory>
+
 </PreferenceScreen>

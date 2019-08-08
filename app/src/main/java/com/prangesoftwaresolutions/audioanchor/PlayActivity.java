@@ -14,10 +14,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.hardware.SensorManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PersistableBundle;
@@ -78,7 +78,14 @@ public class PlayActivity extends AppCompatActivity {
     Runnable mRunnable;
 
     // SleepTimer variables
-    CountDownTimer mSleepTimer;
+    SleepTimer mSleepTimer;
+    boolean mShakeEnabledSetting;
+    int mShakeSensitivitySetting;
+    int mFadeoutTime;
+    int mLastSleepTime;
+
+    //Sensor manager
+    SensorManager mSensorManager;
 
     // Bookmark Adapter and Bookmark ListView
     BookmarkCursorAdapter mBookmarkAdapter;
@@ -108,12 +115,19 @@ public class PlayActivity extends AppCompatActivity {
         mTimeTV = findViewById(R.id.play_time);
         mSleepCountDownTV = findViewById(R.id.play_sleep_time);
 
+        //get preferences
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mCoverImagesFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
+        mShakeEnabledSetting = sharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
+        mShakeSensitivitySetting = sharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
+        mFadeoutTime = Integer.valueOf(sharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
+        mLastSleepTime = sharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.valueOf(getString(R.string.preference_last_sleep_val)));
 
         mAudioFile = AudioFile.getAudioFile(this, mCurrentUri);
         setNewAudioFile();
         setAlbumCover();
+
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         mHandler = new Handler();
 
@@ -351,6 +365,10 @@ public class PlayActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        if(mSleepTimer != null)
+            mSleepTimer.disableTimer();
+
         if (serviceBound) {
             unbindService(serviceConnection);
             //service is active
@@ -446,51 +464,47 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     void showSleepTimerDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        //setup editText
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_sleep_timer, null);
-        builder.setView(dialogView);
         final EditText setTime = dialogView.findViewById(R.id.sleep_timer_set_time);
+        setTime.setText(String.valueOf(mLastSleepTime));
+        setTime.setSelection(setTime.getText().length());
 
+        //setup alertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogView);
         builder.setTitle(R.string.sleep_timer);
         builder.setMessage(R.string.dialog_msg_sleep_timer);
         builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
             // User clicked the OK button so set the sleep timer
             public void onClick(DialogInterface dialog, int id) {
-                // If a sleep timer was already set, cancel the previous one and start a new one
-                if (mSleepTimer != null) {
-                    mSleepTimer.cancel();
-                    mSleepCountDownTV.setVisibility(View.GONE);
-                    mPlayer.setVolume(1.0f);
-                }
-
                 String minutesString = setTime.getText().toString();
                 if (minutesString.isEmpty() || minutesString.equals("0")) {
+                    if(mSleepTimer != null) //make it possible to disable timer by entering 0/empty
+                        mSleepTimer.disableTimer();
                     return;
                 }
                 final int minutes = Integer.parseInt(minutesString);
-                mSleepCountDownTV.setVisibility(View.VISIBLE);
 
-                mSleepTimer = new CountDownTimer(minutes*60*1000, 1000) {
+                //save selection in preferences
+                mLastSleepTime = minutes;
+                final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putInt(getString(R.string.preference_last_sleep_key), mLastSleepTime);
+                editor.apply();
 
-                    @Override
-                    public void onTick(long l) {
-                        String timeString = Utils.formatTime(l, minutes*60*1000);
-                        String sleepTimeLeft = getResources().getString(R.string.sleep_time_left, timeString);
-                        mSleepCountDownTV.setText(sleepTimeLeft);
-                        int totalSteps = 10;
-                        if ((l/1000) < totalSteps) {
-                            mPlayer.decreaseVolume((int) (totalSteps - (l/1000)), totalSteps);
+                //create and start timer
+                if(mSleepTimer == null) {
+                    mSleepTimer = new SleepTimer(mSleepCountDownTV, mPlayer, mSensorManager) {
+                        @Override
+                        public void finished() {
+                            pauseAudio();
                         }
-                    }
+                    };
+                }
 
-                    @Override
-                    public void onFinish() {
-                        pauseAudio();
-                        mPlayer.setVolume(1.0f);
-                        mSleepCountDownTV.setVisibility(View.GONE);
-                    }
-                };
-                mSleepTimer.start();
+                mSleepTimer.createTimer(minutes * 60, mFadeoutTime, mShakeEnabledSetting, mShakeSensitivitySetting / 100f);
+                mSleepTimer.startTimer(false);
             }
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
