@@ -2,7 +2,13 @@ package com.prangesoftwaresolutions.audioanchor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.Cursor;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+
+import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -12,6 +18,41 @@ import java.io.FilenameFilter;
  */
 
 class Utils {
+
+    static String getAlbumCompletion(@NonNull SQLiteDatabase db, long albumID, boolean showInPercentage, Resources resources)
+    {
+        String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
+        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+        String[] selArgs = {Long.toString(albumID)};
+
+        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
+                columns, sel, selArgs, null, null, null);
+
+        if(c == null)
+            return "";
+
+        // Loop through the database rows and sum up the audio durations and completed time
+        int sumDuration = 0;
+        int sumCompletedTime = 0;
+        while (c.moveToNext()) {
+            sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+            sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+        }
+        c.close();
+
+        // Set the text for the album time TextView
+        String timeStr;
+        if (!showInPercentage) {
+            String durationStr = Utils.formatTime(sumDuration, sumDuration);
+            String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
+            timeStr = resources.getString(R.string.time_completed, completedTimeStr, durationStr);
+        } else {
+            int percent = Math.round(((float)sumCompletedTime / sumDuration) * 100);
+            timeStr = resources.getString(R.string.time_completed_percent, percent);
+        }
+
+        return timeStr;
+    }
 
     static String getPath(Context c, String album, String title) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(c);

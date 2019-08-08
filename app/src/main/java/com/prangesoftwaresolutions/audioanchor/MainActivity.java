@@ -44,7 +44,6 @@ import java.util.LinkedHashMap;
 // TODO: Option in settings: Don't show deleted files in list
 // TODO: Option in settings: Sort by
 // TODO: Support subdirectories? / Support multiple base directories
-// TODO: Show album progress in MainActivity
 // TODO: Don't save entire file path in the database, instead put it together from mDirectory, AlbumTitle and AudioFileTitle
 // TODO: Mark files that do not exist anymore but are still in the database (or add a delete button)
 
