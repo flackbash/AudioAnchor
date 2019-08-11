@@ -692,6 +692,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     void play() {
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying() && (mAutoplay || getCurrentPosition() != getDuration())) {
+            mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition());
             mMediaPlayer.start();
             sendPlayStatusResult(MSG_PLAY);
         }
