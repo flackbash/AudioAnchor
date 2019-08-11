@@ -158,7 +158,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         if (mediaSession == null) {
             initMediaSession();
-            initMediaPlayer();
+            initMediaPlayer(activeAudio.getPath(), activeAudio.getCompletedTime());
             buildNotification();
         }
 
@@ -212,6 +212,23 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
+    void initMediaPlayer(String path, int position) {
+        if (mMediaPlayer == null) {
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setOnCompletionListener(this);
+        }
+        try {
+            mMediaPlayer.reset();
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setDataSource(path);
+            mMediaPlayer.prepare();
+            mMediaPlayer.seekTo(position);
+        } catch (IOException e) {
+            e.printStackTrace();
+            stopSelf();
+        }
+    }
+
     @Override
     public void onCompletion(MediaPlayer mp) {
         setCurrentPosition(getDuration());
@@ -225,7 +242,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 activeAudio = mAudioMap.get(mAudioIndex);
                 sendNewAudioFile(mAudioIndex);
                 playingNext = true;
-                loadAudioFile(activeAudio.getPath(), activeAudio.getCompletedTime());
+                initMediaPlayer(activeAudio.getPath(), activeAudio.getCompletedTime());
                 play();
                 buildNotification();
             }
@@ -250,8 +267,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // resume playback
                 Log.e("MediaPlayerService", "Audiofocus Gain");
                 if (mMediaPlayer == null) {
-                    initMediaPlayer();
-                    loadAudioFile(activeAudio.getPath(), activeAudio.getCompletedTime());
+                    initMediaPlayer(activeAudio.getPath(), activeAudio.getCompletedTime());
                 }
                 setVolume(1.0f);
                 break;
@@ -279,7 +295,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-
     /**
      * AudioFocus
      */
@@ -294,30 +309,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     private void removeAudioFocus() {
         audioManager.abandonAudioFocus(this);
-    }
-
-    /**
-     * MediaPlayer actions
-     */
-    private void initMediaPlayer() {
-        if (mMediaPlayer == null)
-            mMediaPlayer = new MediaPlayer();//new MediaPlayer instance
-
-        //Set up MediaPlayer event listeners
-        mMediaPlayer.setOnCompletionListener(this);
-
-        //Reset so that the MediaPlayer is not pointing to another data source
-        mMediaPlayer.reset();
-
-        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        try {
-            // Set the data source to the mediaFile location
-            mMediaPlayer.setDataSource(activeAudio.getPath());
-            mMediaPlayer.prepareAsync();
-        } catch (IOException e) {
-            e.printStackTrace();
-            stopSelf();
-        }
     }
 
     /**
@@ -697,21 +688,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             return mMediaPlayer.isPlaying();
         }
         return false;
-    }
-
-    void loadAudioFile(String path, int position) {
-        if (mMediaPlayer == null) {
-            mMediaPlayer = new MediaPlayer();
-        }
-        try {
-            mMediaPlayer.reset();
-            mMediaPlayer.setDataSource(path);
-            mMediaPlayer.prepare();
-            mMediaPlayer.seekTo(position);
-        } catch (IOException e) {
-            e.printStackTrace();
-            stopSelf();
-        }
     }
 
     void play() {

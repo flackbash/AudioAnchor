@@ -302,9 +302,6 @@ public class PlayActivity extends AppCompatActivity {
             // Initialize the seek bar for the current audio file
             initializeSeekBar();
 
-            // Initialize the mPlayer for the current audio file
-            mPlayer.loadAudioFile(mAudioFile.getPath(), mAudioFile.getCompletedTime());
-
             // Update the time column of the audiofiles table if it has not yet been set
             if (mAudioFile.getTime() == 0) {
                 mAudioFile.setTime(mPlayer.getDuration());
