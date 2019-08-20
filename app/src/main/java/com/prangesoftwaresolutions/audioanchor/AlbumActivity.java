@@ -281,7 +281,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
      * Retrieve all audio file titles from the database
      */
     private LinkedHashMap<String, Integer> getAudioFileTitles() {
-        SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
+        SQLiteDatabase db = openOrCreateDatabase(getString(R.string.database_filename), MODE_PRIVATE, null);
         String[] columns = new String[]{AnchorContract.AudioEntry._ID, AnchorContract.AudioEntry.COLUMN_TITLE};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};
@@ -308,44 +308,14 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     }
 
     private void setCompletedAlbumTime() {
-        SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
-        String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(mAlbumId)};
-
-        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
-                columns, sel, selArgs, null, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return;
-        }
-
-        // Loop through the database rows and sum up the audio durations and completed time
-        int sumDuration = 0;
-        int sumCompletedTime = 0;
-        while (c.moveToNext()) {
-            sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-            sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-        }
-
-        c.close();
-
-        // Set the text for the album time TextView
-        String timeStr;
-        if (!mProgressInPercent) {
-            String durationStr = Utils.formatTime(sumDuration, sumDuration);
-            String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
-            timeStr = getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
-        } else {
-            int percent = Math.round(((float)sumCompletedTime / sumDuration) * 100);
-            timeStr = getResources().getString(R.string.time_completed_percent, percent);
-        }
+        SQLiteDatabase db = openOrCreateDatabase(getString(R.string.database_filename), MODE_PRIVATE, null);
+        String timeStr = Utils.getAlbumCompletion(db, mAlbumId, mProgressInPercent, getResources());
+        db.close();
         mAlbumInfoTimeTV.setText(timeStr);
     }
 
     private void scrollToNotCompletedAudio(ListView listView) {
-        SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
+        SQLiteDatabase db = openOrCreateDatabase(getString(R.string.database_filename), MODE_PRIVATE, null);
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};

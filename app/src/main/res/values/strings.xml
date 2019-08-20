@@ -92,4 +92,7 @@
     <string name="dialog_msg_delete_audio">Are you sure you want to delete this audio file from the database?</string>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
 
+    <!-- Others -->
+    <string name="database_filename" translatable="false">audio_anchor.db</string>
+
 </resources>

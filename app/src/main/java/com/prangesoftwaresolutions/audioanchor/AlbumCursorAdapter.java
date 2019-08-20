@@ -3,6 +3,7 @@ package com.prangesoftwaresolutions.audioanchor;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +43,20 @@ public class AlbumCursorAdapter extends CursorAdapter {
         TextView titleTV = view.findViewById(R.id.audio_storage_item_title);
         String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
         titleTV.setText(title);
+
+        //get the progress of this album and update the view
+        TextView progressTV = view.findViewById(R.id.album_info_time_album);
+        int id = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        String prefKey = context.getString(R.string.settings_progress_percentage_key);
+        String prefDefault = context.getString(R.string.settings_progress_percentage_default);
+        boolean showInPercentages = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
+
+        SQLiteDatabase db = context.getApplicationContext().openOrCreateDatabase(context.getResources().getString(R.string.database_filename), Context.MODE_PRIVATE, null);
+        String timeStr = Utils.getAlbumCompletion(db, id, showInPercentages, context.getResources());
+        db.close();
+
+        progressTV.setText(timeStr);
 
         // Get the path of the thumbnail of the current album and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
