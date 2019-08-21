@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -21,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -577,28 +579,43 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     void exportDatabase(File directory) {
         try {
-            String databaseName = AnchorDbHelper.DATABASE_NAME;
-            File data = Environment.getDataDirectory();
-
             if (directory.canWrite()) {
-                String currentDBPath = "//data//"+getPackageName()+"//databases//"+databaseName+"";
+                String currentDBPath = openOrCreateDatabase(AnchorDbHelper.DATABASE_NAME, MODE_PRIVATE, null).getPath();
+
+                File currentDB = new File(currentDBPath);
+                File currentDBShm = new File(currentDBPath + "-shm");
+                File currentDBWal = new File(currentDBPath + "-wal");
+                File[] currentFiles = {currentDB, currentDBShm, currentDBWal};
+
                 String backupDBPath = "audioanchor.db";
-                File currentDB = new File(data, currentDBPath);
                 File backupDB = new File(directory, backupDBPath);
+                File backupDBShm = new File(directory, backupDBPath + "-shm");
+                File backupDBWal = new File(directory, backupDBPath + "-wal");
+                File[] backupFiles = {backupDB, backupDBShm, backupDBWal};
 
-                if (currentDB.exists()) {
-                    FileChannel src = new FileInputStream(currentDB).getChannel();
-                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
-                    dst.transferFrom(src, 0, src.size());
-                    src.close();
-                    dst.close();
+                int fileExists = 0;
+                for (int i = 0; i < currentFiles.length; i++) {
+                    if (currentFiles[i].exists()) {
+                        FileChannel src = new FileInputStream(currentFiles[i]).getChannel();
+                        FileChannel dst = new FileOutputStream(backupFiles[i]).getChannel();
+                        dst.transferFrom(src, 0, src.size());
+                        src.close();
+                        dst.close();
 
+                        fileExists++;
+                    }
+                }
+                if (fileExists > 0) {
                     String successStr = getResources().getString(R.string.export_success, backupDB.getAbsoluteFile());
                     Toast.makeText(getApplicationContext(), successStr, Toast.LENGTH_LONG).show();
+                    Log.e("Export", "Exported " + fileExists + " files");
+                } else {
+                    Toast.makeText(getApplicationContext(), R.string.export_fail, Toast.LENGTH_LONG).show();
                 }
             }
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), R.string.export_fail, Toast.LENGTH_LONG).show();
+            Log.e("MainActivity", e.getMessage());
         }
     }
 
@@ -609,6 +626,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void fileSelected(File file) {
                 importDatabase(file);
+                updateDBTables();
             }
         });
         fileDialog.showDialog();
@@ -616,27 +634,45 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     void importDatabase(File dbFile) {
         try {
-            String databaseName = AnchorDbHelper.DATABASE_NAME;
-            File data = Environment.getDataDirectory();
+            File dbFileShm = new File(dbFile + "-shm");
+            File dbFileWal = new File(dbFile + "-wal");
+            File[] importFiles = {dbFile, dbFileShm, dbFileWal};
 
-            String newDBPath = "//data//"+getPackageName()+"//databases//"+databaseName+"";
-            File newDB = new File(data, newDBPath);
+            SQLiteDatabase db = openOrCreateDatabase(AnchorDbHelper.DATABASE_NAME, MODE_PRIVATE, null);
+            String newDBPath = db.getPath();
+            db.close();
 
-            if (dbFile.exists()) {
-                FileChannel src = new FileInputStream(dbFile).getChannel();
-                FileChannel dst = new FileOutputStream(newDB).getChannel();
-                dst.transferFrom(src, 0, src.size());
-                src.close();
-                dst.close();
+            File newDB = new File(newDBPath);
+            File newDBShm = new File(newDBPath + "-shm");
+            File newDBWal = new File(newDBPath + "-wal");
+            File[] newFiles = {newDB, newDBShm, newDBWal};
 
+            int fileExists = 0;
+            for (int i=0; i < importFiles.length; i++) {
+                if (importFiles[i].exists()) {
+                    FileChannel src = new FileInputStream(importFiles[i]).getChannel();
+                    FileChannel dst = new FileOutputStream(newFiles[i]).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+
+                    fileExists++;
+                } else {
+                    newFiles[i].delete();
+                }
+            }
+            if (fileExists > 0) {
                 Toast.makeText(getApplicationContext(), R.string.import_success, Toast.LENGTH_LONG).show();
 
                 // Restart the CursorLoader so that the CursorAdapter is updated.
                 getLoaderManager().restartLoader(0, null, this);
+
+                Log.e("Import", "Imported " + fileExists + " files.");
             }
 
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), R.string.import_fail, Toast.LENGTH_LONG).show();
+            Log.e("MainActivity", e.getMessage());
 
         }
     }
