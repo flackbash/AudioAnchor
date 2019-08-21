@@ -17,16 +17,20 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import java.io.File;
 
 /**
- * CursorAdapter for the ListView in the Main Activity
+ * CursorAdapter for the ListView in the Album Activity
  */
 
 public class AudioFileCursorAdapter extends CursorAdapter {
 
     private Context mContext;
+    private String mDirectory;
 
     AudioFileCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
         mContext = context;
+        // Get the base directory from the shared preferences.
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mDirectory = prefs.getString(mContext.getString(R.string.preference_filename), null);
     }
 
     @Override
@@ -76,9 +80,11 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         }
 
         // Show the deletable image if the file does not exist anymore
-        String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
+        String audioTitle = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
+        String albumTitle = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_TITLE));
+        String filePath = mDirectory + File.separator + albumTitle + File.separator + audioTitle;
         ImageView deletableIV = view.findViewById(R.id.audio_file_item_deletable_img);
-        if (!(new File(path)).exists()) {
+        if (!(new File(filePath)).exists()) {
             deletableIV.setImageResource(R.drawable.img_deletable);
         } else {
             deletableIV.setImageResource(android.R.color.transparent);

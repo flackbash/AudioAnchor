@@ -3,7 +3,6 @@ package com.prangesoftwaresolutions.audioanchor;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,14 +21,13 @@ import java.io.File;
 
 public class AlbumCursorAdapter extends CursorAdapter {
     private Context mContext;
-    private String mDirectory;
+    private SharedPreferences mPrefs;
 
     AlbumCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
         mContext = context;
-        // Set up the shared preferences.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mDirectory = prefs.getString(mContext.getString(R.string.preference_filename), null);
+        // Get the base directory from the shared preferences.
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
     @Override
@@ -39,6 +37,7 @@ public class AlbumCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        String directory = mPrefs.getString(mContext.getString(R.string.preference_filename), null);
         // Get the title of the current album and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_storage_item_title);
         String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
@@ -60,6 +59,7 @@ public class AlbumCursorAdapter extends CursorAdapter {
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
         String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
         if (path != null) {
+            path = directory + File.separator + path;
             int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
             BitmapUtils.setImage(thumbnailIV, path, reqSize);
         } else {
@@ -68,7 +68,7 @@ public class AlbumCursorAdapter extends CursorAdapter {
 
         // Show the deletable image if the file does not exist anymore
         ImageView deletableIV = view.findViewById(R.id.album_item_deletable_img);
-        if (mDirectory != null && !(new File(mDirectory, title)).exists()) {
+        if (directory != null && !(new File(directory, title)).exists()) {
             deletableIV.setImageResource(R.drawable.img_deletable);
         } else {
             deletableIV.setImageResource(android.R.color.transparent);

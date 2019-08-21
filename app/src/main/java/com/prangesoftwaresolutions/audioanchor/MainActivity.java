@@ -47,7 +47,6 @@ import java.util.LinkedHashMap;
 // TODO: Option in settings: Don't show deleted files in list
 // TODO: Option in settings: Sort by
 // TODO: Support subdirectories? / Support multiple base directories
-// TODO: Don't save entire file path in the database, instead put it together from mDirectory, AlbumTitle and AudioFileTitle
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -101,8 +100,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 Intent intent = new Intent(MainActivity.this, AlbumActivity.class);
                 intent.putExtra(getString(R.string.album_id), rowId);
                 String albumName = ((TextView) view.findViewById(R.id.audio_storage_item_title)).getText().toString();
-                String albumPath = new File(mDirectory.getAbsolutePath() + File.separator + albumName).getAbsolutePath();
-                intent.putExtra(getString(R.string.directory_path), albumPath);
+                intent.putExtra(getString(R.string.album_name), albumName);
                 startActivity(intent);
             }
         });
@@ -396,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      * Update the album database table if the list of directories in the selected directory do not
      * match the album table entries
      */
-    void updateAudioFileTable(String albumTitle, long albumId) {
+    void updateAudioFileTable(String albumDirName, long albumId) {
         // Get all audio files in the album.
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File dir, String filename) {
@@ -407,8 +405,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         };
 
         // Get all files in the album directory.
-        File directory = new File(mDirectory + File.separator + albumTitle + File.separator);
-        String[] fileList = directory.list(filter);
+        String[] fileList;
+        File albumDir = new File(mDirectory + File.separator + albumDirName);
+
+        if (albumDir.exists()) {
+            fileList = albumDir.list(filter);
+        } else {
+            fileList = new String[]{};
+        }
 
         if (fileList == null) return;
 
@@ -416,12 +420,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Insert new files into the database
         boolean success = true;
-        for (String audioTitle : fileList) {
-            if (!audioTitles.containsKey(audioTitle)) {
-                success = insertAudioFile(audioTitle, albumTitle, albumId);
+        for (String audioFileName : fileList) {
+            if (!audioTitles.containsKey(audioFileName)) {
+                success = insertAudioFile(audioFileName, albumDirName, albumId);
                 if (!success) break;
             } else {
-                audioTitles.remove(audioTitle);
+                audioTitles.remove(audioFileName);
             }
         }
 
@@ -444,17 +448,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /*
      * Insert a new row in the album database table
      */
-    private boolean insertAudioFile(String title, String albumTitle, long albumId) {
+    private boolean insertAudioFile(String title, String albumDirName, long albumId) {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_TITLE, title);
-        String path = Utils.getPath(this, albumTitle, title);
-        values.put(AnchorContract.AudioEntry.COLUMN_PATH, path);
         values.put(AnchorContract.AudioEntry.COLUMN_ALBUM, albumId);
 
         // Retrieve audio duration from Metadata.
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         try {
-            metaRetriever.setDataSource(path);
+            String audioFilePath = mDirectory + File.separator + albumDirName + File.separator + title;
+            metaRetriever.setDataSource(audioFilePath);
             String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(duration));
             metaRetriever.release();
@@ -526,10 +529,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         c.close();
 
-        if (oldCoverPath == null || !(new File(oldCoverPath).exists())) {
+        if (oldCoverPath == null || !(new File(mDirectory.getAbsolutePath() + File.separator + oldCoverPath).exists())) {
             // Search for a cover in the album directory
             File albumDir = new File(mDirectory.getAbsolutePath() + File.separator + title);
             String coverPath = Utils.getImagePath(albumDir);
+            if (coverPath != null) {
+                coverPath = coverPath.replace(mDirectory.getAbsolutePath(), "");
+            }
 
             // Update the album cover path in the albums table
             ContentValues values = new ContentValues();
@@ -662,6 +668,33 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 }
             }
             if (fileExists > 0) {
+                // Adjust album cover paths to contain only the cover file name to enable
+                // import of dbs that were exported in a previous version with the full path names
+                // Get the old cover path
+                String[] proj = new String[]{
+                        AnchorContract.AlbumEntry._ID,
+                        AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
+                Cursor c = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI,
+                        proj, null, null, null);
+                if (c != null) {
+                    if (c.getCount() > 0) {
+                        c.moveToFirst();
+                        while (c.moveToNext()) {
+                            String oldCoverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+                            int id = c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
+                            if (oldCoverPath != null && !oldCoverPath.isEmpty()) {
+                                // Replace the old cover path in the database by the new relative path
+                                String newCoverPath = new File(oldCoverPath).getName();
+                                ContentValues values = new ContentValues();
+                                values.put(AnchorContract.AlbumEntry.COLUMN_COVER_PATH, newCoverPath);
+                                Uri albumUri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
+                                getContentResolver().update(albumUri, values, null, null);
+                            }
+                        }
+                    }
+                    c.close();
+                }
+
                 Toast.makeText(getApplicationContext(), R.string.import_success, Toast.LENGTH_LONG).show();
 
                 // Restart the CursorLoader so that the CursorAdapter is updated.

@@ -1,12 +1,8 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
@@ -52,13 +48,6 @@ class Utils {
         }
 
         return timeStr;
-    }
-
-    static String getPath(Context c, String album, String title) {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(c);
-        String storageDirectory = sharedPref.getString(c.getString(R.string.preference_filename), null);
-        File file = new File(storageDirectory + File.separator + album + File.separator + title);
-        return file.getAbsolutePath();
     }
 
     static String getImagePath(File dir) {

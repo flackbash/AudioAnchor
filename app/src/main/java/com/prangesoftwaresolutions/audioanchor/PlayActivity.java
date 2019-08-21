@@ -56,8 +56,8 @@ public class PlayActivity extends AppCompatActivity {
 
     // Audio File variables
     AudioFile mAudioFile;
-    int mAlbumId;
     private Uri mCurrentUri;
+    private String mDirectory;
 
     // The Views
     ImageView mCoverIV;
@@ -98,9 +98,9 @@ public class PlayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play);
+
         // Get the current uri from the intent
         mCurrentUri = getIntent().getData();
-        mAlbumId = getIntent().getIntExtra("albumId", -1);
 
         mCoverIV = findViewById(R.id.play_cover);
         mTitleTV = findViewById(R.id.play_audio_file_title);
@@ -122,8 +122,9 @@ public class PlayActivity extends AppCompatActivity {
         mShakeSensitivitySetting = sharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
         mFadeoutTime = Integer.valueOf(sharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
         mLastSleepTime = sharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.valueOf(getString(R.string.preference_last_sleep_val)));
+        mDirectory = sharedPreferences.getString(getString(R.string.preference_filename), null);
 
-        mAudioFile = AudioFile.getAudioFile(this, mCurrentUri);
+        mAudioFile = AudioFile.getAudioFile(this, mCurrentUri, mDirectory);
         setNewAudioFile();
         setAlbumCover();
 
@@ -342,8 +343,8 @@ public class PlayActivity extends AppCompatActivity {
 
     private void storeAudioFiles() {
         //Store Serializable audioList to SharedPreferences
-        String sortOrder = "LOWER(" + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
-        ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesFromAlbum(this, mAlbumId, sortOrder);
+        String sortOrder = "LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
+        ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesFromAlbum(this, mAudioFile.getAlbumId(), sortOrder, mDirectory);
         int audioIndex = AudioFile.getIndex(audioList, mAudioFile.getId());
         StorageUtil storage = new StorageUtil(getApplicationContext());
         storage.storeAudio(audioList);

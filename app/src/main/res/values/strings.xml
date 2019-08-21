@@ -54,7 +54,7 @@
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
-    <string name="directory_path" translatable="false">directory_path</string>
+    <string name="album_name" translatable="false">album_name</string>
     <string name="audio_file_uri" translatable="false">audio_file_uri</string>
 
     <!-- Layout Texts -->
