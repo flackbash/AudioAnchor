@@ -52,9 +52,7 @@ public class AlbumCursorAdapter extends CursorAdapter {
         String prefDefault = context.getString(R.string.settings_progress_percentage_default);
         boolean showInPercentages = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
 
-        SQLiteDatabase db = context.getApplicationContext().openOrCreateDatabase(context.getResources().getString(R.string.database_filename), Context.MODE_PRIVATE, null);
-        String timeStr = Utils.getAlbumCompletion(db, id, showInPercentages, context.getResources());
-        db.close();
+        String timeStr = Utils.getAlbumCompletion(context, id, showInPercentages, context.getResources());
 
         progressTV.setText(timeStr);
 

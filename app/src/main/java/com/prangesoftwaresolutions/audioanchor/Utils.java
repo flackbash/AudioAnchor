@@ -19,14 +19,14 @@ import java.io.FilenameFilter;
 
 class Utils {
 
-    static String getAlbumCompletion(@NonNull SQLiteDatabase db, long albumID, boolean showInPercentage, Resources resources)
+    static String getAlbumCompletion(Context context, long albumID, boolean showInPercentage, Resources resources)
     {
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(albumID)};
 
-        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
-                columns, sel, selArgs, null, null, null);
+        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                columns, sel, selArgs, null, null);
 
         if(c == null)
             return "";

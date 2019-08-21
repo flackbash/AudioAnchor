@@ -189,20 +189,17 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     }
 
     private void setCompletedAlbumTime() {
-        SQLiteDatabase db = openOrCreateDatabase(getString(R.string.database_filename), MODE_PRIVATE, null);
-        String timeStr = Utils.getAlbumCompletion(db, mAlbumId, mProgressInPercent, getResources());
-        db.close();
+        String timeStr = Utils.getAlbumCompletion(this, mAlbumId, mProgressInPercent, getResources());
         mAlbumInfoTimeTV.setText(timeStr);
     }
 
     private void scrollToNotCompletedAudio(ListView listView) {
-        SQLiteDatabase db = openOrCreateDatabase(getString(R.string.database_filename), MODE_PRIVATE, null);
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};
 
-        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
-                columns, sel, selArgs, null, null, null);
+        Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                columns, sel, selArgs, null, null);
 
         // Bail early if the cursor is null
         if (c == null) {
