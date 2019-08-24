@@ -53,6 +53,7 @@ public class PlayActivity extends AppCompatActivity {
     boolean serviceBound = false;
     BroadcastReceiver mPlayStatusReceiver;
     BroadcastReceiver mNewAudioFileReceiver;
+    MediaMetadataRetriever mMetadataRetriever;
 
     // Audio File variables
     AudioFile mAudioFile;
@@ -84,15 +85,16 @@ public class PlayActivity extends AppCompatActivity {
     int mFadeoutTime;
     int mLastSleepTime;
 
-    //Sensor manager
+    // Sensor manager
     SensorManager mSensorManager;
 
     // Bookmark Adapter and Bookmark ListView
     BookmarkCursorAdapter mBookmarkAdapter;
     ListView mBookmarkListView;
 
-    // Flag for fetching images from metadata
-    private boolean mCoverImagesFromMetadata;
+    // Settings flags
+    private boolean mCoverFromMetadata;
+    private boolean mTitleFromMetadata;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +119,8 @@ public class PlayActivity extends AppCompatActivity {
 
         //get preferences
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mCoverImagesFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
+        mCoverFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
+        mTitleFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
         mShakeEnabledSetting = sharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
         mShakeSensitivitySetting = sharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
         mFadeoutTime = Integer.valueOf(sharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
@@ -125,12 +128,15 @@ public class PlayActivity extends AppCompatActivity {
         mDirectory = sharedPreferences.getString(getString(R.string.preference_filename), null);
 
         mAudioFile = AudioFile.getAudioFile(this, mCurrentUri, mDirectory);
+        mMetadataRetriever = new MediaMetadataRetriever();
+
         setNewAudioFile();
         setAlbumCover();
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         mHandler = new Handler();
+
 
         // Start the play service
         startService();
@@ -384,7 +390,15 @@ public class PlayActivity extends AppCompatActivity {
      */
     void setNewAudioFile() {
         // Set TextViews
-        mTitleTV.setText(mAudioFile.getTitle());
+        String title = "";
+        if (mTitleFromMetadata) {
+            mMetadataRetriever.setDataSource(mAudioFile.getPath());
+            title = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        }
+        if (title == null || title.isEmpty()) {
+            title = mAudioFile.getTitle();
+        }
+        mTitleTV.setText(title);
         mTimeTV.setText(Utils.formatTime(mAudioFile.getTime(), mAudioFile.getTime()));
         mAlbumTV.setText(mAudioFile.getAlbumTitle());
 
@@ -413,7 +427,7 @@ public class PlayActivity extends AppCompatActivity {
             reqSize = java.lang.Math.max(size.x, size.y);
         }
 
-        if (mCoverImagesFromMetadata) {
+        if (mCoverFromMetadata) {
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             mmr.setDataSource(mAudioFile.getPath());
 

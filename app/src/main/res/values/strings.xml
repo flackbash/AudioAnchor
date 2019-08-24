@@ -35,7 +35,7 @@
     <string name="settings_keep_deleted_label">Keep progress of deleted files in database</string>
     <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
     <string name="settings_keep_deleted_default" translatable="false">false</string>
-    <string name="settings_cover_from_metadata_label">Get cover image from track metadata</string>
+    <string name="settings_cover_from_metadata_label">Get cover image from metadata</string>
     <string name="settings_cover_from_metadata_key" translatable="false">cover_from_metadata</string>
     <string name="settings_cover_from_metadata_default" translatable="false">false</string>
     <string name="settings_sleep_key" translatable="false">settings_sleep_cat</string>
@@ -50,7 +50,9 @@
     <string name="settings_shake_sensitivity_key" translatable="false">settings_shake_sensitivity</string>
     <string name="settings_shake_sensitivity_default" translatable="false">25</string>
     <string name="settings_shake_sensitivity_max" translatable="false">100</string>
-
+    <string name="settings_title_from_metadata_label">Get track title from metadata</string>
+    <string name="settings_title_from_metadata_key" translatable="false">settings_title_from_metadata</string>
+    <string name="settings_title_from_metadata_default" translatable="false">false</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
