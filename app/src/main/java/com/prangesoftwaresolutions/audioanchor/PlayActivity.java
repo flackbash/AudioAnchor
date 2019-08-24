@@ -241,6 +241,7 @@ public class PlayActivity extends AppCompatActivity {
         if (mPlayer != null) {
             mAudioFile = mPlayer.getCurrentAudioFile();
             setNewAudioFile();
+            setAlbumCover();
             initializeSeekBar();
         }
     }
@@ -363,6 +364,7 @@ public class PlayActivity extends AppCompatActivity {
         ArrayList<AudioFile> audioList = new ArrayList<>(storage.loadAudio());
         mAudioFile = audioList.get(audioIndex);
         setNewAudioFile();
+        setAlbumCover();
     }
 
 
