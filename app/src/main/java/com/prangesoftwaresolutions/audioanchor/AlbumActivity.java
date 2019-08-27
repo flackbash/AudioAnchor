@@ -30,6 +30,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     // The album uri and file
     private long mAlbumId;
+    private String mAlbumName;
     private String mDirectory;
 
     // Database variables
@@ -53,6 +54,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Get the uri of the recipe sent via the intent
         mAlbumId = getIntent().getLongExtra(getString(R.string.album_id), -1);
+        mAlbumName = getIntent().getStringExtra(getString(R.string.album_name));
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
         getLoaderManager().initLoader(ALBUM_LOADER, null, this);
@@ -148,19 +150,19 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Set the text of the empty view
         mEmptyTV.setText(R.string.no_audio_files);
 
-        // Set album title
-        cursor.moveToFirst();
-        String albumTitle = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_TITLE));
-        mAlbumInfoTitleTV.setText(albumTitle);
+        if (cursor != null && cursor.getCount() > 0) {
+            if (cursor.moveToFirst()) {
+                // Set album cover
+                String coverPath = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+                coverPath = mDirectory + File.separator + coverPath;
+                int reqSize = getResources().getDimensionPixelSize(R.dimen.album_info_height);
+                BitmapUtils.setImage(mAlbumInfoCoverIV, coverPath, reqSize);
 
-        // Set album cover
-        String coverPath = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-        coverPath = mDirectory + File.separator + coverPath;
-        int reqSize = getResources().getDimensionPixelSize(R.dimen.album_info_height);
-        BitmapUtils.setImage(mAlbumInfoCoverIV, coverPath, reqSize);
-
-        // Set the album info time
-        setCompletedAlbumTime();
+                // Set the album info time
+                setCompletedAlbumTime();
+            }
+        }
+        mAlbumInfoTitleTV.setText(mAlbumName);
 
         // Swap the new cursor in. The framework will take care of closing the old cursor
         mCursorAdapter.swapCursor(cursor);
@@ -198,6 +200,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Bail early if the cursor is null
         if (c == null) {
+            return;
+        } else if (c.getCount() < 1) {
+            c.close();
             return;
         }
 
