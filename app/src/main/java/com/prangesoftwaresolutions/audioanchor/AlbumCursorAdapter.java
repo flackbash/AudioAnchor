@@ -3,6 +3,7 @@ package com.prangesoftwaresolutions.audioanchor;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,12 +59,13 @@ public class AlbumCursorAdapter extends CursorAdapter {
         // Get the path of the thumbnail of the current album and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
         String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+        int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
         if (path != null) {
             path = directory + File.separator + path;
-            int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
             BitmapUtils.setImage(thumbnailIV, path, reqSize);
         } else {
-            thumbnailIV.setImageResource(R.drawable.empty_cover_grey_blue);
+            Bitmap image = BitmapUtils.decodeSampledBitmap(mContext.getResources(), R.drawable.empty_cover_grey_blue, reqSize, reqSize);
+            thumbnailIV.setImageBitmap(image);
         }
 
         // Show the deletable image if the file does not exist anymore

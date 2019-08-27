@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -491,8 +490,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void updateMetaData() {
-        Bitmap albumArt = BitmapFactory.decodeResource(getResources(),
-                R.drawable.empty_cover_grey_blue); //replace with medias albumArt
+        Bitmap albumArt = getNotificationImage(150);
         // Update the current metadata
         mediaSession.setMetadata(new MediaMetadataCompat.Builder()
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
@@ -521,6 +519,30 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
+    private Bitmap getNotificationImage(int size) {
+        Bitmap notificationCover;
+
+        if(mCoverFromMetadata){
+            mMetadataRetriever.setDataSource(activeAudio.getPath());
+            byte [] coverData = mMetadataRetriever.getEmbeddedPicture();
+
+            if (coverData != null) {
+                notificationCover = BitmapUtils.decodeSampledBitmap(coverData, size, size);
+            } else if (activeAudio.getCoverPath() != null){
+                notificationCover = BitmapUtils.decodeSampledBitmap(activeAudio.getCoverPath(),size, size);
+            } else {
+                notificationCover = BitmapUtils.decodeSampledBitmap(getResources(), R.drawable.empty_cover_grey_blue, size, size);
+            }
+        } else {
+            if (activeAudio.getCoverPath() != null){
+                notificationCover = BitmapUtils.decodeSampledBitmap(activeAudio.getCoverPath(),size, size);
+            } else {
+                notificationCover = BitmapUtils.decodeSampledBitmap(getResources(), R.drawable.empty_cover_grey_blue, size, size);
+            }
+        }
+        return notificationCover;
+    }
+
     private void buildNotification() {
         createNotificationChannel();
 
@@ -539,26 +561,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             title = "play";
         }
 
-        Bitmap notificationCover;
-
-        if(mCoverFromMetadata){
-            mMetadataRetriever.setDataSource(activeAudio.getPath());
-            byte [] coverData = mMetadataRetriever.getEmbeddedPicture();
-
-            if (coverData != null) {
-                notificationCover = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
-            } else if (activeAudio.getCoverPath() != null){
-                notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
-            } else {
-                notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
-            }
-        } else {
-            if (activeAudio.getCoverPath() != null){
-                notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
-            } else {
-                notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
-            }
-        }
+        Bitmap notificationCover = getNotificationImage(200);
 
         String audioTitle = "";
         if (mTitleFromMetadata) {

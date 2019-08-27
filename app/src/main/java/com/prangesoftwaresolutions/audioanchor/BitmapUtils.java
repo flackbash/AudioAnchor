@@ -1,5 +1,6 @@
 package com.prangesoftwaresolutions.audioanchor;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -37,7 +38,7 @@ class BitmapUtils {
      * Taken from https://developer.android.com/topic/performance/graphics/load-bitmap.html
      * This helps downSample an image.
      */
-    private static Bitmap decodeSampledBitmap(String file, int reqWidth, int reqHeight) {
+    static Bitmap decodeSampledBitmap(String file, int reqWidth, int reqHeight) {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -51,6 +52,54 @@ class BitmapUtils {
         options.inJustDecodeBounds = false;
         try {
             return BitmapFactory.decodeFile(file, options);
+        } catch (java.lang.OutOfMemoryError e) {
+            Log.e(LOG_TAG, "Out of memory." + e);
+        }
+        return null;
+    }
+
+    /**
+     * Taken from https://developer.android.com/topic/performance/graphics/load-bitmap.html
+     * This helps downSample an image.
+     */
+    static Bitmap decodeSampledBitmap(Resources res, int resID, int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(res, resID, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        try {
+            return BitmapFactory.decodeResource(res, resID, options);
+        } catch (java.lang.OutOfMemoryError e) {
+            Log.e(LOG_TAG, "Out of memory." + e);
+        }
+        return null;
+    }
+
+    /**
+     * Taken from https://developer.android.com/topic/performance/graphics/load-bitmap.html
+     * This helps downSample an image.
+     */
+    static Bitmap decodeSampledBitmap(byte[] coverBytes, int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.length, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        try {
+            return BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.length, options);
         } catch (java.lang.OutOfMemoryError e) {
             Log.e(LOG_TAG, "Out of memory." + e);
         }
