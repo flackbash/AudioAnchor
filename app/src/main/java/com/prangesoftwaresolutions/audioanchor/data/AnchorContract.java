@@ -11,6 +11,8 @@ import com.prangesoftwaresolutions.audioanchor.BuildConfig;
  */
 
 public class AnchorContract {
+
+    //$$ private Constructor??
     // Content constants
     static final String CONTENT_AUTHORITY = BuildConfig.APPLICATION_ID;
     static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
@@ -73,7 +75,6 @@ public class AnchorContract {
         // Content URI for the bookmark table
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_BOOKMARK);
         public static final Uri CONTENT_URI_DISTINCT = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_BOOKMARK_DISTINCT);
-
         // The MIME type of the CONTENT_URI for a list of bookmarks.
         static final String CONTENT_LIST_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_BOOKMARK;

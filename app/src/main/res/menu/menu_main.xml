@@ -9,6 +9,15 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_show_directories"
+        android:icon="@drawable/directory_ic"
+        android:orderInCategory="100"
+        android:title="@string/directories"
+        app:showAsAction="never" />
+
+
+
+    <item
         android:id="@+id/menu_export"
         android:orderInCategory="101"
         android:title="@string/export_db"

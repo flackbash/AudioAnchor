@@ -20,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,7 +38,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 
 // TODO: Option in settings: Show title (from Metadata)
 // TODO: Option in settings: if in autoplay play completed files as well
@@ -77,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Set up the shared preferences.
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        //$$ "preference_filename" als Liste mit mehreren Directories
         mPrefDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
         mKeepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
 
@@ -240,7 +246,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     showChangeDirectorySelector();
                 }
                 return true;
-            case R.id.menu_export:
+
+            case R.id.menu_show_directories:
+                showDirectoriesDialog();
+                return true;
+
+                case R.id.menu_export:
                 // Check if app has the necessary permissions
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
@@ -272,6 +283,87 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return super.onOptionsItemSelected(item);
     }
 
+
+    void showDirectoriesDialog() {
+
+   /*     Set<String> defSet = new HashSet<String>();
+            defSet.add("def 1");
+            defSet.add("def 2");
+*/
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+     //   final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_directories, null);
+     //   builder.setView(dialogView);
+        builder.setTitle(R.string.directories);
+
+     //   SharedPreferences.Editor editor = mSharedPreferences.edit();
+        Set<String> mDirectories = mSharedPreferences.getStringSet("dirs", null);
+      //  Set<String> mSelectedDirectories = mSharedPreferences.getStringSet("selectedDirectories", null);
+
+
+
+
+        //   List<String> list = new ArrayList<String>(fetch);
+        if(mDirectories != null) {
+
+                CharSequence[] dirsList = mDirectories.toArray(new CharSequence[mDirectories.size()]);
+
+            /*    boolean[] mSelectedDirsBool = new boolean[mSelectedDirectories.size()];
+                int numberOfItems = mSelectedDirectories.size();
+
+                for (int i=0; i<numberOfItems ; i++) {
+                    if (boolList[i] == "true") {
+                        mSelectedDirsBool[i] = true;
+                    }
+                    else {mSelectedDirsBool[i] = false;}
+                }
+*/
+
+                builder.setMessage(null);
+
+
+                builder.setMultiChoiceItems(dirsList, null, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        // The 'which' argument contains the index position
+                        // of the selected item
+                    }
+
+
+                });
+        } else {builder.setMessage(R.string.no_directories);}
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+
+
+            }
+        });
+
+        builder.setNeutralButton(R.string.add_directory, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                //    showChangeDirectorySelector();
+
+
+
+                }
+
+        });
+
+
+        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+            }
+
+        });
+
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
+    }
+
     private void showChangeDirectorySelector() {
         // TODO: once the navigation bug is fixed the baseDirectory can be set to mDirectory if it's not null
         File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
@@ -294,8 +386,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mDirectory = directory;
         updateAlbumTable();
 
+        //$$multiple directories
         // Store the selected path in the shared preferences to persist when the app is closed
         SharedPreferences.Editor editor = mSharedPreferences.edit();
+        //$$ getString(R.string.preference_filename)
         editor.putString(getString(R.string.preference_filename), directory.getAbsolutePath());
         editor.apply();
 
@@ -338,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      * Update the album database table if the list of directories in the selected directory do not
      * match the album table entries
      */
+    //$$ multiple directories
     void updateAlbumTable() {
         // Get all subdirectories of the selected audio storage directory.
         FilenameFilter filter = new FilenameFilter() {

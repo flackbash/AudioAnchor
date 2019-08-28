@@ -80,6 +80,12 @@
     <string name="no_bookmarks">There are no bookmarks for this audio file yet</string>
     <string name="bookmarks">Bookmarks</string>
 
+    <string name="no_directories">No directories selected</string>
+    <string name="directories">Directories</string>
+    <string name="add_directory">Add directory</string>
+
+
+
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
     <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing</string>
@@ -91,5 +97,6 @@
     <string name="dialog_msg_delete_album">Are you sure you want to delete the album and its contents from the database?</string>
     <string name="dialog_msg_delete_audio">Are you sure you want to delete this audio file from the database?</string>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
+
 
 </resources>
