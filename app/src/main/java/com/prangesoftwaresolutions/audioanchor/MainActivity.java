@@ -451,8 +451,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
                 Cursor c = getDirectories();
 
-                //$$ TODO go back to default view when list is empty
-
                 if(c.getCount() == 0) {
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(R.string.dialog_msg_ok);
                     alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.VISIBLE);
