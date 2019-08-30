@@ -36,6 +36,11 @@ public class AnchorProvider extends ContentProvider {
     private static final int BOOKMARK_ID = 301;
     private static final int BOOKMARK_DISTINCT = 310;
 
+
+    private static final int DIRECTORY = 400;
+    private static final int DIRECTORY_ID = 401;
+
+
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
@@ -51,6 +56,12 @@ public class AnchorProvider extends ContentProvider {
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK, BOOKMARK);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK + "/#", BOOKMARK_ID);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK_DISTINCT, BOOKMARK_DISTINCT);
+
+        //$$
+        // URIS for the directories table
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_DIRECTORY, DIRECTORY);
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_DIRECTORY + "/#", DIRECTORY_ID);
+
     }
 
     /**
@@ -114,7 +125,7 @@ public class AnchorProvider extends ContentProvider {
             case AUDIO_ID:
                 // Query a single row given by the ID in the URI
                 selection = AnchorContract.AudioEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // Perform query on the recipe table for the given recipe id.
                 cursor = database.query(AnchorContract.AudioEntry.TABLE_NAME, projection, selection, selectionArgs,
@@ -123,21 +134,28 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM_ID:
                 // Query a single row given by the ID in the URI
                 selection = AnchorContract.AlbumEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // Perform query on the recipe table for the given recipe id.
                 cursor = database.query(AnchorContract.AlbumEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
             case BOOKMARK_ID:
+                //$$$  AnchorContract.AlbumEntry._ID + "=?";  ==    AnchorContract.BookmarkEntry._ID + "=?";
                 // Query a single row given by the ID in the URI
                 selection = AnchorContract.AlbumEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // Perform query on the recipe table for the given recipe id.
                 cursor = database.query(AnchorContract.BookmarkEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
+            case DIRECTORY:
+                cursor = database.query(AnchorContract.DirectoryEntry.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
+
+
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
@@ -166,6 +184,8 @@ public class AnchorProvider extends ContentProvider {
                 return AnchorContract.AlbumEntry.CONTENT_ITEM_TYPE;
             case BOOKMARK_ID:
                 return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
+            case DIRECTORY:
+                return AnchorContract.DirectoryEntry.CONTENT_LIST_TYPE;
             default:
                 throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
         }
@@ -185,6 +205,9 @@ public class AnchorProvider extends ContentProvider {
                 return insertAlbum(uri, contentValues);
             case BOOKMARK:
                 return insertBookmark(uri, contentValues);
+            //$$
+            case DIRECTORY:
+                return insertDirectory(uri, contentValues);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
@@ -268,6 +291,30 @@ public class AnchorProvider extends ContentProvider {
         return ContentUris.withAppendedId(uri, id);
     }
 
+
+    private Uri insertDirectory(Uri uri, ContentValues values) {
+        // Sanity check values
+        if (!sanityCheckDirectory(values)) {
+            throw new IllegalArgumentException("Sanity check failed: corrupted content values");
+        }
+
+        // Get writable database
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        long id = db.insert(AnchorContract.DirectoryEntry.TABLE_NAME, null, values);
+
+        if (id == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + uri);
+            return null;
+        }
+
+        // Notify all listeners that the data at the given URI has changed
+        getContext().getContentResolver().notifyChange(uri, null);
+
+        // Return the new URI with the appended ID
+        return ContentUris.withAppendedId(uri, id);
+    }
+
     /**
      * Delete the data at the given selection and selection arguments.
      */
@@ -308,6 +355,10 @@ public class AnchorProvider extends ContentProvider {
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 getContext().getContentResolver().notifyChange(uri, null);
                 return database.delete(AnchorContract.BookmarkEntry.TABLE_NAME, selection, selectionArgs);
+            case DIRECTORY:
+                getContext().getContentResolver().notifyChange(uri, null);
+                return database.delete(AnchorContract.DirectoryEntry.TABLE_NAME, selection, selectionArgs);
+
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
         }
@@ -341,6 +392,10 @@ public class AnchorProvider extends ContentProvider {
                 selection = AnchorContract.BookmarkEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateBookmark(uri, values, selection, selectionArgs);
+            case DIRECTORY:
+                return updateDirectory(uri, values, selection, selectionArgs);
+
+
             default:
                 throw new IllegalArgumentException("Update is not supported for " + uri);
         }
@@ -423,6 +478,32 @@ public class AnchorProvider extends ContentProvider {
 
         // Update the table
         int rowsUpdated = db.update(AnchorContract.BookmarkEntry.TABLE_NAME, values, selection, selectionArgs);
+
+        // If 1 or more rows were updated, then notify all listeners that the data at the
+        // given URI has changed
+        if (rowsUpdated != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return rowsUpdated;
+    }
+
+    private int updateDirectory(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        // If there are no values to update, then don't try to update the database
+        if (values.size() == 0) {
+            return 0;
+        }
+
+        // Sanity check values
+        if (!sanityCheckDirectory(values)) {
+            throw new IllegalArgumentException("Sanity check failed: corrupted content values");
+        }
+
+        // Get writable database
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Update the table
+        int rowsUpdated = db.update(AnchorContract.DirectoryEntry.TABLE_NAME, values, selection, selectionArgs);
 
         // If 1 or more rows were updated, then notify all listeners that the data at the
         // given URI has changed
@@ -518,4 +599,25 @@ public class AnchorProvider extends ContentProvider {
         }
         return true;
     }
+
+
+    private boolean sanityCheckDirectory(ContentValues values) {
+        // Check whether the directory will be updated and is not null
+        if (values.containsKey(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY)) {
+            String val = values.getAsString(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY);
+            if (val == null) {
+                return false;
+            }
+        }
+        // Check whether  dir_shown will be updated and is not null
+        if (values.containsKey(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN)) {
+            String val = values.getAsString(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN);
+            if (val == null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }

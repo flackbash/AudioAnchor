@@ -25,6 +25,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ImageButton;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -75,8 +79,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
+
+    //$$$
+    private DirectoriesCursorAdapter mDirsAdapter;
+
+    //$$ TODO change name to "mDirsListView
+    ListView mDirsList;
+
+//    TextView mEmptyTVDir;
+
+
+    // TODO change name to "mdirectoriesDialog" or something
+    AlertDialog alertDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_directories, null);
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -92,12 +113,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Initialize the cursor adapter
         mCursorAdapter = new AlbumCursorAdapter(this, null);
 
+
         // Use a ListView and CursorAdapter to recycle space
         mListView = findViewById(R.id.list);
+
+    //    mDirsList = findViewById(R.id.list_directories);
+
 
         // Set the EmptyView for the ListView
         mEmptyTV = findViewById(R.id.emptyList);
         mListView.setEmptyView(mEmptyTV);
+
+
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -248,8 +275,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 return true;
 
             case R.id.menu_show_directories:
-                showDirectoriesDialog();
+                // Check if app has the necessary permissions
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                } else {
+                    showDirectoriesDialog();
+                }
                 return true;
+
 
                 case R.id.menu_export:
                 // Check if app has the necessary permissions
@@ -284,85 +320,246 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
+    //$$$$
     void showDirectoriesDialog() {
 
-   /*     Set<String> defSet = new HashSet<String>();
-            defSet.add("def 1");
-            defSet.add("def 2");
-*/
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-     //   final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_directories, null);
-     //   builder.setView(dialogView);
         builder.setTitle(R.string.directories);
-
-     //   SharedPreferences.Editor editor = mSharedPreferences.edit();
-        Set<String> mDirectories = mSharedPreferences.getStringSet("dirs", null);
-      //  Set<String> mSelectedDirectories = mSharedPreferences.getStringSet("selectedDirectories", null);
+        final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_directories, null);
 
 
+        mDirsList = (ListView) dialogView.findViewById(android.R.id.list);
 
 
-        //   List<String> list = new ArrayList<String>(fetch);
-        if(mDirectories != null) {
+        Cursor c = getDirectories();
 
-                CharSequence[] dirsList = mDirectories.toArray(new CharSequence[mDirectories.size()]);
-
-            /*    boolean[] mSelectedDirsBool = new boolean[mSelectedDirectories.size()];
-                int numberOfItems = mSelectedDirectories.size();
-
-                for (int i=0; i<numberOfItems ; i++) {
-                    if (boolList[i] == "true") {
-                        mSelectedDirsBool[i] = true;
-                    }
-                    else {mSelectedDirsBool[i] = false;}
-                }
-*/
-
-                builder.setMessage(null);
+        mDirsAdapter = new DirectoriesCursorAdapter(this, c);
 
 
-                builder.setMultiChoiceItems(dirsList, null, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                        // The 'which' argument contains the index position
-                        // of the selected item
-                    }
+        mDirsList.setAdapter(mDirsAdapter);
 
+        //$$$  empty view won't work....
+  /*
+        TextView mEmptyTVDir = findViewById(android.R.id.empty);
+        mDirsList.setEmptyView(mEmptyTVDir);
 
-                });
-        } else {builder.setMessage(R.string.no_directories);}
+    */
+        mDirsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+            }
+         });
+
+        builder.setView(dialogView);
         builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-
-
-
             }
         });
 
         builder.setNeutralButton(R.string.add_directory, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                //    showChangeDirectorySelector();
-
-
 
                 }
 
         });
 
-
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+        //$$ hardcoded String!!!
+        builder.setNegativeButton("Remove", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-
             }
-
         });
 
 
+        alertDialog = builder.create();
+        alertDialog.show();
+
+        //Override onClick() methods right afer dialog.show() to keep dialog open although buttons are clicked
+        alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            { showAddDirectorySelector(); }
+        });
+
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                //$$ hardcoded String!!!
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText("Done");
+                alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
+                alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
+
+                DirectoriesCursorAdapter.setRemoveView();
+                mDirsAdapter.notifyDataSetChanged();
+
+            }
+        });
+
+
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Button btn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
+                if (btn.getText() == getString(R.string.dialog_msg_ok)) {
+                    alertDialog.dismiss();
+                } else {
+
+                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(R.string.dialog_msg_ok);
+                    alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.VISIBLE);
+                    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
+
+                    DirectoriesCursorAdapter.setDefaultView();
+                    mDirsAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    public void listItemClick(View v) {
+
+  //      TextView mDirTV = (TextView) v.findViewById(R.id.dir_textview);
+  //      Toast.makeText(MainActivity.this, "" + mDirTV.getText(), Toast.LENGTH_SHORT).show();
+    }
+
+
+
+    public void removeDir(View v) {
+        View mDirectoryItem = (View) v.getParent();
+        final TextView mDirTV = mDirectoryItem.findViewById(R.id.dir_textview);
+
+    //    ListView lv = (ListView) mDirectoryItem.getParent();
+   //     int position = lv.getPositionForView(v);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_msg_change_dir);
+        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Ok" button, so remove the directory.
+                String sel = AnchorContract.DirectoryEntry.COLUMN_DIRECTORY + "=?";
+                String[] selArgs = {mDirTV.getText().toString()};
+                getContentResolver().delete(AnchorContract.DirectoryEntry.CONTENT_URI, sel, selArgs);
+
+                Toast.makeText(MainActivity.this, "" + mDirTV.getText() + "  removed" , Toast.LENGTH_SHORT).show();
+
+
+                Cursor c = getDirectories();
+
+                //$$ TODO go back to default view when list is empty
+
+                if(c.getCount() == 0) {
+                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(R.string.dialog_msg_ok);
+                    alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.VISIBLE);
+                    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
+
+                    DirectoriesCursorAdapter.setDefaultView();
+                    mDirsAdapter.notifyDataSetChanged();
+
+                }
+
+                mDirsAdapter.swapCursor(c);
+
+
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
 
     }
+
+    public void checkBoxChange(View v) {
+        CheckBox cb = (CheckBox) v;
+        View mDirectoryItem = (View) v.getParent();
+        TextView mDirTV = mDirectoryItem.findViewById(R.id.dir_textview);
+
+        if (cb.isChecked()) {
+            Toast.makeText(MainActivity.this,  mDirTV.getText() + " checked", Toast.LENGTH_SHORT).show();
+            updateDirectoriesTable(String.valueOf(mDirTV.getText()), 1);
+
+        } else {
+            Toast.makeText(MainActivity.this, mDirTV.getText() + " unchecked", Toast.LENGTH_SHORT).show();
+            updateDirectoriesTable(String.valueOf(mDirTV.getText()), 0);
+        }
+
+        Cursor c = getDirectories();
+        mDirsAdapter.swapCursor(c);
+
+
+    }
+
+    public void updateDirectoriesTable(String dirPath, Integer value) {
+       // String[] proj = new String[]{AnchorContract.DirectoryEntry.COLUMN_DIRECTORY};
+        String sel = AnchorContract.DirectoryEntry.COLUMN_DIRECTORY + "=?";
+        String[] selArgs = {dirPath};
+
+        ContentValues values = new ContentValues();
+        values.put(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN, value);
+
+        getContentResolver().update(AnchorContract.DirectoryEntry.CONTENT_URI, values, sel, selArgs);
+
+        //mDirsAdapter.notifyDataSetChanged();
+
+    }
+
+
+
+    private void showAddDirectorySelector() {
+        File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+        FileDialog fileDialog = new FileDialog(this, baseDirectory, null);
+        fileDialog.setSelectDirectoryOption(true);
+        fileDialog.addDirectoryListener(new FileDialog.DirectorySelectedListener() {
+            public void directorySelected(File directory) {
+                //only add directories that are not already in database
+                if (checkDirNotDuplicate(directory.toString())) {
+                    // add directory to Database
+                    insertDirectory(directory.toString());
+                    Cursor c = getDirectories();
+                    mDirsAdapter.swapCursor(c);
+                } else {
+                    Toast.makeText(MainActivity.this, "Cannot add duplicate directory  \n"
+                            + directory.toString(), Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+        fileDialog.showDialog();
+    }
+
+
+    private boolean checkDirNotDuplicate (String directory) {
+        String[] proj = new String[]{AnchorContract.DirectoryEntry.COLUMN_DIRECTORY};
+        String sel = AnchorContract.DirectoryEntry.COLUMN_DIRECTORY + "=?";
+        String[] selArgs = {directory};
+        Cursor c = getContentResolver().query(AnchorContract.DirectoryEntry.CONTENT_URI,
+                proj, sel, selArgs, null);
+
+        if (c == null) {return false;}
+
+        if (c.getCount() == 0) {
+            c.close();
+            return true;
+            } else {
+                c.close();
+                return false;
+             }
+        }
+
 
     private void showChangeDirectorySelector() {
         // TODO: once the navigation bug is fixed the baseDirectory can be set to mDirectory if it's not null
@@ -476,6 +673,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         }
     }
+
+
+    /*
+     * Insert a new row in the directories table
+     */
+
+    private void insertDirectory(String dir) {
+        ContentValues values = new ContentValues();
+        values.put(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY, dir);
+        values.put(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN, 1);
+        getContentResolver().insert(AnchorContract.DirectoryEntry.CONTENT_URI, values);
+    }
+
 
     /*
      * Insert a new row in the albums table
@@ -655,5 +865,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    Cursor getDirectories() {
+        String[] projection = {
+                AnchorContract.DirectoryEntry._ID,
+                AnchorContract.DirectoryEntry.COLUMN_DIRECTORY,
+                AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN};
+
+        String sortOrder = AnchorContract.DirectoryEntry._ID + " ASC";
+        return getContentResolver().query(AnchorContract.DirectoryEntry.CONTENT_URI, projection, null, null, sortOrder);
     }
 }

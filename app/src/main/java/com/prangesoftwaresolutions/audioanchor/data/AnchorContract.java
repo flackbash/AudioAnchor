@@ -23,6 +23,10 @@ public class AnchorContract {
     static final String PATH_BOOKMARK = "bookmark";
     static final String PATH_BOOKMARK_DISTINCT = "bookmark_distinct";
 
+    //$$$
+    static final String PATH_DIRECTORY = "directory";
+
+
     // Class for the Audio File Table
     public static abstract class AudioEntry implements BaseColumns {
         // Content URI for the audio table
@@ -90,5 +94,25 @@ public class AnchorContract {
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_POSITION = "position";
         public static final String COLUMN_AUDIO_FILE = "audio_file";
+    }
+
+
+    // Class for the Directory Table
+    public static abstract class DirectoryEntry implements BaseColumns {
+        // Content URI for the directory table
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_DIRECTORY);
+
+        // The MIME type of the CONTENT_URI for a list of directories.
+        static final String CONTENT_LIST_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_DIRECTORY;
+
+
+        public static final String TABLE_NAME = "directories";
+
+        // The Columns
+        public static final String _ID = BaseColumns._ID;
+        public static final String COLUMN_DIRECTORY = "directory";
+        public static final String COLUMN_DIR_SHOWN = "dir_shown";
+
     }
 }

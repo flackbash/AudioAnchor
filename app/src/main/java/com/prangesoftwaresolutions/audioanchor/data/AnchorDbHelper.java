@@ -12,7 +12,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "audio_anchor.db";
 
     // Database version. Must be incremented when the database schema is changed.
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     private static AnchorDbHelper mInstance = null;
 
@@ -44,9 +44,20 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 + AnchorContract.BookmarkEntry.COLUMN_POSITION + " INTEGER, "
                 + AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + " INTEGER);";
 
+        // Create a String that contains the SQL statement to create the directories table
+        String SQL_CREATE_DIRECTORIES_TABLE = "CREATE TABLE " + AnchorContract.DirectoryEntry.TABLE_NAME + " ("
+                + AnchorContract.DirectoryEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + AnchorContract.DirectoryEntry.COLUMN_DIRECTORY + " TEXT NOT NULL, "
+                + AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN + " INTEGER);";
+
+
+
         db.execSQL(SQL_CREATE_AUDIO_FILE_TABLE);
         db.execSQL(SQL_CREATE_ALBUM_TABLE);
         db.execSQL(SQL_CREATE_BOOKMARK_TABLE);
+
+        //$$ add to onUpgrade
+        db.execSQL(SQL_CREATE_DIRECTORIES_TABLE);
     }
 
     @Override
@@ -58,6 +69,15 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 + AnchorContract.BookmarkEntry.COLUMN_POSITION + " INTEGER, "
                 + AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + " INTEGER);";
         db.execSQL(SQL_CREATE_BOOKMARK_TABLE);
+
+
+        // Create a String that contains the SQL statement to create the directories table
+        String SQL_CREATE_DIRECTORIES_TABLE = "CREATE TABLE " + AnchorContract.DirectoryEntry.TABLE_NAME + " ("
+                + AnchorContract.DirectoryEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + AnchorContract.DirectoryEntry.COLUMN_DIRECTORY + " TEXT NOT NULL, "
+                + AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN + " INTEGER);";
+        db.execSQL(SQL_CREATE_DIRECTORIES_TABLE);
+
     }
 
     static AnchorDbHelper getInstance(Context context) {

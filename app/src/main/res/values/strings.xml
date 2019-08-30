@@ -86,6 +86,7 @@
 
 
 
+
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
     <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing</string>

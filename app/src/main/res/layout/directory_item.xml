@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:drawSelectorOnTop="true"
+    android:gravity="center_vertical">
+
+    <CheckBox
+        android:id="@+id/dir_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:onClick="checkBoxChange"/>
+
+    <TextView
+
+        android:id="@+id/dir_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="blaa"
+        android:layout_toRightOf="@+id/dir_checkbox"
+        android:clickable="true"
+        android:onClick="listItemClick"
+        />
+
+    <ImageButton
+        android:id="@+id/dir_del_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:src="@drawable/img_deletable"
+        android:visibility="gone"
+        android:background="?android:attr/selectableItemBackground"
+        android:onClick="removeDir"
+        />
+
+
+</RelativeLayout>
+
