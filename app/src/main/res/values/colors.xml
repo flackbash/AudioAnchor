@@ -7,6 +7,7 @@
 
     <color name="colorBackgroundLight">#44B8BCC7</color>
     <color name="colorBackgroundStrong">#BBDBDDE3</color>
+    <color name="colorBackgroundStrongDark">#BB000000</color>
 
     <color name="colorGreyBlue">#536872</color>
 </resources>

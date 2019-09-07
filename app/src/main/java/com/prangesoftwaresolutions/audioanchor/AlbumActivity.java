@@ -49,6 +49,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Utils.setActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album);
 

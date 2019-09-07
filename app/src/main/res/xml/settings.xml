@@ -20,7 +20,10 @@
         android:defaultValue="@string/settings_title_from_metadata_default"
         android:key="@string/settings_title_from_metadata_key"
         android:title="@string/settings_title_from_metadata_label"/>
-
+    <SwitchPreference
+        android:defaultValue="@string/settings_dark_default"
+        android:key="@string/settings_dark_key"
+        android:title="@string/settings_dark_label"/>
     <PreferenceCategory
         android:key="@string/settings_sleep_key"
         android:title="@string/settings_sleep_label">
