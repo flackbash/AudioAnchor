@@ -205,7 +205,6 @@ public class AnchorProvider extends ContentProvider {
                 return insertAlbum(uri, contentValues);
             case BOOKMARK:
                 return insertBookmark(uri, contentValues);
-            //$$
             case DIRECTORY:
                 return insertDirectory(uri, contentValues);
             default:

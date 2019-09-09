@@ -1,5 +1,6 @@
 package com.prangesoftwaresolutions.audioanchor.data;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -35,7 +36,9 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
         String SQL_CREATE_ALBUM_TABLE = "CREATE TABLE " + AnchorContract.AlbumEntry.TABLE_NAME + " ("
                 + AnchorContract.AlbumEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + AnchorContract.AlbumEntry.COLUMN_TITLE + " TEXT NOT NULL, "
-                + AnchorContract.AlbumEntry.COLUMN_COVER_PATH + " TEXT);";
+                + AnchorContract.AlbumEntry.COLUMN_COVER_PATH + " TEXT, "
+                + AnchorContract.AlbumEntry.COLUMN_BASE_DIR + " TEXT NOT NULL, "
+                + AnchorContract.AlbumEntry.COLUMN_ALBUM_SHOWN + " INTEGER);";
 
         // Create a String that contains the SQL statement to create the bookmark table
         String SQL_CREATE_BOOKMARK_TABLE = "CREATE TABLE " + AnchorContract.BookmarkEntry.TABLE_NAME + " ("
@@ -55,8 +58,6 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_AUDIO_FILE_TABLE);
         db.execSQL(SQL_CREATE_ALBUM_TABLE);
         db.execSQL(SQL_CREATE_BOOKMARK_TABLE);
-
-        //$$ add to onUpgrade
         db.execSQL(SQL_CREATE_DIRECTORIES_TABLE);
     }
 
@@ -78,6 +79,12 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 + AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN + " INTEGER);";
         db.execSQL(SQL_CREATE_DIRECTORIES_TABLE);
 
+/*
+        String SQL_ADD_COLUMN_TO_ALBUM_TABLE = "ALTER TABLE " + AnchorContract.AlbumEntry.TABLE_NAME +
+                " ADD COLUMN " + AnchorContract.AlbumEntry.COLUMN_BASE_DIR_ID + " INTEGER;";
+
+        db.execSQL(SQL_ADD_COLUMN_TO_ALBUM_TABLE);
+*/
     }
 
     static AnchorDbHelper getInstance(Context context) {

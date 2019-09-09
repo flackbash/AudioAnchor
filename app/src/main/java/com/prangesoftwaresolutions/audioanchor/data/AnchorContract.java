@@ -72,6 +72,9 @@ public class AnchorContract {
         public static final String _ID = BaseColumns._ID;
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_COVER_PATH = "cover_path";
+        //update for multiple directories functionality
+        public static final String COLUMN_BASE_DIR = "base_dir";
+        public static final String COLUMN_ALBUM_SHOWN = "album_shown";
     }
 
     // Class for the Bookmark Table

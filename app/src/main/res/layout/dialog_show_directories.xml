@@ -19,6 +19,7 @@
         android:textAlignment="center"
         android:layout_margin="@dimen/standard_margin"
         android:textAppearance="?android:textAppearanceMedium"
+        android:visibility="gone"
         android:text="@string/no_directories" />
 
 

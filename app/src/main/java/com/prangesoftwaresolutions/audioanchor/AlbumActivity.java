@@ -16,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -59,6 +60,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Get the uri of the recipe sent via the intent
         mAlbumId = getIntent().getLongExtra(getString(R.string.album_id), -1);
+        Log.e("ALbumID", Long.toString(mAlbumId));
         mDirectory = new File(getIntent().getStringExtra(getString(R.string.directory_path)));
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
@@ -227,6 +229,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Insert new files into the database
         boolean success = true;
         for (String file : fileList) {
+                Log.e("UpdateAudio File:", file);
+            Log.e("UpdateAudioFile:", mDirectory.getAbsolutePath());
+
+
             if (!audioTitles.containsKey(file)) {
                 success = insertAudioFile(file);
                 if (!success) break;
@@ -257,13 +263,17 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     private boolean insertAudioFile(String title) {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_TITLE, title);
+        ///$$$???? TODO ????????????????????
         String path = Utils.getPath(this, mDirectory.getName(), title);
+
         values.put(AnchorContract.AudioEntry.COLUMN_PATH, path);
         values.put(AnchorContract.AudioEntry.COLUMN_ALBUM, mAlbumId);
 
         // Retrieve audio duration from Metadata.
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         try {
+            Log.e("Exception", path);
+
             metaRetriever.setDataSource(path);
             String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(duration));
@@ -283,6 +293,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     private LinkedHashMap<String, Integer> getAudioFileTitles() {
         SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
         String[] columns = new String[]{AnchorContract.AudioEntry._ID, AnchorContract.AudioEntry.COLUMN_TITLE};
+
+        //$$ TODO
+
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};
 

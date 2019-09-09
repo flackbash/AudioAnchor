@@ -103,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Set up the shared preferences.
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        //$$ "preference_filename" als Liste mit mehreren Directories
         mPrefDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
         mKeepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
 
@@ -131,10 +130,31 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
                 // Open the AlbumActivity for the clicked album
                 Intent intent = new Intent(MainActivity.this, AlbumActivity.class);
-                intent.putExtra(getString(R.string.album_id), rowId);
                 String albumName = ((TextView) view.findViewById(R.id.audio_storage_item_title)).getText().toString();
-                String albumPath = new File(mDirectory.getAbsolutePath() + File.separator + albumName).getAbsolutePath();
+
+                // TODO get path from Table
+
+                String[] projection = new String[]{AnchorContract.AlbumEntry.COLUMN_BASE_DIR, AnchorContract.AlbumEntry._ID};
+                String sel = AnchorContract.AlbumEntry.COLUMN_TITLE  + "=?";
+                String[] selArgs = {albumName};
+
+                //get baseDir from table and set to mDirectory; put albumPath in intent
+                Cursor c = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI, projection, sel, selArgs, null);
+                c.moveToFirst();
+                mDirectory =  new File(c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_BASE_DIR)));
+                String albumPath = new File(mDirectory + File.separator + albumName).getAbsolutePath();
                 intent.putExtra(getString(R.string.directory_path), albumPath);
+
+                //get AlbumID from Table and put in Intent
+                c.moveToFirst();
+                Integer mAlbumID = c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
+                intent.putExtra(getString(R.string.album_id), Long.valueOf(mAlbumID));
+
+                //set directory in shared preferences
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+                editor.putString(getString(R.string.preference_filename), mDirectory.getAbsolutePath());
+                editor.apply();
+
                 startActivity(intent);
             }
         });
@@ -188,15 +208,45 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+
+        /*
+        //only display albums of directories which are checked in directories dialog
+        String[] proj = {AnchorContract.DirectoryEntry.COLUMN_DIRECTORY, AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN};
+        String sel = AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN  + " = ?";
+        String[] selArgs = {String.valueOf(1)};
+
+        Cursor c = getContentResolver().query(AnchorContract.DirectoryEntry.CONTENT_URI,
+                proj, sel, selArgs, null);
+
+        ArrayList<String> dirsShown = new ArrayList<String>();
+
+    //    c.moveToFirst();
+
+
+        while (c.moveToNext()) {
+            String dir = c.getString(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY));
+            Integer dirShown = c.getInt(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN));
+            Log.e("dirsShownINT", Integer.toString(dirShown));
+            if (dirShown == 1) {
+                dirsShown.add(dir);
+                Log.e("dirsShown", dir);
+            }
+        }
+
+
+    */
         // Set the projection to retrieve the relevant columns from the table
         String[] projection = {
                 AnchorContract.AlbumEntry._ID,
                 AnchorContract.AlbumEntry.COLUMN_TITLE,
                 AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
 
+        String selection = AnchorContract.AlbumEntry.COLUMN_ALBUM_SHOWN+ " = ?";
+        String[] selectionArgs = new String[]{String.valueOf(1)};
+
         String sortOrder = "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" +AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
 
-        return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, null, null, sortOrder);
+        return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, selection, selectionArgs, sortOrder);
     }
 
     @Override
@@ -328,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_directories, null);
 
 
-        mDirsList = (ListView) dialogView.findViewById(android.R.id.list);
+        mDirsList = dialogView.findViewById(android.R.id.list);
 
 
         Cursor c = getDirectories();
@@ -355,6 +405,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         builder.setView(dialogView);
         builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+
+
             }
         });
 
@@ -406,9 +458,31 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public void onClick(View v)
             {
                 Button btn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-
                 if (btn.getText() == getString(R.string.dialog_msg_ok)) {
+                    //$$foo
+                    //TODO put in method
+                    Cursor c = getDirectories();
+           //         c.moveToFirst();
+                    while (c.moveToNext()) {
+                        String dir = c.getString(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY));
+                        Integer dirShown = c.getInt(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN));
+                        ///TODO check for duplicate entries???
+                        ///TODO Update Album Column "album_shown"
+
+                        File directory = new File(dir);
+                        setDirectory(directory);
+
+                        if (dirShown == 1) {
+                            updateAlbumShown(1, dir);
+                        } else  {
+                            updateAlbumShown(0, dir);
+                        }
+
+                    }
+
+                    c.close();
                     alertDialog.dismiss();
+
                 } else {
 
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(R.string.dialog_msg_ok);
@@ -581,12 +655,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mDirectory = directory;
         updateAlbumTable();
 
+
+
         //$$multiple directories
         // Store the selected path in the shared preferences to persist when the app is closed
         SharedPreferences.Editor editor = mSharedPreferences.edit();
-        //$$ getString(R.string.preference_filename)
         editor.putString(getString(R.string.preference_filename), directory.getAbsolutePath());
         editor.apply();
+
+
+
+
 
         // Inform the user about the selected path
         String text = "Path: " + directory.getAbsolutePath();
@@ -630,6 +709,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     //$$ multiple directories
     void updateAlbumTable() {
         // Get all subdirectories of the selected audio storage directory.
+        Log.e("updateAlbumTable", mDirectory.getAbsolutePath());
+
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File dir, String filename) {
                 File sel = new File(dir, filename);
@@ -641,8 +722,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         String[] directoryList;
         if (mDirectory != null && mDirectory.isDirectory()) {
             directoryList = mDirectory.list(filter);
+
         } else {
             directoryList = new String[]{};
+
         }
 
         LinkedHashMap<String, Integer> albumTitles = getAlbumTitles();
@@ -651,12 +734,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         for (String dirTitle : directoryList) {
             if (!albumTitles.containsKey(dirTitle)) {
                 insertAlbum(dirTitle);
+                Log.e("insert", dirTitle);
+
             } else {
                 updateAlbumCover(albumTitles.get(dirTitle), dirTitle);
                 albumTitles.remove(dirTitle);
+                Log.e("Remove", dirTitle);
             }
         }
 
+        /*
         // Delete missing directories from the database
         if(!mKeepDeleted) {
             for (String title: albumTitles.keySet()) {
@@ -670,6 +757,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, sel, selArgs);
             }
         }
+
+         */
+    }
+
+
+    private void updateAlbumShown(Integer value, String baseDir) {
+        ContentValues values = new ContentValues();
+        values.put(AnchorContract.AlbumEntry.COLUMN_ALBUM_SHOWN, value);
+        String sel = AnchorContract.AlbumEntry.COLUMN_BASE_DIR + " = ?";
+        String[] selArgs = new String[]{baseDir};
+        getContentResolver().update(AnchorContract.AlbumEntry.CONTENT_URI, values, sel, selArgs);
     }
 
 
@@ -691,6 +789,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void insertAlbum(String title) {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AlbumEntry.COLUMN_TITLE, title);
+        values.put(AnchorContract.AlbumEntry.COLUMN_BASE_DIR, mDirectory.getAbsolutePath());
+
+        Log.e("insertAlbum", mDirectory.getAbsolutePath());
+
         Uri uri = getContentResolver().insert(AnchorContract.AlbumEntry.CONTENT_URI, values);
         updateAlbumCover(ContentUris.parseId(uri), title);
     }
