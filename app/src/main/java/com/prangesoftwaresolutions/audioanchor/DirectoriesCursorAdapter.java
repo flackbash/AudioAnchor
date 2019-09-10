@@ -13,6 +13,9 @@ import android.widget.TextView;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
 public class DirectoriesCursorAdapter extends CursorAdapter {
     private static boolean mRemoveDirView;
    // public boolean mRemoveDirView;
@@ -40,38 +43,46 @@ public class DirectoriesCursorAdapter extends CursorAdapter {
         CheckBox dirShownCB = view.findViewById(R.id.dir_checkbox);
         int dirShown = cursor.getInt(cursor.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN));
 
+        //Check boxes of directories whose content will be shown in main activity
         if (dirShown == 1) {
             dirShownCB.setChecked(true);
-        } else if (dirShown == 0) {
-            dirShownCB.setChecked(false);
-        }
+            } else {
+                dirShownCB.setChecked(false);
+                }
 
-            ImageButton mImgBtn = view.findViewById(R.id.dir_del_btn);
 
-        if (!mRemoveDirView) {
-            dirShownCB.setVisibility(View.VISIBLE);
-            mImgBtn.setVisibility(View.INVISIBLE);
+        //show delete button and hide checkbox for directory when removeDirectoryView is set or when directory is empty
+        ImageButton mImgBtn = view.findViewById(R.id.dir_del_btn);
 
-        } else {
+        FilenameFilter filter = new FilenameFilter() {
+            public boolean accept(File dir, String filename) {
+                File sel = new File(dir, filename);
+                // Only list files that are readable and directories
+                return sel.canRead() && sel.isDirectory();
+            }
+        };
+
+        String[] directoryList;
+        directoryList = new File(dir).list(filter);
+
+        if (mRemoveDirView || directoryList.length == 0) {
             dirShownCB.setVisibility(View.INVISIBLE);
             mImgBtn.setVisibility(View.VISIBLE);
 
+        } else {
+            dirShownCB.setVisibility(View.VISIBLE);
+            mImgBtn.setVisibility(View.INVISIBLE);
         }
-
 
     }
 
 
     public static void setRemoveView() {
         mRemoveDirView = true;
-
     }
 
     public static void setDefaultView() {
         mRemoveDirView = false;
-
     }
-
-
 
 }

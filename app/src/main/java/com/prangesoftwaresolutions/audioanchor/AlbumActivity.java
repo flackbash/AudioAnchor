@@ -229,10 +229,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Insert new files into the database
         boolean success = true;
         for (String file : fileList) {
-                Log.e("UpdateAudio File:", file);
-            Log.e("UpdateAudioFile:", mDirectory.getAbsolutePath());
-
-
             if (!audioTitles.containsKey(file)) {
                 success = insertAudioFile(file);
                 if (!success) break;
@@ -263,7 +259,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     private boolean insertAudioFile(String title) {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_TITLE, title);
-        ///$$$???? TODO ????????????????????
         String path = Utils.getPath(this, mDirectory.getName(), title);
 
         values.put(AnchorContract.AudioEntry.COLUMN_PATH, path);
@@ -272,8 +267,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Retrieve audio duration from Metadata.
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         try {
-            Log.e("Exception", path);
-
             metaRetriever.setDataSource(path);
             String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(duration));
@@ -293,8 +286,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     private LinkedHashMap<String, Integer> getAudioFileTitles() {
         SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
         String[] columns = new String[]{AnchorContract.AudioEntry._ID, AnchorContract.AudioEntry.COLUMN_TITLE};
-
-        //$$ TODO
 
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};

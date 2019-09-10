@@ -53,9 +53,12 @@ public class AlbumCursorAdapter extends CursorAdapter {
             thumbnailIV.setImageResource(R.drawable.empty_cover_grey_blue);
         }
 
+
+        String baseDir = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_BASE_DIR));
+
         // Show the deletable image if the file does not exist anymore
         ImageView deletableIV = view.findViewById(R.id.album_item_deletable_img);
-        if (mDirectory != null && !(new File(mDirectory, title)).exists()) {
+        if (baseDir != null && !(new File(baseDir, title)).exists()) {
             deletableIV.setImageResource(R.drawable.img_deletable);
         } else {
             deletableIV.setImageResource(android.R.color.transparent);

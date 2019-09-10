@@ -116,8 +116,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Use a ListView and CursorAdapter to recycle space
         mListView = findViewById(R.id.list);
 
-    //    mDirsList = findViewById(R.id.list_directories);
-
 
         // Set the EmptyView for the ListView
         mEmptyTV = findViewById(R.id.emptyList);
@@ -132,13 +130,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 Intent intent = new Intent(MainActivity.this, AlbumActivity.class);
                 String albumName = ((TextView) view.findViewById(R.id.audio_storage_item_title)).getText().toString();
 
-                // TODO get path from Table
-
                 String[] projection = new String[]{AnchorContract.AlbumEntry.COLUMN_BASE_DIR, AnchorContract.AlbumEntry._ID};
                 String sel = AnchorContract.AlbumEntry.COLUMN_TITLE  + "=?";
                 String[] selArgs = {albumName};
 
-                //get baseDir from table and set to mDirectory; put albumPath in intent
+                //get baseDir from table and set mDirectory; put albumPath in intent
+                //$!
                 Cursor c = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI, projection, sel, selArgs, null);
                 c.moveToFirst();
                 mDirectory =  new File(c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_BASE_DIR)));
@@ -209,38 +206,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
 
-        /*
-        //only display albums of directories which are checked in directories dialog
-        String[] proj = {AnchorContract.DirectoryEntry.COLUMN_DIRECTORY, AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN};
-        String sel = AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN  + " = ?";
-        String[] selArgs = {String.valueOf(1)};
-
-        Cursor c = getContentResolver().query(AnchorContract.DirectoryEntry.CONTENT_URI,
-                proj, sel, selArgs, null);
-
-        ArrayList<String> dirsShown = new ArrayList<String>();
-
-    //    c.moveToFirst();
-
-
-        while (c.moveToNext()) {
-            String dir = c.getString(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY));
-            Integer dirShown = c.getInt(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN));
-            Log.e("dirsShownINT", Integer.toString(dirShown));
-            if (dirShown == 1) {
-                dirsShown.add(dir);
-                Log.e("dirsShown", dir);
-            }
-        }
-
-
-    */
         // Set the projection to retrieve the relevant columns from the table
         String[] projection = {
                 AnchorContract.AlbumEntry._ID,
                 AnchorContract.AlbumEntry.COLUMN_TITLE,
-                AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
+                AnchorContract.AlbumEntry.COLUMN_COVER_PATH,
+                AnchorContract.AlbumEntry.COLUMN_BASE_DIR};
 
+        //Only Add Albums to cursor which are selected to be shown in ListView
         String selection = AnchorContract.AlbumEntry.COLUMN_ALBUM_SHOWN+ " = ?";
         String[] selectionArgs = new String[]{String.valueOf(1)};
 
@@ -284,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         showChangeDirectorySelector();
                     } else {
                         mDirectory = new File(mPrefDirectory);
+                        //$$$TODO change somehow
                         updateAlbumTable();
                     }
                 }
@@ -377,18 +351,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         builder.setTitle(R.string.directories);
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_directories, null);
 
-
         mDirsList = dialogView.findViewById(android.R.id.list);
 
-
         Cursor c = getDirectories();
-
         mDirsAdapter = new DirectoriesCursorAdapter(this, c);
-
-
         mDirsList.setAdapter(mDirsAdapter);
 
-        //$$$  empty view won't work....
+        //$$$  TODO empty view won't work....
   /*
         TextView mEmptyTVDir = findViewById(android.R.id.empty);
         mDirsList.setEmptyView(mEmptyTVDir);
@@ -459,15 +428,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             {
                 Button btn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
                 if (btn.getText() == getString(R.string.dialog_msg_ok)) {
-                    //$$foo
                     //TODO put in method
                     Cursor c = getDirectories();
-           //         c.moveToFirst();
                     while (c.moveToNext()) {
                         String dir = c.getString(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY));
                         Integer dirShown = c.getInt(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN));
                         ///TODO check for duplicate entries???
-                        ///TODO Update Album Column "album_shown"
 
                         File directory = new File(dir);
                         setDirectory(directory);
@@ -505,11 +471,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
     public void removeDir(View v) {
+        //TODO Change confirmation dialogue
         View mDirectoryItem = (View) v.getParent();
         final TextView mDirTV = mDirectoryItem.findViewById(R.id.dir_textview);
-
-    //    ListView lv = (ListView) mDirectoryItem.getParent();
-   //     int position = lv.getPositionForView(v);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_change_dir);
@@ -518,7 +482,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 // User clicked the "Ok" button, so remove the directory.
                 String sel = AnchorContract.DirectoryEntry.COLUMN_DIRECTORY + "=?";
                 String[] selArgs = {mDirTV.getText().toString()};
+
+                removeDataOfDeletedDirs(mDirTV.getText().toString());
+
                 getContentResolver().delete(AnchorContract.DirectoryEntry.CONTENT_URI, sel, selArgs);
+
 
                 Toast.makeText(MainActivity.this, "" + mDirTV.getText() + "  removed" , Toast.LENGTH_SHORT).show();
 
@@ -555,6 +523,68 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     }
 
+    public void removeDataOfDeletedDirs(String dir) {
+
+        //get albums of deleted directory
+        String[] projection = new String[] {AnchorContract.AlbumEntry._ID};
+
+        String sel = AnchorContract.AlbumEntry.COLUMN_BASE_DIR + "=?";
+        String[] selArgs = {dir};
+
+        Cursor c = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI, projection, sel, selArgs, null);
+
+        List<Integer> albumsToDelete = new ArrayList<Integer>();
+
+
+        while (c.moveToNext()) {
+           Integer ID =  c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
+           albumsToDelete.add(ID);
+           getContentResolver().delete(AnchorContract.AlbumEntry.CONTENT_URI, AnchorContract.AlbumEntry._ID + "=?", new String[] {ID.toString()});
+           Log.e("AlbumToDelete", ID.toString());
+        }
+        c.close();
+
+
+        List<Integer> audioFilesToDelete = new ArrayList<Integer>();
+
+
+        for (Integer albumID : albumsToDelete) {
+            projection = new String[]{AnchorContract.AudioEntry._ID};
+            sel = AnchorContract.AudioEntry.COLUMN_ALBUM + " =? ";
+            selArgs = new String[]{albumID.toString()};
+            c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, null);
+            while (c.moveToNext()) {
+                Integer ID = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
+                audioFilesToDelete.add(ID);
+                getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, AnchorContract.AudioEntry._ID + "=?", new String[] {ID.toString()});
+                Log.e("AudioFileToDelete", ID.toString());
+            }
+            c.close();
+
+        }
+
+        for (Integer audioFileID : audioFilesToDelete) {
+            projection = new String[] {AnchorContract.BookmarkEntry._ID};
+            sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + " =? ";
+            selArgs = new String[] {audioFileID.toString()};
+            c = getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, projection, sel, selArgs, null);
+            if (c != null) {
+                while (c.moveToNext()) {
+                    Integer ID = c.getInt(c.getColumnIndex(AnchorContract.BookmarkEntry._ID));
+                    getContentResolver().delete(AnchorContract.BookmarkEntry.CONTENT_URI, AnchorContract.BookmarkEntry._ID + "=?", new String[] {ID.toString()});
+                    Log.e("BookmarkToDelete", ID.toString());
+
+                }
+                c.close();
+
+            }
+
+        }
+
+    }
+
+
+
     public void checkBoxChange(View v) {
         CheckBox cb = (CheckBox) v;
         View mDirectoryItem = (View) v.getParent();
@@ -576,7 +606,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void updateDirectoriesTable(String dirPath, Integer value) {
-       // String[] proj = new String[]{AnchorContract.DirectoryEntry.COLUMN_DIRECTORY};
         String sel = AnchorContract.DirectoryEntry.COLUMN_DIRECTORY + "=?";
         String[] selArgs = {dirPath};
 
@@ -585,7 +614,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         getContentResolver().update(AnchorContract.DirectoryEntry.CONTENT_URI, values, sel, selArgs);
 
-        //mDirsAdapter.notifyDataSetChanged();
 
     }
 
@@ -657,16 +685,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
 
-        //$$multiple directories
         // Store the selected path in the shared preferences to persist when the app is closed
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putString(getString(R.string.preference_filename), directory.getAbsolutePath());
         editor.apply();
 
 
-
-
-
+        //$$TODO delete?
         // Inform the user about the selected path
         String text = "Path: " + directory.getAbsolutePath();
         Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
@@ -706,11 +731,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      * Update the album database table if the list of directories in the selected directory do not
      * match the album table entries
      */
-    //$$ multiple directories
     void updateAlbumTable() {
         // Get all subdirectories of the selected audio storage directory.
-        Log.e("updateAlbumTable", mDirectory.getAbsolutePath());
-
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File dir, String filename) {
                 File sel = new File(dir, filename);
@@ -730,6 +752,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         LinkedHashMap<String, Integer> albumTitles = getAlbumTitles();
 
+        //$$$ TODO change
         // Insert new directories into the database
         for (String dirTitle : directoryList) {
             if (!albumTitles.containsKey(dirTitle)) {
@@ -742,6 +765,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 Log.e("Remove", dirTitle);
             }
         }
+
 
         /*
         // Delete missing directories from the database
@@ -790,8 +814,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AlbumEntry.COLUMN_TITLE, title);
         values.put(AnchorContract.AlbumEntry.COLUMN_BASE_DIR, mDirectory.getAbsolutePath());
-
-        Log.e("insertAlbum", mDirectory.getAbsolutePath());
 
         Uri uri = getContentResolver().insert(AnchorContract.AlbumEntry.CONTENT_URI, values);
         updateAlbumCover(ContentUris.parseId(uri), title);

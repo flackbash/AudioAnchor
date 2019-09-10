@@ -22,8 +22,6 @@ public class AnchorContract {
     static final String PATH_ALBUM_DISTINCT = "album_distinct";
     static final String PATH_BOOKMARK = "bookmark";
     static final String PATH_BOOKMARK_DISTINCT = "bookmark_distinct";
-
-    //$$$
     static final String PATH_DIRECTORY = "directory";
 
 
