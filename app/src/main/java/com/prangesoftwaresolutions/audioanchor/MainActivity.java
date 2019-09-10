@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 c.moveToFirst();
                 mDirectory =  new File(c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_BASE_DIR)));
                 String albumPath = new File(mDirectory + File.separator + albumName).getAbsolutePath();
-                intent.putExtra(getString(R.string.directory_path), albumPath);
+           //     intent.putExtra(getString(R.string.directory_path), albumPath);
 
                 //get AlbumID from Table and put in Intent
                 c.moveToFirst();
@@ -278,7 +278,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     } else {
                         mDirectory = new File(mPrefDirectory);
                         //$$$TODO change somehow
-                        updateAlbumTable();
                         updateDBTables();
                     }
                 }

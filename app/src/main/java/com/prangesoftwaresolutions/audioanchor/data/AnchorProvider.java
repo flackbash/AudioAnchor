@@ -41,8 +41,8 @@ public class AnchorProvider extends ContentProvider {
 
 
 
-    private static final int DIRECTORY = 400;
-    private static final int DIRECTORY_ID = 401;
+    private static final int DIRECTORY = 500;
+    private static final int DIRECTORY_ID = 501;
 
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
