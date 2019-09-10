@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     // Preferences
     private SharedPreferences mSharedPreferences;
     private boolean mKeepDeleted;
+    private boolean mDarkTheme;
 
     // Database variables
     private static final int AUDIO_LOADER = 0;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Utils.setActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mPrefDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
         mKeepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
+        mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
         getLoaderManager().initLoader(AUDIO_LOADER, null, this);
@@ -182,6 +185,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(Loader<Cursor> loader) {
         // This is called when the last Cursor provided to onLoadFinished() is about to be closed.
         mCursorAdapter.swapCursor(null);
+    }
+
+    @Override
+    protected void onRestart() {
+        //recreate if theme has changed
+        boolean currentDarkTheme;
+        currentDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
+        if (mDarkTheme != currentDarkTheme) {
+            recreate();
+        }
+        super.onRestart();
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
@@ -14,6 +16,21 @@ import java.io.FilenameFilter;
  */
 
 class Utils {
+
+    //call in onCreate before setContentView and super.onCreate to apply theme
+    static void setActivityTheme(Context context)
+    {
+        SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean darkTheme = prefManager.getBoolean(context.getString(R.string.settings_dark_key), Boolean.getBoolean(context.getString(R.string.settings_dark_default)));
+
+        if(darkTheme) {
+            context.setTheme(R.style.AppThemeDark);
+        }
+        else {
+            context.setTheme(R.style.AppTheme);
+        }
+    }
 
     static String getAlbumCompletion(Context context, long albumID, boolean showInPercentage, Resources resources)
     {

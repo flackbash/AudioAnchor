@@ -23,8 +23,7 @@
             android:gravity="center_horizontal"
             android:padding="@dimen/small_margin"
             android:text="@string/title"
-            android:background="@color/colorBackgroundStrong"
-            />
+            android:background="?playActivityHeaderBG" />
         <TextView
             android:id="@+id/play_album_title"
             android:layout_width="match_parent"
@@ -34,7 +33,7 @@
             android:layout_below="@+id/play_audio_file_title"
             android:gravity="center_horizontal"
             android:text="@string/album"
-            android:background="@color/colorBackgroundStrong"
+            android:background="?playActivityHeaderBG"
             />
     </RelativeLayout>
 
