@@ -28,7 +28,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 + AnchorContract.AudioEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + AnchorContract.AudioEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + AnchorContract.AudioEntry.COLUMN_ALBUM + " TEXT NOT NULL, "
-                + AnchorContract.AudioEntry.COLUMN_PATH + " TEXT NOT NULL, "
+                + AnchorContract.AudioEntry.COLUMN_PATH + " TEXT, "
                 + AnchorContract.AudioEntry.COLUMN_TIME + " INTEGER DEFAULT 0, "
                 + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME + " INTEGER DEFAULT 0);";
 

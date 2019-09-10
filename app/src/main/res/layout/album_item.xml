@@ -9,20 +9,34 @@
 
     <ImageView
         android:id="@+id/audio_storage_item_thumbnail"
-        android:layout_width="@dimen/album_item_height"
-        android:layout_height="@dimen/album_item_height"
-        android:src="@drawable/empty_cover_grey_blue"/>
+        android:layout_width="@dimen/album_info_height"
+        android:layout_height="@dimen/album_info_height"
+        android:src="@drawable/empty_cover_grey_blue" />
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
         <TextView
             android:id="@+id/audio_storage_item_title"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/big_font_size"
+            android:layout_height="match_parent"
             android:padding="@dimen/small_margin"
-            android:layout_centerVertical="true"/>
+            android:text="@string/album"
+            android:textSize="@dimen/big_font_size" />
+
+        <TextView
+            android:id="@+id/album_info_time_album"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/small_margin"
+            android:paddingStart="@dimen/small_margin"
+            android:paddingEnd="@dimen/small_margin"
+            android:text="00:00 / 00:00"
+            android:textSize="@dimen/small_font_size"
+            android:layout_below="@id/audio_storage_item_title"/>
+
         <ImageView
             android:id="@+id/album_item_deletable_img"
             android:layout_width="wrap_content"

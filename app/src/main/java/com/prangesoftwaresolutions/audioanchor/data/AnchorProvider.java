@@ -36,6 +36,10 @@ public class AnchorProvider extends ContentProvider {
     private static final int BOOKMARK_ID = 301;
     private static final int BOOKMARK_DISTINCT = 310;
 
+    private static final int AUDIO_ALBUM = 400;
+    private static final int AUDIO_ALBUM_ID = 401;
+
+
 
     private static final int DIRECTORY = 400;
     private static final int DIRECTORY_ID = 401;
@@ -56,6 +60,9 @@ public class AnchorProvider extends ContentProvider {
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK, BOOKMARK);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK + "/#", BOOKMARK_ID);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK_DISTINCT, BOOKMARK_DISTINCT);
+        // URIs for the joined audio and album table
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_AUDIO_ALBUM, AUDIO_ALBUM);
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_AUDIO_ALBUM + "/#", AUDIO_ALBUM_ID);
 
         //$$
         // URIS for the directories table
@@ -100,9 +107,25 @@ public class AnchorProvider extends ContentProvider {
                         null, null, sortOrder);
                 break;
             case BOOKMARK:
-                // Query the album table with the given parameters
+                // Query the bookmarks table with the given parameters
                 cursor = database.query(AnchorContract.BookmarkEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
+                break;
+            case AUDIO_ALBUM:
+                StringBuilder projBuilder = new StringBuilder();
+                if (projection != null) {
+                    for (int i=0; i<projection.length;i++) {
+                        if (i > 0) projBuilder.append(", ");
+                        projBuilder.append(projection[i]).append(" AS ").append(projection[i].replace(AnchorContract.AudioEntry.TABLE_NAME, "").replace(".", ""));
+                    }
+                }
+                String projectionString = projBuilder.toString();
+
+                String query = "SELECT " + projectionString + " FROM " + AnchorContract.AudioEntry.TABLE_NAME +
+                                  " INNER JOIN " + AnchorContract.AlbumEntry.TABLE_NAME +
+                                  " ON " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=" + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID +
+                                  " WHERE " + selection + " ORDER BY " + sortOrder;
+                cursor = database.rawQuery(query, selectionArgs);
                 break;
             case AUDIO_DISTINCT:
                 qb = new SQLiteQueryBuilder();
@@ -150,6 +173,27 @@ public class AnchorProvider extends ContentProvider {
                 cursor = database.query(AnchorContract.BookmarkEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
+            case AUDIO_ALBUM_ID:
+                // Query a single row of the joined Audio and Album table given by the Audio ID in the URI
+                selection = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+
+                projBuilder = new StringBuilder();
+                if (projection != null) {
+                    for (int i=0; i<projection.length;i++) {
+                        if (i > 0) projBuilder.append(", ");
+                        projBuilder.append(projection[i]).append(" AS ").append(projection[i].replace(AnchorContract.AudioEntry.TABLE_NAME + ".", "").replace(".", ""));
+                    }
+                }
+                projectionString = projBuilder.toString();
+
+                query = "SELECT " + projectionString + " FROM " + AnchorContract.AudioEntry.TABLE_NAME +
+                        " INNER JOIN " + AnchorContract.AlbumEntry.TABLE_NAME +
+                        " ON " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "="  + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID +
+                        " WHERE " + selection + " ORDER BY " + sortOrder;
+
+                cursor = database.rawQuery(query, selectionArgs);
+                break;
             case DIRECTORY:
                 cursor = database.query(AnchorContract.DirectoryEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
@@ -178,11 +222,15 @@ public class AnchorProvider extends ContentProvider {
                 return AnchorContract.AlbumEntry.CONTENT_LIST_TYPE;
             case BOOKMARK:
                 return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
+            case AUDIO_ALBUM:
+                return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
             case AUDIO_ID:
                 return AnchorContract.AudioEntry.CONTENT_ITEM_TYPE;
             case ALBUM_ID:
                 return AnchorContract.AlbumEntry.CONTENT_ITEM_TYPE;
             case BOOKMARK_ID:
+                return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
+            case AUDIO_ALBUM_ID:
                 return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
             case DIRECTORY:
                 return AnchorContract.DirectoryEntry.CONTENT_LIST_TYPE;
@@ -223,6 +271,9 @@ public class AnchorProvider extends ContentProvider {
 
         // Get writable database
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // dirty hack since older tables where created with COLUMN_PATH not null
+        values.put(AnchorContract.AudioEntry.COLUMN_PATH, "");
 
         long id = db.insert(AnchorContract.AudioEntry.TABLE_NAME, null, values);
 
@@ -424,6 +475,7 @@ public class AnchorProvider extends ContentProvider {
         // given URI has changed
         if (rowsUpdated != 0) {
             getContext().getContentResolver().notifyChange(uri, null);
+            getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
         }
 
         return rowsUpdated;
@@ -527,13 +579,6 @@ public class AnchorProvider extends ContentProvider {
         // Check whether the album will be updated and that the new title is not null
         if (values.containsKey(AnchorContract.AudioEntry.COLUMN_ALBUM)) {
             String val = values.getAsString(AnchorContract.AudioEntry.COLUMN_ALBUM);
-            if (val == null) {
-                return false;
-            }
-        }
-        // Check whether the album will be updated and that the new title is not null
-        if (values.containsKey(AnchorContract.AudioEntry.COLUMN_PATH)) {
-            String val = values.getAsString(AnchorContract.AudioEntry.COLUMN_PATH);
             if (val == null) {
                 return false;
             }

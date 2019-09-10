@@ -23,6 +23,7 @@ public class AnchorContract {
     static final String PATH_BOOKMARK = "bookmark";
     static final String PATH_BOOKMARK_DISTINCT = "bookmark_distinct";
     static final String PATH_DIRECTORY = "directory";
+    static final String PATH_AUDIO_ALBUM = "audio_album";
 
 
     // Class for the Audio File Table
@@ -30,6 +31,7 @@ public class AnchorContract {
         // Content URI for the audio table
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_AUDIO_FILES);
         public static final Uri CONTENT_URI_DISTINCT = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_AUDIO_FILES_DISTINCT);
+        public static final Uri CONTENT_URI_AUDIO_ALBUM = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_AUDIO_ALBUM);
 
         // The MIME type of the CONTENT_URI for a list of audios.
         static final String CONTENT_LIST_TYPE =

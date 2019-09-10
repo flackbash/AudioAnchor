@@ -1,16 +1,43 @@
 package com.prangesoftwaresolutions.audioanchor;
 
+import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 public class SettingsActivity extends AppCompatActivity {
 
+    private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
+    private SharedPreferences mPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Utils.setActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        if(mPrefListener == null) {
+            mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+                @Override
+                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                    if (key.equals(getString(R.string.settings_dark_key))) {
+                        recreate();
+                    }
+                }
+            };
+        }
+
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPreferences.registerOnSharedPreferenceChangeListener(mPrefListener);
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        mPreferences.unregisterOnSharedPreferenceChangeListener(mPrefListener);
     }
 
     public static class AnchorPreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
@@ -26,6 +53,5 @@ public class SettingsActivity extends AppCompatActivity {
             preference.setSummary(stringValue);
             return true;
         }
-
     }
 }

@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -61,12 +60,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     private MediaPlayer mMediaPlayer;
 
-    //MediaSession
+    // MediaSession
     private MediaSessionManager mediaSessionManager;
     private MediaSessionCompat mediaSession;
     private MediaControllerCompat.TransportControls transportControls;
 
-    //AudioPlayer notification IDs
+    // Metadata Retriever
+    MediaMetadataRetriever mMetadataRetriever;
+
+    // AudioPlayer notification IDs
     private static final int NOTIFICATION_ID = 101;
     private static final String CHANNEL_ID = "com.prangesoftwaresolutions.audioanchor.NOTIFICATION_CHANNEL";
 
@@ -96,8 +98,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // Autoplay flag
     private boolean mAutoplay;
 
-    // Flag for fetching images from metadata
-    private boolean mCoverImagesFromMetadata;
+    // Settings flags
+    private boolean mCoverFromMetadata;
+    private boolean mTitleFromMetadata;
 
     /**
      * Service lifecycle methods
@@ -111,11 +114,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void onCreate() {
         super.onCreate();
         mBroadcaster = LocalBroadcastManager.getInstance(this);
+        mMetadataRetriever = new MediaMetadataRetriever();
 
         // Set up the shared preferences.
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mAutoplay = sharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
-        mCoverImagesFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
+        mCoverFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
+        mTitleFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
 
         // Perform one-time setup procedures
         // Manage incoming phone calls during playback.
@@ -485,8 +490,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void updateMetaData() {
-        Bitmap albumArt = BitmapFactory.decodeResource(getResources(),
-                R.drawable.empty_cover_grey_blue); //replace with medias albumArt
+        Bitmap albumArt = getNotificationImage(150);
         // Update the current metadata
         mediaSession.setMetadata(new MediaMetadataCompat.Builder()
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
@@ -515,6 +519,30 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
+    private Bitmap getNotificationImage(int size) {
+        Bitmap notificationCover;
+
+        if(mCoverFromMetadata){
+            mMetadataRetriever.setDataSource(activeAudio.getPath());
+            byte [] coverData = mMetadataRetriever.getEmbeddedPicture();
+
+            if (coverData != null) {
+                notificationCover = BitmapUtils.decodeSampledBitmap(coverData, size, size);
+            } else if (activeAudio.getCoverPath() != null){
+                notificationCover = BitmapUtils.decodeSampledBitmap(activeAudio.getCoverPath(),size, size);
+            } else {
+                notificationCover = BitmapUtils.decodeSampledBitmap(getResources(), R.drawable.empty_cover_grey_blue, size, size);
+            }
+        } else {
+            if (activeAudio.getCoverPath() != null){
+                notificationCover = BitmapUtils.decodeSampledBitmap(activeAudio.getCoverPath(),size, size);
+            } else {
+                notificationCover = BitmapUtils.decodeSampledBitmap(getResources(), R.drawable.empty_cover_grey_blue, size, size);
+            }
+        }
+        return notificationCover;
+    }
+
     private void buildNotification() {
         createNotificationChannel();
 
@@ -533,28 +561,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             title = "play";
         }
 
-        Bitmap notificationCover;
+        Bitmap notificationCover = getNotificationImage(200);
 
-        if(mCoverImagesFromMetadata){
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            mmr.setDataSource(activeAudio.getPath());
-            byte [] coverData = mmr.getEmbeddedPicture();
-
-            if (coverData != null) {
-                notificationCover = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
-            } else if (activeAudio.getCoverPath() != null){
-                notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
-            } else {
-                notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
-            }
-        } else {
-            if (activeAudio.getCoverPath() != null){
-                notificationCover = BitmapFactory.decodeFile(activeAudio.getCoverPath());
-            } else {
-                notificationCover = BitmapFactory.decodeResource(getResources(), R.drawable.empty_cover_grey_blue);
-            }
+        String audioTitle = "";
+        if (mTitleFromMetadata) {
+            mMetadataRetriever.setDataSource(activeAudio.getPath());
+            audioTitle = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         }
-
+        if (audioTitle == null || audioTitle.isEmpty()) {
+            audioTitle = activeAudio.getTitle();
+        }
 
         Intent startActivityIntent = new Intent(this, PlayActivity.class);
         startActivityIntent.setData(ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, activeAudio.getId()));
@@ -579,7 +595,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .setSmallIcon(R.drawable.ic_notification_new)
                 // Set Notification content information
                 .setContentText(activeAudio.getAlbumTitle())
-                .setContentTitle(activeAudio.getTitle())
+                .setContentTitle(audioTitle)
                 // Set the intent for the activity that is launched on click
                 .setContentIntent(launchIntent)
                 // Set the visibility for the lock screen

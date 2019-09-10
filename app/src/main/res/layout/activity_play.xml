@@ -8,13 +8,13 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3">
+        android:layout_weight="5">
         <ImageView
             android:id="@+id/play_cover"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:src="@drawable/empty_cover_grey_blue"
-            android:scaleType="fitStart"/>
+            android:scaleType="fitCenter"/>
         <TextView
             android:id="@+id/play_audio_file_title"
             android:layout_width="match_parent"
@@ -23,8 +23,7 @@
             android:gravity="center_horizontal"
             android:padding="@dimen/small_margin"
             android:text="@string/title"
-            android:background="@color/colorBackgroundStrong"
-            />
+            android:background="?playActivityHeaderBG" />
         <TextView
             android:id="@+id/play_album_title"
             android:layout_width="match_parent"
@@ -34,16 +33,17 @@
             android:layout_below="@+id/play_audio_file_title"
             android:gravity="center_horizontal"
             android:text="@string/album"
-            android:background="@color/colorBackgroundStrong"
+            android:background="?playActivityHeaderBG"
             />
     </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:orientation="vertical"
-        android:paddingBottom="@dimen/small_margin">
+        android:paddingBottom="@dimen/small_margin"
+        android:paddingTop="@dimen/large_margin">
 
         <RelativeLayout
             android:id="@+id/play_controls_layout"

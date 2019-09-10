@@ -2,15 +2,12 @@ package com.prangesoftwaresolutions.audioanchor;
 
 import android.app.LoaderManager;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
@@ -29,14 +26,13 @@ import android.widget.Toast;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.util.LinkedHashMap;
 
 public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
     // The album uri and file
     private long mAlbumId;
-    private File mDirectory;
+    private String mAlbumName;
+    private String mDirectory;
 
     // Database variables
     private static final int ALBUM_LOADER = 0;
@@ -50,18 +46,17 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     // Settings variables
     boolean mProgressInPercent;
-    private boolean mKeepDeleted;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Utils.setActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album);
 
         // Get the uri of the recipe sent via the intent
         mAlbumId = getIntent().getLongExtra(getString(R.string.album_id), -1);
-        Log.e("ALbumID", Long.toString(mAlbumId));
-        mDirectory = new File(getIntent().getStringExtra(getString(R.string.directory_path)));
+        mAlbumName = getIntent().getStringExtra(getString(R.string.album_name));
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
         getLoaderManager().initLoader(ALBUM_LOADER, null, this);
@@ -71,7 +66,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         String prefKey = getString(R.string.settings_progress_percentage_key);
         String prefDefault = getString(R.string.settings_progress_percentage_default);
         mProgressInPercent = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
-        mKeepDeleted = pref.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
+
+        mDirectory = pref.getString(getString(R.string.preference_filename), null);
 
         // Initialize the cursor adapter
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
@@ -93,10 +89,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
-                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, rowId);
+                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, rowId);
 
                 // Check if the audio file exists
-                AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri);
+                AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri, mDirectory);
                 if (!(new File(audio.getPath())).exists()) {
                     Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_LONG).show();
                     return;
@@ -105,7 +101,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 // Open the PlayActivity for the clicked audio file
                 Intent intent = new Intent(AlbumActivity.this, PlayActivity.class);
                 intent.setData(uri);
-                intent.putExtra("albumId", (int)mAlbumId);
                 startActivity( intent );
             }
         });
@@ -116,7 +111,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, l);
 
                 // Don't allow delete action if the audio file still exists
-                AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri);
+                AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri, mDirectory);
                 if ((new File(audio.getPath())).exists()) {
                     return false;
                 }
@@ -127,26 +122,25 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         });
 
         scrollToNotCompletedAudio(listView);
-
-        updateAudioFileTable();
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String[] projection = {
-                AnchorContract.AudioEntry._ID,
-                AnchorContract.AudioEntry.COLUMN_TITLE,
-                AnchorContract.AudioEntry.COLUMN_ALBUM,
-                AnchorContract.AudioEntry.COLUMN_PATH,
-                AnchorContract.AudioEntry.COLUMN_TIME,
-                AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME,
+                AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_TITLE,
+                AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_COVER_PATH
         };
 
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+        String sel = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};
-        String sortOrder = "CAST(" + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
+        String sortOrder = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
 
-        return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
+        return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, projection, sel, selArgs, sortOrder);
     }
 
     @Override
@@ -158,26 +152,19 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Set the text of the empty view
         mEmptyTV.setText(R.string.no_audio_files);
 
-        // Set the slbum info text and image
-        String[] proj = {AnchorContract.AlbumEntry.COLUMN_COVER_PATH, AnchorContract.AlbumEntry.COLUMN_TITLE};
-        String sel = AnchorContract.AlbumEntry._ID + "=?";
-        String[] selArgs = {Long.toString(mAlbumId)};
-        Cursor c = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI, proj, sel, selArgs, null);
-        if (c == null || c.getCount() < 1) {
-            return;
-        }
-        if (c.moveToFirst()) {
-            String albumTitle = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
-            mAlbumInfoTitleTV.setText(albumTitle);
+        if (cursor != null && cursor.getCount() > 0) {
+            if (cursor.moveToFirst()) {
+                // Set album cover
+                String coverPath = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+                coverPath = mDirectory + File.separator + coverPath;
+                int reqSize = getResources().getDimensionPixelSize(R.dimen.album_info_height);
+                BitmapUtils.setImage(mAlbumInfoCoverIV, coverPath, reqSize);
 
-            String coverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-            int reqSize = getResources().getDimensionPixelSize(R.dimen.album_info_height);
-            BitmapUtils.setImage(mAlbumInfoCoverIV, coverPath, reqSize);
+                // Set the album info time
+                setCompletedAlbumTime();
+            }
         }
-        c.close();
-
-        // Set the album info time
-        setCompletedAlbumTime();
+        mAlbumInfoTitleTV.setText(mAlbumName);
 
         // Swap the new cursor in. The framework will take care of closing the old cursor
         mCursorAdapter.swapCursor(cursor);
@@ -200,165 +187,24 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         return(super.onOptionsItemSelected(item));
     }
 
-    /*
-     * Update the album database table if the list of directories in the selected directory do not
-     * match the album table entries
-     */
-    void updateAudioFileTable() {
-        // Get all audio files in the album.
-        FilenameFilter filter = new FilenameFilter() {
-            public boolean accept(File dir, String filename) {
-                File sel = new File(dir, filename);
-                // Only list files that are readable and audio files
-                return sel.getName().endsWith(".mp3") || sel.getName().endsWith(".wma") || sel.getName().endsWith(".ogg") || sel.getName().endsWith(".wav") || sel.getName().endsWith(".flac") || sel.getName().endsWith(".m4a") || sel.getName().endsWith(".m4b");
-            }
-        };
-
-        // Get all files in the album directory.
-        String[] fileList;
-        if (mDirectory != null) {
-            fileList = mDirectory.list(filter);
-        } else {
-            fileList = new String[]{};
-        }
-
-        if (fileList == null) return;
-
-        LinkedHashMap<String, Integer> audioTitles = getAudioFileTitles();
-
-        // Insert new files into the database
-        boolean success = true;
-        for (String file : fileList) {
-            if (!audioTitles.containsKey(file)) {
-                success = insertAudioFile(file);
-                if (!success) break;
-            } else {
-                audioTitles.remove(file);
-            }
-        }
-
-        if (!success) {
-            Toast.makeText(getApplicationContext(), R.string.audio_file_error, Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        // Delete missing audio files from the database
-        if (!mKeepDeleted) {
-            for (String title: audioTitles.keySet()) {
-                Integer id = audioTitles.get(title);
-                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
-                getContentResolver().delete(uri, null, null);
-            }
-        }
-    }
-
-    /*
-     * Insert a new row in the album database table
-     */
-    private boolean insertAudioFile(String title) {
-        ContentValues values = new ContentValues();
-        values.put(AnchorContract.AudioEntry.COLUMN_TITLE, title);
-        String path = Utils.getPath(this, mDirectory.getName(), title);
-
-        values.put(AnchorContract.AudioEntry.COLUMN_PATH, path);
-        values.put(AnchorContract.AudioEntry.COLUMN_ALBUM, mAlbumId);
-
-        // Retrieve audio duration from Metadata.
-        MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-        try {
-            metaRetriever.setDataSource(path);
-            String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(duration));
-            metaRetriever.release();
-        } catch (java.lang.RuntimeException e) {
-            return false;
-        }
-
-        // Insert the row into the database table
-        getContentResolver().insert(AnchorContract.AudioEntry.CONTENT_URI, values);
-        return true;
-    }
-
-    /**
-     * Retrieve all audio file titles from the database
-     */
-    private LinkedHashMap<String, Integer> getAudioFileTitles() {
-        SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
-        String[] columns = new String[]{AnchorContract.AudioEntry._ID, AnchorContract.AudioEntry.COLUMN_TITLE};
-
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(mAlbumId)};
-
-        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
-                columns, sel, selArgs, null, null, null);
-
-        LinkedHashMap<String, Integer> titles = new LinkedHashMap<>();
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return titles;
-        }
-
-        // Loop through the database rows and add the audio file titles to the hashmap
-        while (c.moveToNext()) {
-            String title = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
-            int id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-            titles.put(title, id);
-        }
-
-        c.close();
-        return titles;
-    }
-
     private void setCompletedAlbumTime() {
-        SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
-        String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(mAlbumId)};
-
-        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
-                columns, sel, selArgs, null, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return;
-        }
-
-        // Loop through the database rows and sum up the audio durations and completed time
-        int sumDuration = 0;
-        int sumCompletedTime = 0;
-        while (c.moveToNext()) {
-            sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-            sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-        }
-
-        c.close();
-
-        // Set the text for the album time TextView
-        String timeStr;
-        if (!mProgressInPercent) {
-            String durationStr = Utils.formatTime(sumDuration, sumDuration);
-            String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
-            timeStr = getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
-        } else {
-            int percent = Math.round(((float)sumCompletedTime / sumDuration) * 100);
-            timeStr = getResources().getString(R.string.time_completed_percent, percent);
-        }
+        String timeStr = Utils.getAlbumCompletion(this, mAlbumId, mProgressInPercent, getResources());
         mAlbumInfoTimeTV.setText(timeStr);
     }
 
     private void scrollToNotCompletedAudio(ListView listView) {
-        SQLiteDatabase db = openOrCreateDatabase("audio_anchor.db", MODE_PRIVATE, null);
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbumId)};
 
-        Cursor c = db.query(AnchorContract.AudioEntry.TABLE_NAME,
-                columns, sel, selArgs, null, null, null);
+        Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                columns, sel, selArgs, null, null);
 
         // Bail early if the cursor is null
         if (c == null) {
+            return;
+        } else if (c.getCount() < 1) {
+            c.close();
             return;
         }
 

@@ -4,6 +4,7 @@ package com.prangesoftwaresolutions.audioanchor;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,16 +18,24 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import java.io.File;
 
 /**
- * CursorAdapter for the ListView in the Main Activity
+ * CursorAdapter for the ListView in the Album Activity
  */
 
 public class AudioFileCursorAdapter extends CursorAdapter {
 
     private Context mContext;
+    private String mDirectory;
+    private boolean mTitleFromMetadata;
+    private MediaMetadataRetriever mMetadataRetriever;
 
     AudioFileCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
         mContext = context;
+        // Get the base directory from the shared preferences.
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mDirectory = prefs.getString(mContext.getString(R.string.preference_filename), null);
+        mTitleFromMetadata = prefs.getBoolean(mContext.getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(mContext.getString(R.string.settings_title_from_metadata_default)));
+        mMetadataRetriever = new MediaMetadataRetriever();
     }
 
     @Override
@@ -36,9 +45,22 @@ public class AudioFileCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        // Get the path to the audio file
+        String audioTitle = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
+        String albumTitle = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_TITLE));
+        String filePath = mDirectory + File.separator + albumTitle + File.separator + audioTitle;
+
         // Get the title of the current audio file and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_file_item_title);
-        String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
+        String title = "";
+        if (mTitleFromMetadata) {
+            mMetadataRetriever.setDataSource(filePath);
+            title = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        }
+        if (title == null || title.isEmpty()) {
+            // Also use the file name if the audio file has no metadata title
+            title = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
+        }
         titleTV.setText(title);
 
         // Get the completed time and full time of the current audio file and set this text to the durationTV
@@ -76,9 +98,8 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         }
 
         // Show the deletable image if the file does not exist anymore
-        String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_PATH));
         ImageView deletableIV = view.findViewById(R.id.audio_file_item_deletable_img);
-        if (!(new File(path)).exists()) {
+        if (!(new File(filePath)).exists()) {
             deletableIV.setImageResource(R.drawable.img_deletable);
         } else {
             deletableIV.setImageResource(android.R.color.transparent);

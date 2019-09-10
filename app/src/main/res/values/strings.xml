@@ -35,7 +35,7 @@
     <string name="settings_keep_deleted_label">Keep progress of deleted files in database</string>
     <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
     <string name="settings_keep_deleted_default" translatable="false">false</string>
-    <string name="settings_cover_from_metadata_label">Get cover image from track metadata</string>
+    <string name="settings_cover_from_metadata_label">Get cover image from metadata</string>
     <string name="settings_cover_from_metadata_key" translatable="false">cover_from_metadata</string>
     <string name="settings_cover_from_metadata_default" translatable="false">false</string>
     <string name="settings_sleep_key" translatable="false">settings_sleep_cat</string>
@@ -50,11 +50,16 @@
     <string name="settings_shake_sensitivity_key" translatable="false">settings_shake_sensitivity</string>
     <string name="settings_shake_sensitivity_default" translatable="false">25</string>
     <string name="settings_shake_sensitivity_max" translatable="false">100</string>
-
+    <string name="settings_title_from_metadata_label">Get track title from metadata</string>
+    <string name="settings_title_from_metadata_key" translatable="false">settings_title_from_metadata</string>
+    <string name="settings_title_from_metadata_default" translatable="false">false</string>
+    <string name="settings_dark_label">Dark theme</string>
+    <string name="settings_dark_key" translatable="false">settings_dark</string>
+    <string name="settings_dark_default" translatable="false">false</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
-    <string name="directory_path" translatable="false">directory_path</string>
+    <string name="album_name" translatable="false">album_name</string>
     <string name="audio_file_uri" translatable="false">audio_file_uri</string>
 
     <!-- Layout Texts -->
@@ -99,5 +104,7 @@
     <string name="dialog_msg_delete_audio">Are you sure you want to delete this audio file from the database?</string>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
 
+    <!-- Others -->
+    <string name="database_filename" translatable="false">audio_anchor.db</string>
 
 </resources>
