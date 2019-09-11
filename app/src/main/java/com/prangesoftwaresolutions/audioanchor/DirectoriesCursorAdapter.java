@@ -53,7 +53,6 @@ public class DirectoriesCursorAdapter extends CursorAdapter {
 
         //show delete button and hide checkbox for directory when removeDirectoryView is set or when directory is empty
         ImageButton mImgBtn = view.findViewById(R.id.dir_del_btn);
-
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File dir, String filename) {
                 File sel = new File(dir, filename);
@@ -61,11 +60,10 @@ public class DirectoriesCursorAdapter extends CursorAdapter {
                 return sel.canRead() && sel.isDirectory();
             }
         };
-
         String[] directoryList;
         directoryList = new File(dir).list(filter);
 
-        if (mRemoveDirView || directoryList.length == 0) {
+        if (directoryList == null || mRemoveDirView || directoryList.length == 0) {
             dirShownCB.setVisibility(View.INVISIBLE);
             mImgBtn.setVisibility(View.VISIBLE);
 
@@ -73,7 +71,6 @@ public class DirectoriesCursorAdapter extends CursorAdapter {
             dirShownCB.setVisibility(View.VISIBLE);
             mImgBtn.setVisibility(View.INVISIBLE);
         }
-
     }
 
 

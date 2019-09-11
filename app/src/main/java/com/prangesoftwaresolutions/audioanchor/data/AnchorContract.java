@@ -12,7 +12,6 @@ import com.prangesoftwaresolutions.audioanchor.BuildConfig;
 
 public class AnchorContract {
 
-    //$$ private Constructor??
     // Content constants
     static final String CONTENT_AUTHORITY = BuildConfig.APPLICATION_ID;
     static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);

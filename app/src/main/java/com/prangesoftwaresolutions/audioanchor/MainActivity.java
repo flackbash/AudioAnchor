@@ -29,8 +29,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.ImageButton;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -45,10 +43,9 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+
 
 // TODO: Option in settings: Show title (from Metadata)
 // TODO: Option in settings: if in autoplay play completed files as well
@@ -97,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_show_directories, null);
 
-
         Utils.setActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -123,38 +119,31 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mEmptyTV = findViewById(R.id.emptyList);
         mListView.setEmptyView(mEmptyTV);
 
-
-
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
                 // Open the AlbumActivity for the clicked album
                 Intent intent = new Intent(MainActivity.this, AlbumActivity.class);
                 String albumName = ((TextView) view.findViewById(R.id.audio_storage_item_title)).getText().toString();
+                intent.putExtra(getString(R.string.album_name), albumName);
 
+                //get baseDir from table
                 String[] projection = new String[]{AnchorContract.AlbumEntry.COLUMN_BASE_DIR, AnchorContract.AlbumEntry._ID};
                 String sel = AnchorContract.AlbumEntry.COLUMN_TITLE  + "=?";
                 String[] selArgs = {albumName};
-
-                //get baseDir from table and set mDirectory; put albumPath in intent
-                //$!
                 Cursor c = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI, projection, sel, selArgs, null);
                 c.moveToFirst();
                 mDirectory =  new File(c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_BASE_DIR)));
-                String albumPath = new File(mDirectory + File.separator + albumName).getAbsolutePath();
-           //     intent.putExtra(getString(R.string.directory_path), albumPath);
 
-                //get AlbumID from Table and put in Intent
-                c.moveToFirst();
-                Integer mAlbumID = c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
-                intent.putExtra(getString(R.string.album_id), Long.valueOf(mAlbumID));
-
-                //set directory in shared preferences
+                //get AlbumID from cursor
+                Integer albumID = c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
+                intent.putExtra(getString(R.string.album_id), Long.valueOf(albumID));
+                c.close();
+                //set directory of album in shared preferences
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
                 editor.putString(getString(R.string.preference_filename), mDirectory.getAbsolutePath());
                 editor.apply();
 
-                intent.putExtra(getString(R.string.album_name), albumName);
                 startActivity(intent);
             }
         });
@@ -165,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, l);
 
                 // Check if the audio file exists
-                String[] proj = new String[]{AnchorContract.AlbumEntry.COLUMN_TITLE};
+                String[] proj = new String[]{AnchorContract.AlbumEntry.COLUMN_TITLE, AnchorContract.AlbumEntry.COLUMN_BASE_DIR};
                 Cursor c = getContentResolver().query(uri, proj, null, null, null);
 
                 if (c == null) return false;
@@ -174,12 +163,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 if (c.moveToNext()) {
                     title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
                 }
+
+                String baseDir = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_BASE_DIR));
                 c.close();
 
                 if (title == null) return false;
 
                 // Do not allow the delete action if the file still exists
-                if ((new File(mDirectory, title)).exists()) {
+
+                if ((new File(baseDir, title)).exists()) {
                     return false;
                 }
 
@@ -197,12 +189,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         } else {
             mListView.setAdapter(mCursorAdapter);
 
-            if (mPrefDirectory == null) {
-                showChangeDirectorySelector();
+            Cursor c = getDirectories();
+            if (c == null || c.getCount() == 0) {
+                showDirectoriesDialog();
+                showAddDirectorySelector();
             } else {
-                mDirectory = new File(mPrefDirectory);
-                // updateDBTables();
+                updateDBTablesForAllDirectories(c);
             }
+
         }
     }
 
@@ -273,12 +267,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 } else {
                     mListView.setAdapter(mCursorAdapter);
 
-                    if (mPrefDirectory == null) {
-                        showChangeDirectorySelector();
+                    Cursor c = getDirectories();
+                    if (c == null || c.getCount() == 0) {
+                        showDirectoriesDialog();
+                        showAddDirectorySelector();
                     } else {
-                        mDirectory = new File(mPrefDirectory);
-                        //$$$TODO change somehow
-                        updateDBTables();
+                        updateDBTablesForAllDirectories(c);
                     }
                 }
                 break;
@@ -306,18 +300,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_choose_directory:
-                // Check if app has the necessary permissions
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                            PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
-                } else {
-                    showChangeDirectorySelector();
-                }
-                return true;
-
             case R.id.menu_show_directories:
                 // Check if app has the necessary permissions
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -329,9 +311,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     showDirectoriesDialog();
                 }
                 return true;
-
-
-                case R.id.menu_export:
+            case R.id.menu_export:
                 // Check if app has the necessary permissions
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
@@ -346,7 +326,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 showImportFileSelector();
                 return true;
             case R.id.menu_synchronize:
-                updateDBTables();
+                Cursor c = getDirectories();
+                updateDBTablesForAllDirectories(c);
                 getLoaderManager().restartLoader(0, null, this);
                 Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
                 return true;
@@ -364,7 +345,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
-    //$$$$
     void showDirectoriesDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -423,7 +403,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public void onClick(View v)
             { showAddDirectorySelector(); }
         });
-
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -448,29 +427,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             {
                 Button btn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
                 if (btn.getText() == getString(R.string.dialog_msg_ok)) {
-                    //TODO put in method
                     Cursor c = getDirectories();
                     while (c.moveToNext()) {
                         String dir = c.getString(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY));
                         Integer dirShown = c.getInt(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN));
-                        ///TODO check for duplicate entries???
-
-                        File directory = new File(dir);
-                        setDirectory(directory);
-
+                        mDirectory  = new File(dir);
+                        updateDBTables();
                         if (dirShown == 1) {
                             updateAlbumShown(1, dir);
                         } else  {
                             updateAlbumShown(0, dir);
                         }
-
                     }
-
                     c.close();
                     alertDialog.dismiss();
 
                 } else {
-
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(R.string.dialog_msg_ok);
                     alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.VISIBLE);
                     alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
@@ -504,12 +476,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 String[] selArgs = {mDirTV.getText().toString()};
 
                 removeDataOfDeletedDirs(mDirTV.getText().toString());
-
                 getContentResolver().delete(AnchorContract.DirectoryEntry.CONTENT_URI, sel, selArgs);
-
-
+                // TODO hardcoded String
                 Toast.makeText(MainActivity.this, "" + mDirTV.getText() + "  removed" , Toast.LENGTH_SHORT).show();
-
 
                 Cursor c = getDirectories();
 
@@ -517,10 +486,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(R.string.dialog_msg_ok);
                     alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.VISIBLE);
                     alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
-
                     DirectoriesCursorAdapter.setDefaultView();
                     mDirsAdapter.notifyDataSetChanged();
-
                 }
 
                 mDirsAdapter.swapCursor(c);
@@ -555,7 +522,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         List<Integer> albumsToDelete = new ArrayList<Integer>();
 
-
         while (c.moveToNext()) {
            Integer ID =  c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
            albumsToDelete.add(ID);
@@ -564,9 +530,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         c.close();
 
-
         List<Integer> audioFilesToDelete = new ArrayList<Integer>();
-
 
         for (Integer albumID : albumsToDelete) {
             projection = new String[]{AnchorContract.AudioEntry._ID};
@@ -577,10 +541,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 Integer ID = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
                 audioFilesToDelete.add(ID);
                 getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, AnchorContract.AudioEntry._ID + "=?", new String[] {ID.toString()});
-                Log.e("AudioFileToDelete", ID.toString());
             }
             c.close();
-
         }
 
         for (Integer audioFileID : audioFilesToDelete) {
@@ -592,15 +554,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 while (c.moveToNext()) {
                     Integer ID = c.getInt(c.getColumnIndex(AnchorContract.BookmarkEntry._ID));
                     getContentResolver().delete(AnchorContract.BookmarkEntry.CONTENT_URI, AnchorContract.BookmarkEntry._ID + "=?", new String[] {ID.toString()});
-                    Log.e("BookmarkToDelete", ID.toString());
-
                 }
                 c.close();
-
             }
-
         }
-
     }
 
 
@@ -680,25 +637,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
              }
         }
 
-
-    private void showChangeDirectorySelector() {
-        // TODO: once the navigation bug is fixed the baseDirectory can be set to mDirectory if it's not null
-        File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-        FileDialog fileDialog = new FileDialog(this, baseDirectory, null);
-        fileDialog.setSelectDirectoryOption(true);
-        fileDialog.addDirectoryListener(new FileDialog.DirectorySelectedListener() {
-            public void directorySelected(File directory) {
-                // Set the storage directory to the selected directory
-                if (mDirectory != null) {
-                    changeDirectoryWithConfirmation(directory);
-                } else {
-                    setDirectory(directory);
-                }
-            }
-        });
-        fileDialog.showDialog();
-    }
-
+ /*
     private void setDirectory(File directory){
         mDirectory = directory;
         updateDBTables();
@@ -711,40 +650,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         editor.apply();
 
 
-        //$$TODO delete?
         // Inform the user about the selected path
         String text = "Path: " + directory.getAbsolutePath();
         Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Show the change directory confirmation dialog and let the user decide whether to change the directory
-     */
-    private void changeDirectoryWithConfirmation(final File directory) {
-        // Create an AlertDialog.Builder and set the message and click listeners
-        // for the positive and negative buttons on the dialog.
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_msg_change_dir);
-        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Ok" button, so change the directory.
-                getContentResolver().delete(AnchorContract.AlbumEntry.CONTENT_URI, null, null);
-                getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, null, null);
-                setDirectory(directory);
+  */
+    //Loops trough directory entries and updates Album Table for every directory
+    private boolean updateDBTablesForAllDirectories(Cursor c) {
+        if (c == null) {
+            return false;
+        } else {
+            while (c.moveToNext()) {
+                mDirectory = new File(c.getString(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY)));
+                updateDBTables();
             }
-        });
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
-            }
-        });
+            c.close();
+        } return true;
 
-        // Create and show the AlertDialog
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
     }
 
     /*
@@ -770,6 +693,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         }
 
+        //$$ TODO get only album titels of current dir
+
         LinkedHashMap<String, Integer> albumTitles = getAlbumTitles();
 
         //$$$ TODO change
@@ -782,13 +707,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 id = albumTitles.get(dirTitle);
                 updateAlbumCover(id, dirTitle);
                 albumTitles.remove(dirTitle);
-                Log.e("Remove", dirTitle);
             }
             updateAudioFileTable(dirTitle, id);
         }
 
 
-        /*
+
         // Delete missing directories from the database
         if(!mKeepDeleted) {
             for (String title: albumTitles.keySet()) {
@@ -802,15 +726,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, sel, selArgs);
             }
         }
-
-         */
     }
 
 
     private void updateAlbumShown(Integer value, String baseDir) {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AlbumEntry.COLUMN_ALBUM_SHOWN, value);
-        String sel = AnchorContract.AlbumEntry.COLUMN_BASE_DIR + " = ?";
+        String sel = AnchorContract.AlbumEntry.COLUMN_BASE_DIR + " = ?"; // + AnchorContract.AlbumEntry.COLUMN_ALBUM_SHOWN + " != ?";
         String[] selArgs = new String[]{baseDir};
         getContentResolver().update(AnchorContract.AlbumEntry.CONTENT_URI, values, sel, selArgs);
     }
@@ -989,8 +911,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     private LinkedHashMap<String, Integer> getAlbumTitles() {
         String[] proj = new String[]{AnchorContract.AlbumEntry._ID, AnchorContract.AlbumEntry.COLUMN_TITLE};
+        String sel = AnchorContract.AlbumEntry.COLUMN_BASE_DIR + "=?";
+        String[] selArgs = new String[]{mDirectory.getAbsolutePath()};
         Cursor c = getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI,
-                proj, null, null, null);
+                proj, sel, selArgs, null);
 
         LinkedHashMap<String, Integer> titles = new LinkedHashMap<>();
 
@@ -1072,7 +996,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void fileSelected(File file) {
                 importDatabase(file);
-                updateDBTables();
+                Cursor c = getDirectories();
+                updateDBTablesForAllDirectories(c);
             }
         });
         fileDialog.showDialog();
@@ -1189,7 +1114,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 AnchorContract.DirectoryEntry._ID,
                 AnchorContract.DirectoryEntry.COLUMN_DIRECTORY,
                 AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN};
-
         String sortOrder = AnchorContract.DirectoryEntry._ID + " ASC";
         return getContentResolver().query(AnchorContract.DirectoryEntry.CONTENT_URI, projection, null, null, sortOrder);
     }

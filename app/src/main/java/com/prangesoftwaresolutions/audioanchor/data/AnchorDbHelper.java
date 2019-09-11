@@ -73,18 +73,17 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
 
 
         // Create a String that contains the SQL statement to create the directories table
-        String SQL_CREATE_DIRECTORIES_TABLE = "CREATE TABLE " + AnchorContract.DirectoryEntry.TABLE_NAME + " ("
+        String SQL_CREATE_DIRECTORIES_TABLE = "CREATE TABLE IF NOT EXISTS " + AnchorContract.DirectoryEntry.TABLE_NAME + " ("
                 + AnchorContract.DirectoryEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + AnchorContract.DirectoryEntry.COLUMN_DIRECTORY + " TEXT NOT NULL, "
                 + AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN + " INTEGER);";
         db.execSQL(SQL_CREATE_DIRECTORIES_TABLE);
 
-/*
+        // String to Add Column to Album Tabel that contains the baseDirectory information
         String SQL_ADD_COLUMN_TO_ALBUM_TABLE = "ALTER TABLE " + AnchorContract.AlbumEntry.TABLE_NAME +
-                " ADD COLUMN " + AnchorContract.AlbumEntry.COLUMN_BASE_DIR_ID + " INTEGER;";
+                " ADD COLUMN " + AnchorContract.AlbumEntry.COLUMN_BASE_DIR + " TEXT;";
 
         db.execSQL(SQL_ADD_COLUMN_TO_ALBUM_TABLE);
-*/
     }
 
     static AnchorDbHelper getInstance(Context context) {
