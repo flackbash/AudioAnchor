@@ -35,7 +35,6 @@ public class DirectoriesCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-
         TextView dirTV = view.findViewById(R.id.dir_textview);
         String dir = cursor.getString(cursor.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY));
         dirTV.setText(dir);

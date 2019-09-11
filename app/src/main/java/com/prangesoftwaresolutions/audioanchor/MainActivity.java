@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -72,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TextView mEmptyTV;
     ListView mListView;
 
+
+
     // Permission request
     private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
@@ -83,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     //$$ TODO change name to "mDirsListView
     ListView mDirsList;
 
-//    TextView mEmptyTVDir;
+
 
 
     // TODO change name to "mdirectoriesDialog" or something
@@ -353,16 +356,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mDirsList = dialogView.findViewById(android.R.id.list);
 
+
         Cursor c = getDirectories();
         mDirsAdapter = new DirectoriesCursorAdapter(this, c);
         mDirsList.setAdapter(mDirsAdapter);
 
-        //$$$  TODO empty view won't work....
-  /*
-        TextView mEmptyTVDir = findViewById(android.R.id.empty);
+        //set empty View for directories list
+        TextView mEmptyTVDir = dialogView.findViewById(android.R.id.empty);
         mDirsList.setEmptyView(mEmptyTVDir);
 
-    */
+
+
         mDirsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -401,20 +405,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         {
             @Override
             public void onClick(View v)
-            { showAddDirectorySelector(); }
+            { showAddDirectorySelector();}
         });
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                //$$ hardcoded String!!!
-                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText("Done");
-                alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
-                alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
+                //only show option to remove directories when there actually are directories to remove
+                if (mDirsAdapter.getCursor().getCount() != 0) {
+                    //$$ hardcoded String!!!
+                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText("Done");
+                    alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
+                    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
 
-                DirectoriesCursorAdapter.setRemoveView();
-                mDirsAdapter.notifyDataSetChanged();
+                    DirectoriesCursorAdapter.setRemoveView();
+                    mDirsAdapter.notifyDataSetChanged();
+                }
 
             }
         });
@@ -427,7 +434,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             {
                 Button btn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
                 if (btn.getText() == getString(R.string.dialog_msg_ok)) {
-                    Cursor c = getDirectories();
+                    Cursor c = mDirsAdapter.getCursor();
+                    c.moveToPosition(-1);
                     while (c.moveToNext()) {
                         String dir = c.getString(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIRECTORY));
                         Integer dirShown = c.getInt(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_DIR_SHOWN));
@@ -454,16 +462,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         });
     }
 
-    public void listItemClick(View v) {
 
-  //      TextView mDirTV = (TextView) v.findViewById(R.id.dir_textview);
-  //      Toast.makeText(MainActivity.this, "" + mDirTV.getText(), Toast.LENGTH_SHORT).show();
+    public void listItemClick(View v) {
     }
 
 
 
     public void removeDir(View v) {
-        //TODO Change confirmation dialogue
         View mDirectoryItem = (View) v.getParent();
         final TextView mDirTV = mDirectoryItem.findViewById(R.id.dir_textview);
 
