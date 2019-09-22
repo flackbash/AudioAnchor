@@ -10,7 +10,10 @@ import android.util.Log;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -37,7 +40,7 @@ public class FileDialog {
     private final Activity activity;
     private boolean selectDirectoryOption;
     private String fileEndsWith;
-
+    private HashMap<String, HashSet<String>> childDirectories = new HashMap<>();
 
     FileDialog(Activity activity, File initialPath, String fileEndsWith) {
         this.activity = activity;
@@ -125,9 +128,9 @@ public class FileDialog {
 
     private void loadFileList(File path) {
         this.currentPath = path;
-        List<String> r = new ArrayList<>();
+        List<String> fileList = new ArrayList<>();
         if (path.exists()) {
-            if (path.getParentFile() != null) r.add(PARENT_DIR);
+            if (path.getParentFile() != null) fileList.add(PARENT_DIR);
             FilenameFilter filter = new FilenameFilter() {
                 public boolean accept(File dir, String filename) {
                     File sel = new File(dir, filename);
@@ -139,17 +142,36 @@ public class FileDialog {
                     }
                 }
             };
-            String[] fileList1 = path.list(filter);
-            // TODO: This should not probably not happen. Right now not all directories are always shown
-            if (fileList1 != null) {
-                Collections.addAll(r, fileList1);
+            String[] fileListTmp = path.list(filter);
+            String currPathName = path.getAbsolutePath();
+            // Add those directories that can not be displayed because root privileges are required
+            if (childDirectories.containsKey(currPathName)) {
+                for (String childDir : childDirectories.get(currPathName)) {
+                    if ((fileListTmp == null || !Arrays.asList(fileListTmp).contains(childDir)) && new File(currPathName, childDir).exists()) {
+                        fileList.add(childDir);
+                        Log.i("FileDialog.java", "Directory " + currPathName + " is not readable. Manually adding directory " + childDir);
+                    }
+                }
+            }
+            if (fileListTmp != null) {
+                Collections.addAll(fileList, fileListTmp);
             }
         }
-        fileList = r.toArray(new String[]{});
+        this.fileList = fileList.toArray(new String[]{});
     }
 
     private File getChosenFile(String fileChosen) {
-        if (fileChosen.equals(PARENT_DIR)) return currentPath.getParentFile();
+        if (fileChosen.equals(PARENT_DIR)) {
+            File parentFile = currentPath.getParentFile();
+            // Save the child directories in a hash map. This is necessary, because root privileges
+            // are required to read certain directories. This way, all directories can still be shown
+            if (!childDirectories.containsKey(parentFile.getAbsolutePath())) {
+                HashSet<String> childDirs = new HashSet<>();
+                childDirectories.put(parentFile.getAbsolutePath(), childDirs);
+            }
+            childDirectories.get(parentFile.getAbsolutePath()).add(currentPath.getName());
+            return parentFile;
+        }
         else return new File(currentPath, fileChosen);
     }
 
