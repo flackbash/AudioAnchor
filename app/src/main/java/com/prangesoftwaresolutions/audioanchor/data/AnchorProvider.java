@@ -332,10 +332,12 @@ public class AnchorProvider extends ContentProvider {
             case AUDIO:
                 // Delete all rows that match the selection and selection args
                 getContext().getContentResolver().notifyChange(uri, null);
+                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
             case ALBUM:
                 // Delete all rows that match the selection and selection args
                 getContext().getContentResolver().notifyChange(uri, null);
+                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
             case BOOKMARK:
                 // Delete all rows that match the selection and selection args
@@ -346,11 +348,13 @@ public class AnchorProvider extends ContentProvider {
                 selection = AnchorContract.AudioEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 getContext().getContentResolver().notifyChange(uri, null);
+                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
             case ALBUM_ID:
                 // Delete a single row given by the ID in the URI
                 selection = AnchorContract.AlbumEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 getContext().getContentResolver().notifyChange(uri, null);
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
             case BOOKMARK_ID:

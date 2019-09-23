@@ -107,7 +107,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, l);
+                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, l);
+                Uri deleteUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, l);
 
                 // Don't allow delete action if the audio file still exists
                 AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri, mDirectory);
@@ -115,7 +116,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     return false;
                 }
 
-                deleteAudioWithConfirmation(uri);
+                deleteAudioWithConfirmation(deleteUri);
                 return true;
             }
         });
