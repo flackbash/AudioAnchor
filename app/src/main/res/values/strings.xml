@@ -56,6 +56,9 @@
     <string name="settings_dark_label">Dark theme</string>
     <string name="settings_dark_key" translatable="false">settings_dark</string>
     <string name="settings_dark_default" translatable="false">false</string>
+    <string name="settings_autorewind_label">Autorewind time</string>
+    <string name="settings_autorewind_key" translatable="false">autorewind</string>
+    <string name="settings_autorewind_default" translatable="false">0</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
