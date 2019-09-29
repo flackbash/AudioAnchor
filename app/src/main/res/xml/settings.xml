@@ -24,6 +24,14 @@
         android:defaultValue="@string/settings_dark_default"
         android:key="@string/settings_dark_key"
         android:title="@string/settings_dark_label"/>
+    <EditTextPreference
+        android:defaultValue="@string/settings_autorewind_default"
+        android:inputType="number"
+        android:key="@string/settings_autorewind_key"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:maxLength="2"
+        android:title="@string/settings_autorewind_label" />
     <PreferenceCategory
         android:key="@string/settings_sleep_key"
         android:title="@string/settings_sleep_label">

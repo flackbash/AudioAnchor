@@ -101,6 +101,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // Settings flags
     private boolean mCoverFromMetadata;
     private boolean mTitleFromMetadata;
+    private int mAutorewind;
 
     /**
      * Service lifecycle methods
@@ -121,6 +122,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mAutoplay = sharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
         mCoverFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
         mTitleFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
+        mAutorewind = Integer.valueOf(sharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
 
         // Perform one-time setup procedures
         // Manage incoming phone calls during playback.
@@ -708,7 +710,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     void play() {
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying() && (mAutoplay || getCurrentPosition() != getDuration())) {
-            mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition());
+            mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition() - mAutorewind * 1000);
             mMediaPlayer.start();
             sendPlayStatusResult(MSG_PLAY);
         }
