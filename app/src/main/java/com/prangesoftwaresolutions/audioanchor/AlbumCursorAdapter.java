@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +24,31 @@ import java.io.File;
 public class AlbumCursorAdapter extends CursorAdapter {
     private Context mContext;
     private SharedPreferences mPrefs;
+    private LruCache<String, Bitmap> mImageCache;
 
     AlbumCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
         mContext = context;
         // Get the base directory from the shared preferences.
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        // Set up the image cache
+        // See https://developer.android.com/topic/performance/graphics/cache-bitmap
+        // Get max available Java VM memory. Stored in kilobytes as LruCache takes an int in its constructor.
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use fraction of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 12;
+
+        mImageCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size is measured in kilobytes rather than number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+
+
     }
 
     @Override
@@ -62,10 +82,20 @@ public class AlbumCursorAdapter extends CursorAdapter {
         int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
         if (path != null) {
             path = directory + File.separator + path;
-            BitmapUtils.setImage(thumbnailIV, path, reqSize);
+            if (new File(path).exists()) {
+                Bitmap storedImage = getBitmapFromMemCache(path);
+                if (storedImage != null) {
+                    thumbnailIV.setImageBitmap(storedImage);
+                } else {
+                    Bitmap image = BitmapUtils.decodeSampledBitmap(path, reqSize, reqSize);
+                    thumbnailIV.setImageBitmap(image);
+                    addBitmapToMemoryCache(path, image);
+                }
+            } else {
+                setEmptyCoverImage(thumbnailIV, reqSize);
+            }
         } else {
-            Bitmap image = BitmapUtils.decodeSampledBitmap(mContext.getResources(), R.drawable.empty_cover_grey_blue, reqSize, reqSize);
-            thumbnailIV.setImageBitmap(image);
+            setEmptyCoverImage(thumbnailIV, reqSize);
         }
 
         // Show the deletable image if the file does not exist anymore
@@ -75,5 +105,27 @@ public class AlbumCursorAdapter extends CursorAdapter {
         } else {
             deletableIV.setImageResource(android.R.color.transparent);
         }
+    }
+
+    private void setEmptyCoverImage(ImageView iv, int reqSize) {
+        String imageKey = String.valueOf(R.drawable.empty_cover_grey_blue);
+        Bitmap storedImage = getBitmapFromMemCache(imageKey);
+        if (storedImage != null) {
+            iv.setImageBitmap(storedImage);
+        } else {
+            Bitmap image = BitmapUtils.decodeSampledBitmap(mContext.getResources(), R.drawable.empty_cover_grey_blue, reqSize, reqSize);
+            iv.setImageBitmap(image);
+            addBitmapToMemoryCache(imageKey, image);
+        }
+    }
+
+    private void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            mImageCache.put(key, bitmap);
+        }
+    }
+
+    private Bitmap getBitmapFromMemCache(String key) {
+        return mImageCache.get(key);
     }
 }
