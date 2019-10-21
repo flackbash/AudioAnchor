@@ -67,10 +67,7 @@ public class AlbumCursorAdapter extends CursorAdapter {
         //get the progress of this album and update the view
         TextView progressTV = view.findViewById(R.id.album_info_time_album);
         int id = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-        String prefKey = context.getString(R.string.settings_progress_percentage_key);
-        String prefDefault = context.getString(R.string.settings_progress_percentage_default);
-        boolean showInPercentages = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
+        boolean showInPercentages = mPrefs.getBoolean(context.getString(R.string.settings_progress_percentage_key), Boolean.getBoolean(context.getString(R.string.settings_progress_percentage_default)));
 
         String timeStr = Utils.getAlbumCompletion(context, id, showInPercentages, context.getResources());
 
