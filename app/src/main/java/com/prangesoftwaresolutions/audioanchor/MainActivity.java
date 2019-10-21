@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Preferences
     private SharedPreferences mSharedPreferences;
-    private boolean mKeepDeleted;
     private boolean mDarkTheme;
 
     // Database variables
@@ -80,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Set up the shared preferences.
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mPrefDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
-        mKeepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
         mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
@@ -393,7 +391,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         // Delete missing directories from the database
-        if(!mKeepDeleted) {
+        boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
+        if(!keepDeleted) {
             for (String title: albumTitles.keySet()) {
                 int id = albumTitles.get(title);
                 // Delete the album in the albums table
@@ -453,7 +452,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         // Delete missing audio files from the database
-        if (!mKeepDeleted) {
+        boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
+        if (!keepDeleted) {
             for (String title: audioTitles.keySet()) {
                 Integer id = audioTitles.get(title);
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
