@@ -13,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -44,7 +45,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     TextView mAlbumInfoTimeTV;
 
     // Settings variables
-    boolean mProgressInPercent;
+    SharedPreferences mPrefs;
+    boolean mDarkTheme;
 
 
     @Override
@@ -61,12 +63,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         getLoaderManager().initLoader(ALBUM_LOADER, null, this);
 
         // Set up the shared preferences.
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        String prefKey = getString(R.string.settings_progress_percentage_key);
-        String prefDefault = getString(R.string.settings_progress_percentage_default);
-        mProgressInPercent = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mDarkTheme = mPrefs.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
 
-        mDirectory = pref.getString(getString(R.string.preference_filename), null);
+        mDirectory = mPrefs.getString(getString(R.string.preference_filename), null);
 
         // Initialize the cursor adapter
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
@@ -125,6 +125,24 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        getLoaderManager().restartLoader(0, null, this);
+    }
+
+    @Override
+    protected void onRestart() {
+        // recreate if theme has changed
+        boolean currentDarkTheme;
+        currentDarkTheme = mPrefs.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
+        if (mDarkTheme != currentDarkTheme) {
+            recreate();
+        }
+        super.onRestart();
+    }
+
+
+    @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String[] projection = {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
@@ -177,10 +195,21 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_album, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
+                return true;
+            case R.id.menu_settings:
+                // Send an intent to open the Settings
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
         }
 
@@ -188,7 +217,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     }
 
     private void setCompletedAlbumTime() {
-        String timeStr = Utils.getAlbumCompletion(this, mAlbumId, mProgressInPercent, getResources());
+        boolean progressInPercent = mPrefs.getBoolean(getString(R.string.settings_progress_percentage_key), Boolean.getBoolean(getString(R.string.settings_progress_percentage_default)));
+        String timeStr = Utils.getAlbumCompletion(this, mAlbumId, progressInPercent, getResources());
         mAlbumInfoTimeTV.setText(timeStr);
     }
 

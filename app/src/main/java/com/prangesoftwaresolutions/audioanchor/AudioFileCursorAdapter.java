@@ -25,16 +25,15 @@ public class AudioFileCursorAdapter extends CursorAdapter {
 
     private Context mContext;
     private String mDirectory;
-    private boolean mTitleFromMetadata;
     private MediaMetadataRetriever mMetadataRetriever;
+    private SharedPreferences mPrefs;
 
     AudioFileCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
         mContext = context;
         // Get the base directory from the shared preferences.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mDirectory = prefs.getString(mContext.getString(R.string.preference_filename), null);
-        mTitleFromMetadata = prefs.getBoolean(mContext.getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(mContext.getString(R.string.settings_title_from_metadata_default)));
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mDirectory = mPrefs.getString(mContext.getString(R.string.preference_filename), null);
         mMetadataRetriever = new MediaMetadataRetriever();
     }
 
@@ -53,7 +52,8 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         // Get the title of the current audio file and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_file_item_title);
         String title = "";
-        if (mTitleFromMetadata) {
+        boolean titleFromMetadata = mPrefs.getBoolean(mContext.getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(mContext.getString(R.string.settings_title_from_metadata_default)));
+        if (titleFromMetadata) {
             mMetadataRetriever.setDataSource(filePath);
             title = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         }
@@ -68,10 +68,7 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         int duration = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
         int completedTime = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
 
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(mContext);
-        String prefKey = mContext.getString(R.string.settings_progress_percentage_key);
-        String prefDefault = mContext.getString(R.string.settings_progress_percentage_default);
-        boolean progressInPercent = pref.getBoolean(prefKey, Boolean.getBoolean(prefDefault));
+        boolean progressInPercent = mPrefs.getBoolean(mContext.getString(R.string.settings_progress_percentage_key), Boolean.getBoolean(mContext.getString(R.string.settings_progress_percentage_default)));
 
         String timeStr;
         if (progressInPercent) {
