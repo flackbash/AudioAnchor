@@ -42,11 +42,6 @@ import java.io.FilenameFilter;
 import java.nio.channels.FileChannel;
 import java.util.LinkedHashMap;
 
-// TODO: Option in settings: Show title (from Metadata)
-// TODO: Option in settings: if in autoplay play completed files as well
-// TODO: Option in settings: Don't show deleted files in list
-// TODO: Option in settings: Sort by
-// TODO: Support subdirectories? / Support multiple base directories
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
