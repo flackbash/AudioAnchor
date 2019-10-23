@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.SwitchPreference;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -57,6 +58,31 @@ public class SettingsActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
+
+            // Make sure the autoplay position preference is enabled iff autoplay is
+            final SwitchPreference autoplayPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_key));
+            final SwitchPreference autoplayPositionPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_restart_key));
+
+            // This is needed for cases where autoplay was checked while a previous version of
+            // AudioAnchor was installed
+            if (autoplayPref.isChecked()) {
+                autoplayPositionPref.setEnabled(true);
+            } else {
+                autoplayPositionPref.setEnabled(false);
+            }
+
+            autoplayPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object o) {
+                    boolean isChecked = (boolean) o;
+                    if (isChecked) {
+                        autoplayPositionPref.setEnabled(true);
+                    } else {
+                        autoplayPositionPref.setEnabled(false);
+                    }
+                    return true;
+                }
+            });
         }
 
         @Override

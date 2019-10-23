@@ -29,6 +29,9 @@
     <string name="settings_autoplay_label">Autoplay</string>
     <string name="settings_autoplay_key" translatable="false">autoplay</string>
     <string name="settings_autoplay_default" translatable="false">false</string>
+    <string name="settings_autoplay_restart_label">Replay tracks from beginning in autoplay queue</string>
+    <string name="settings_autoplay_restart_key" translatable="false">autoplay_position</string>
+    <string name="settings_autoplay_restart_default" translatable="false">true</string>
     <string name="settings_progress_percentage_label">Show progress in percent</string>
     <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
     <string name="settings_progress_percentage_default">false</string>
@@ -38,8 +41,7 @@
     <string name="settings_cover_from_metadata_label">Get cover image from metadata</string>
     <string name="settings_cover_from_metadata_key" translatable="false">cover_from_metadata</string>
     <string name="settings_cover_from_metadata_default" translatable="false">false</string>
-    <string name="settings_sleep_key" translatable="false">settings_sleep_cat</string>
-    <string name="settings_sleep_label">Sleep timer</string>
+    <string name="settings_sleep_timer_category">Sleep timer</string>
     <string name="settings_sleep_fadeout_label">Fade out time</string>
     <string name="settings_sleep_fadeout_key" translatable="false">settings_sleep_fadeout</string>
     <string name="settings_sleep_fadeout_default" translatable="false">10</string>
@@ -59,6 +61,9 @@
     <string name="settings_autorewind_label">Autorewind time</string>
     <string name="settings_autorewind_key" translatable="false">autorewind</string>
     <string name="settings_autorewind_default" translatable="false">0</string>
+    <string name="settings_display_category">Display</string>
+    <string name="settings_playback_category">Playback</string>
+    <string name="settings_miscellaneous_category">Miscellaneous</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>

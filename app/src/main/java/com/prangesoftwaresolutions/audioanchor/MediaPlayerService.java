@@ -97,6 +97,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     // Autoplay flag
     private boolean mAutoplay;
+    private boolean mAutoplayRestart;
 
     // Settings flags
     private boolean mCoverFromMetadata;
@@ -120,6 +121,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Set up the shared preferences.
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mAutoplay = sharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
+        mAutoplayRestart = sharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
         mCoverFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
         mTitleFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
         mAutorewind = Integer.valueOf(sharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
@@ -249,7 +251,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 activeAudio = mAudioMap.get(mAudioIndex);
                 sendNewAudioFile(mAudioIndex);
                 playingNext = true;
-                initMediaPlayer(activeAudio.getPath(), activeAudio.getCompletedTime());
+                int startPosition;
+                if (mAutoplayRestart) {
+                    startPosition = 0;
+                } else {
+                    startPosition = activeAudio.getCompletedTime();
+                }
+                initMediaPlayer(activeAudio.getPath(), startPosition);
                 play();
                 buildNotification();
             }
