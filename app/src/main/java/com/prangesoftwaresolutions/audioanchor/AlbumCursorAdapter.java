@@ -61,6 +61,7 @@ public class AlbumCursorAdapter extends CursorAdapter {
         String directory = mPrefs.getString(mContext.getString(R.string.preference_filename), null);
         // Get the title of the current album and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_storage_item_title);
+        titleTV.setSelected(true);
         String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
         titleTV.setText(title);
 

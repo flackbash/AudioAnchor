@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/settings_playback_category">
+
+        <SwitchPreference
+            android:defaultValue="@string/settings_autoplay_default"
+            android:key="@string/settings_autoplay_key"
+            android:title="@string/settings_autoplay_label"/>
+        <SwitchPreference
+            android:defaultValue="@string/settings_autoplay_restart_default"
+            android:key="@string/settings_autoplay_restart_key"
+            android:title="@string/settings_autoplay_restart_label"
+            android:singleLineTitle="false"
+            android:enabled="false"/>
+
+        <EditTextPreference
+            android:defaultValue="@string/settings_autorewind_default"
+            android:inputType="number"
+            android:key="@string/settings_autorewind_key"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:maxLength="2"
+            android:title="@string/settings_autorewind_label"
+            android:summary="@string/settings_autorewind_default"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/settings_display_category">
+
+        <SwitchPreference
+            android:defaultValue="@string/settings_progress_percentage_default"
+            android:key="@string/settings_progress_percentage_key"
+            android:title="@string/settings_progress_percentage_label"/>
+        <SwitchPreference
+            android:defaultValue="@string/settings_cover_from_metadata_default"
+            android:key="@string/settings_cover_from_metadata_key"
+            android:title="@string/settings_cover_from_metadata_label"/>
+        <SwitchPreference
+            android:defaultValue="@string/settings_title_from_metadata_default"
+            android:key="@string/settings_title_from_metadata_key"
+            android:title="@string/settings_title_from_metadata_label"/>
+        <SwitchPreference
+            android:defaultValue="@string/settings_dark_default"
+            android:key="@string/settings_dark_key"
+            android:title="@string/settings_dark_label"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/settings_sleep_timer_category">
+
+        <EditTextPreference
+            android:defaultValue="@string/settings_sleep_fadeout_default"
+            android:inputType="number"
+            android:key="@string/settings_sleep_fadeout_key"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:maxLength="3"
+            android:title="@string/settings_sleep_fadeout_label"
+            android:summary="@string/settings_sleep_fadeout_default"/>
+        <SwitchPreference
+            android:defaultValue="@string/settings_shake_default"
+            android:key="@string/settings_shake_key"
+            android:title="@string/settings_shake_label" />
+        <SeekBarPreference
+            android:defaultValue="@string/settings_shake_sensitivity_default"
+            android:max="@string/settings_shake_sensitivity_max"
+            android:key="@string/settings_shake_sensitivity_key"
+            android:title="@string/settings_shake_sensitivity_label"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/settings_miscellaneous_category">
+
+        <SwitchPreference
+            android:defaultValue="@string/settings_keep_deleted_default"
+            android:key="@string/settings_keep_deleted_key"
+            android:title="@string/settings_keep_deleted_label"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

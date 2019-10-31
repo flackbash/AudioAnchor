@@ -24,7 +24,10 @@
             android:layout_height="match_parent"
             android:padding="@dimen/small_margin"
             android:text="@string/album"
-            android:textSize="@dimen/big_font_size" />
+            android:textSize="@dimen/big_font_size"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"/>
 
         <TextView
             android:id="@+id/album_info_time_album"
