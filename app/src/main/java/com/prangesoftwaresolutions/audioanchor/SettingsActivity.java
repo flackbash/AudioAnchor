@@ -1,8 +1,10 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 import android.content.SharedPreferences;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.support.v7.app.AppCompatActivity;
@@ -53,7 +55,7 @@ public class SettingsActivity extends AppCompatActivity {
         mPreferences.unregisterOnSharedPreferenceChangeListener(mPrefListener);
     }
 
-    public static class AnchorPreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
+    public static class AnchorPreferenceFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -71,25 +73,54 @@ public class SettingsActivity extends AppCompatActivity {
                 autoplayPositionPref.setEnabled(false);
             }
 
-            autoplayPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object o) {
-                    boolean isChecked = (boolean) o;
-                    if (isChecked) {
-                        autoplayPositionPref.setEnabled(true);
-                    } else {
-                        autoplayPositionPref.setEnabled(false);
-                    }
-                    return true;
-                }
-            });
+            initSummary(getPreferenceScreen());
         }
 
         @Override
-        public boolean onPreferenceChange(Preference preference, Object o) {
-            String stringValue = o.toString();
-            preference.setSummary(stringValue);
-            return true;
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+            Preference pref = findPreference(s);
+
+            updatePrefSummary(pref);
+
+            if (s.equals(getString(R.string.settings_autoplay_key))) {
+                boolean isChecked = ((SwitchPreference)pref).isChecked();
+                final SwitchPreference autoplayPositionPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_restart_key));
+                if (isChecked) {
+                    autoplayPositionPref.setEnabled(true);
+                } else {
+                    autoplayPositionPref.setEnabled(false);
+                }
+            }
+        }
+
+        private void initSummary(Preference p) {
+            if (p instanceof PreferenceGroup) {
+                PreferenceGroup pGrp = (PreferenceGroup) p;
+                for (int i = 0; i < pGrp.getPreferenceCount(); i++) {
+                    initSummary(pGrp.getPreference(i));
+                }
+            } else {
+                updatePrefSummary(p);
+            }
+        }
+
+        private void updatePrefSummary(Preference p) {
+            if (p instanceof EditTextPreference) {
+                EditTextPreference editTextPref = (EditTextPreference) p;
+                p.setSummary(editTextPref.getText());
+            }
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         }
     }
 }

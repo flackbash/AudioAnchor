@@ -21,7 +21,8 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:maxLength="2"
-            android:title="@string/settings_autorewind_label" />
+            android:title="@string/settings_autorewind_label"
+            android:summary="@string/settings_autorewind_default"/>
 
     </PreferenceCategory>
 
@@ -56,7 +57,8 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:maxLength="3"
-            android:title="@string/settings_sleep_fadeout_label" />
+            android:title="@string/settings_sleep_fadeout_label"
+            android:summary="@string/settings_sleep_fadeout_default"/>
         <SwitchPreference
             android:defaultValue="@string/settings_shake_default"
             android:key="@string/settings_shake_key"
