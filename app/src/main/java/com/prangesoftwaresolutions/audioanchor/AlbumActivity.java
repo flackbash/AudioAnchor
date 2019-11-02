@@ -325,9 +325,11 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     if (! (new File(audio.getPath())).exists()) {
                         getContentResolver().delete(deleteUri, null, null);
                         deletionCount ++;
+
+                        // Delete all bookmarks for the deleted track
+                        deleteBookmarksForTrack(trackId);
                     }
 
-                    // TODO: delete associated bookmarks as well
                 }
                 String deletedTracks = getResources().getString(R.string.tracks_deleted, deletionCount);
                 Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
@@ -346,6 +348,32 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    private void deleteBookmarksForTrack(long trackId) {
+        // Get all bookmarks associated with the trackId
+        String[] columns = new String[]{AnchorContract.BookmarkEntry._ID, AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE};
+        String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
+        String[] selArgs = {Long.toString(trackId)};
+
+        Cursor c = getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI,
+                columns, sel, selArgs, null, null);
+
+        // Bail early if the cursor is null
+        if (c == null) {
+            return;
+        } else if (c.getCount() < 1) {
+            c.close();
+            return;
+        }
+
+        while (c.moveToNext()) {
+            // Delete bookmarks associated with the track from the database
+            int bookmarkId = c.getInt(c.getColumnIndex(AnchorContract.BookmarkEntry._ID));
+            Uri deleteUri = ContentUris.withAppendedId(AnchorContract.BookmarkEntry.CONTENT_URI, bookmarkId);
+            getContentResolver().delete(deleteUri, null, null);
+        }
+        c.close();
     }
 
     private void markSelectedTracksAsNotStarted() {
