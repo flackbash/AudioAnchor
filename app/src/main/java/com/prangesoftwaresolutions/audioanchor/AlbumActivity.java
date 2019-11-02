@@ -2,6 +2,7 @@ package com.prangesoftwaresolutions.audioanchor;
 
 import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,9 +14,11 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -26,6 +29,7 @@ import android.widget.Toast;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
@@ -47,6 +51,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     // Settings variables
     SharedPreferences mPrefs;
     boolean mDarkTheme;
+
+    // Variables for multi choice mode
+    ArrayList<Long> mSelectedTracks = new ArrayList<>();
 
 
     @Override
@@ -104,20 +111,65 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             }
         });
 
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, l);
-                Uri deleteUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, l);
+        // See https://developer.android.com/guide/topics/ui/menus.html#CAB for details
+        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
 
-                // Don't allow delete action if the audio file still exists
-                AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri, mDirectory);
-                if ((new File(audio.getPath())).exists()) {
-                    return false;
+            @Override
+            public void onItemCheckedStateChanged(ActionMode actionMode, int i, long l, boolean b) {
+                // Adjust menu title and list of selected tracks when items are selected / de-selected
+                if (b) {
+                    mSelectedTracks.add(l);
+                } else {
+                    mSelectedTracks.remove(l);
+                }
+                String menuTitle = getResources().getString(R.string.items_selected, mSelectedTracks.size());
+                actionMode.setTitle(menuTitle);
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
+                // Inflate the menu for the CAB
+                getMenuInflater().inflate(R.menu.menu_album_cab, menu);
+                // Without this, menu items are always shown in the action bar instead of the overflow menu
+                for (int i = 0; i < menu.size(); i++) {
+                    menu.getItem(i).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+                }
+                return true;
+
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
+                    case R.id.menu_delete_from_db:
+                        deleteSelectedTracksFromDBWithConfirmation();
+                        actionMode.finish(); // Action picked, so close the CAB
+                        return true;
+                    case R.id.menu_mark_as_not_started:
+                        markSelectedTracksAsNotStarted();
+                        actionMode.finish();
+                        return true;
+                    case R.id.menu_mark_as_completed:
+                        markSelectedTracksAsCompleted();
+                        actionMode.finish();
+                        return true;
+                    default:
+                        return false;
                 }
 
-                deleteAudioWithConfirmation(deleteUri);
-                return true;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode actionMode) {
+                // Make necessary updates to the activity when the CAB is removed
+                // By default, selected items are deselected/unchecked.
+                mSelectedTracks.clear();
             }
         });
 
@@ -253,18 +305,33 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         listView.setSelection(Math.max(scrollTo - 1, 0));
     }
 
-    /**
-     * Show the delete audio confirmation dialog and let the user decide whether to delete the audio
-     */
-    private void deleteAudioWithConfirmation(final Uri audioUri) {
-        // Create an AlertDialog.Builder and set the message and click listeners
-        // for the positive and negative buttons on the dialog.
+    private void deleteSelectedTracksFromDBWithConfirmation() {
+        Long[] selectedTracks = new Long[mSelectedTracks.size()];
+        final Long[] selectedTracksArr = mSelectedTracks.toArray(selectedTracks);
+
+        // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_delete_audio);
         builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Ok" button, so delete the audio.
-                getContentResolver().delete(audioUri, null, null);
+                // User clicked the "Ok" button, so delete the tracks from the database
+                int deletionCount = 0;
+                for (long trackId : selectedTracksArr) {
+                    Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, trackId);
+                    Uri deleteUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
+
+                    // Don't allow delete action if the track still exists
+                    AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri, mDirectory);
+                    if (! (new File(audio.getPath())).exists()) {
+                        getContentResolver().delete(deleteUri, null, null);
+                        deletionCount ++;
+                    }
+
+                    // TODO: delete associated bookmarks as well
+                }
+                String deletedTracks = getResources().getString(R.string.tracks_deleted, deletionCount);
+                Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
+
             }
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
@@ -279,5 +346,50 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    private void markSelectedTracksAsNotStarted() {
+        // Set the completedTime column of the audiofiles table for each selected track to 0
+        for (long trackId : mSelectedTracks) {
+            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
+            ContentValues values = new ContentValues();
+            values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, 0);
+            getContentResolver().update(uri, values, null, null);
+            getContentResolver().notifyChange(uri, null);
+        }
+    }
+
+    private void markSelectedTracksAsCompleted() {
+        // Set the completedTime column of the audiofiles table for each selected track to the totalTime
+        // of the track
+        for (long trackId : mSelectedTracks) {
+            // Get total time for a selected track
+            String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_TIME};
+            String sel = AnchorContract.AudioEntry._ID + "=?";
+            String[] selArgs = {Long.toString(trackId)};
+
+            Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                    columns, sel, selArgs, null, null);
+
+            // Bail early if the cursor is null
+            if (c == null) {
+                return;
+            } else if (c.getCount() < 1) {
+                c.close();
+                return;
+            }
+
+            int totalTime = 0;
+            while (c.moveToNext()) {
+                totalTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+            }
+            c.close();
+
+            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
+            ContentValues values = new ContentValues();
+            values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, totalTime);
+            getContentResolver().update(uri, values, null, null);
+            getContentResolver().notifyChange(uri, null);
+        }
     }
 }

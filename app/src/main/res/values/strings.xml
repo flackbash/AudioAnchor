@@ -18,7 +18,8 @@
     <string name="audio_file_error">There is a problem with the audio files in this directory.</string>
     <string name="empty_title_error">Please enter a title for your bookmark.</string>
     <string name="jumped_to_bookmark">Jumped to bookmark \"%s\" at %s</string>
-    <string name="bookmark_deleted">Bookmark deleted</string>
+    <string name="bookmark_deleted">Bookmark deleted.</string>
+    <string name="tracks_deleted">%d track(s) deleted from database.</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>
@@ -92,6 +93,10 @@
     <string name="set_bookmark_at">Set bookmark at</string>
     <string name="no_bookmarks">There are no bookmarks for this audio file yet</string>
     <string name="bookmarks">Bookmarks</string>
+    <string name="delete_from_db">Delete from database</string>
+    <string name="mark_as_not_started">Mark as not started</string>
+    <string name="mark_as_completed">Mark as completed</string>
+    <string name="items_selected">%d selected</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
@@ -102,7 +107,7 @@
     <string name="dialog_msg_delete">Delete</string>
     <string name="dialog_msg_goto">Enter the time to which you want to jump</string>
     <string name="dialog_msg_delete_album">Are you sure you want to delete the album and its contents from the database?</string>
-    <string name="dialog_msg_delete_audio">Are you sure you want to delete this audio file from the database?</string>
+    <string name="dialog_msg_delete_audio">Are you sure you want to delete the selected track(s) from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
 
     <!-- Others -->

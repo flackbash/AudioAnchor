@@ -6,8 +6,10 @@
     <color name="colorAccent">#FF1744</color>
 
     <color name="colorBackgroundLight">#44B8BCC7</color>
+    <color name="colorBackgroundLightNoTrans">#E3E4E9</color>
     <color name="colorBackgroundStrong">#BBDBDDE3</color>
-    <color name="colorBackgroundStrongDark">#BB000000</color>
+    <color name="colorBackgroundLightDarkTheme">#BB6D6E71</color>
+    <color name="colorBackgroundStrongDarkTheme">#BB000000</color>
 
     <color name="colorGreyBlue">#536872</color>
 </resources>

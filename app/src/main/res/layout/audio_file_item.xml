@@ -4,7 +4,8 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:drawSelectorOnTop="true"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:background="?android:attr/activatedBackgroundIndicator">
 
     <ImageView
         android:id="@+id/audio_file_item_thumbnail"

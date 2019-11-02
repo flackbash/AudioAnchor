@@ -7,13 +7,21 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="playActivityHeaderBG">@color/colorBackgroundStrong</item>
+        <item name="android:activatedBackgroundIndicator">@drawable/list_item_activated_background</item>
+        <item name="actionModeStyle">@style/LStyled.ActionMode</item>
     </style>
 
     <style name="AppThemeDark" parent="Theme.AppCompat">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="playActivityHeaderBG">@color/colorBackgroundStrongDark</item>
+        <item name="playActivityHeaderBG">@color/colorBackgroundStrongDarkTheme</item>
+        <item name="android:activatedBackgroundIndicator">@drawable/list_item_activated_background_dark</item>
+        <item name="actionModeStyle">@style/LStyled.ActionMode</item>
+    </style>
+
+    <style name="LStyled.ActionMode" parent="@style/Widget.AppCompat.ActionMode">
+        <item name="background">@color/colorPrimaryBright</item>
     </style>
 
 </resources>
