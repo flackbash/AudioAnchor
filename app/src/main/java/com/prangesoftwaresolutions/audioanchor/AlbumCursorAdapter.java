@@ -99,9 +99,9 @@ public class AlbumCursorAdapter extends CursorAdapter {
         // Show the deletable image if the file does not exist anymore
         ImageView deletableIV = view.findViewById(R.id.album_item_deletable_img);
         if (directory != null && !(new File(directory, title)).exists()) {
-            deletableIV.setImageResource(R.drawable.img_deletable);
+            deletableIV.setVisibility(View.VISIBLE);
         } else {
-            deletableIV.setImageResource(android.R.color.transparent);
+            deletableIV.setVisibility(View.GONE);
         }
     }
 

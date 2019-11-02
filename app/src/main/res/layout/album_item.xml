@@ -36,7 +36,6 @@
             android:paddingBottom="@dimen/small_margin"
             android:paddingStart="@dimen/small_margin"
             android:paddingEnd="@dimen/small_margin"
-            android:text="00:00 / 00:00"
             android:textSize="@dimen/small_font_size"
             android:layout_below="@id/audio_storage_item_title"/>
 
@@ -45,7 +44,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"/>
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/ic_deletable"
+            android:tint="?colorDeletableIcon"
+            android:visibility="gone"/>
     </RelativeLayout>
 
 </LinearLayout>

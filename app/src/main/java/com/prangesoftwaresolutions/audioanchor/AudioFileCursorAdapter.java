@@ -97,9 +97,9 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         // Show the deletable image if the file does not exist anymore
         ImageView deletableIV = view.findViewById(R.id.audio_file_item_deletable_img);
         if (!(new File(filePath)).exists()) {
-            deletableIV.setImageResource(R.drawable.img_deletable);
+            deletableIV.setVisibility(View.VISIBLE);
         } else {
-            deletableIV.setImageResource(android.R.color.transparent);
+            deletableIV.setVisibility(View.GONE);
         }
 
     }
