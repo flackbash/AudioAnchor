@@ -118,7 +118,7 @@ public class PlayActivity extends AppCompatActivity {
         mTimeTV = findViewById(R.id.play_time);
         mSleepCountDownTV = findViewById(R.id.play_sleep_time);
 
-        //get preferences
+        // Get preferences
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mCoverFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
         mTitleFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
@@ -128,7 +128,7 @@ public class PlayActivity extends AppCompatActivity {
         mLastSleepTime = sharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.valueOf(getString(R.string.preference_last_sleep_val)));
         mDirectory = sharedPreferences.getString(getString(R.string.preference_filename), null);
 
-        mAudioFile = AudioFile.getAudioFile(this, mCurrentUri, mDirectory);
+        mAudioFile = DBAccessUtils.getAudioFile(this, mCurrentUri, mDirectory);
         mMetadataRetriever = new MediaMetadataRetriever();
 
         setNewAudioFile();
@@ -257,7 +257,6 @@ public class PlayActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_play, menu);
         return true;
     }
@@ -298,7 +297,7 @@ public class PlayActivity extends AppCompatActivity {
         serviceBound = savedInstanceState.getBoolean("serviceStatus");
     }
 
-    //Binding this Client to the AudioPlayer Service
+    // Binding this Client to the AudioPlayer Service
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -327,7 +326,7 @@ public class PlayActivity extends AppCompatActivity {
     };
 
     private void startService() {
-        //Check is service is active
+        // Check if service is active
         if (!serviceBound) {
             storeAudioFiles();
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
@@ -337,23 +336,29 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     private void playAudio() {
-        //Send a broadcast to the service -> PLAY_NEW_AUDIO
+        // Send a broadcast to the service -> PLAY_NEW_AUDIO
         startService();
         Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
         sendBroadcast(broadcastIntent);
     }
 
     private void pauseAudio() {
-        //Send a broadcast to the service -> PLAY_NEW_AUDIO
+        // Send a broadcast to the service -> PLAY_NEW_AUDIO
         Intent broadcastIntent = new Intent(Broadcast_PAUSE_AUDIO);
         sendBroadcast(broadcastIntent);
     }
 
     private void storeAudioFiles() {
-        //Store Serializable audioList to SharedPreferences
+        // Store Serializable audioList in SharedPreferences
         String sortOrder = "LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
-        ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesFromAlbum(this, mAudioFile.getAlbumId(), sortOrder, mDirectory);
-        int audioIndex = AudioFile.getIndex(audioList, mAudioFile.getId());
+        ArrayList<AudioFile> audioList = DBAccessUtils.getAllAudioFilesFromAlbum(this, mAudioFile.getAlbumId(), sortOrder, mDirectory);
+        int audioIndex = -1;
+        for(int i = 0; i < audioList.size(); i++) {
+            AudioFile audioFile = audioList.get(i);
+            if(audioFile.getId() == mAudioFile.getId()) {
+                audioIndex = i;
+            }
+        }
         StorageUtil storage = new StorageUtil(getApplicationContext());
         storage.storeAudio(audioList);
         storage.storeAudioIndex(audioIndex);
@@ -479,13 +484,13 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     void showSleepTimerDialog() {
-        //setup editText
+        // Setup editText
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_sleep_timer, null);
         final EditText setTime = dialogView.findViewById(R.id.sleep_timer_set_time);
         setTime.setText(String.valueOf(mLastSleepTime));
         setTime.setSelection(setTime.getText().length());
 
-        //setup alertDialog
+        // Setup alertDialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         builder.setTitle(R.string.sleep_timer);
@@ -536,6 +541,9 @@ public class PlayActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
+    /*
+     * Show a dialog that let's the user specify a position to which to jump to
+     */
     void showGoToDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_goto, null);

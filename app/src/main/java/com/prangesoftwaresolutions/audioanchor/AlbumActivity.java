@@ -2,7 +2,6 @@ package com.prangesoftwaresolutions.audioanchor;
 
 import android.app.LoaderManager;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -98,7 +97,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, rowId);
 
                 // Check if the audio file exists
-                AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri, mDirectory);
+                AudioFile audio = DBAccessUtils.getAudioFile(AlbumActivity.this, uri, mDirectory);
                 if (!(new File(audio.getPath())).exists()) {
                     Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_LONG).show();
                     return;
@@ -149,20 +148,23 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 switch (menuItem.getItemId()) {
                     case R.id.menu_delete_from_db:
                         deleteSelectedTracksFromDBWithConfirmation();
-                        actionMode.finish(); // Action picked, so close the CAB
+                        actionMode.finish();
                         return true;
                     case R.id.menu_mark_as_not_started:
-                        markSelectedTracksAsNotStarted();
+                        for (long trackId : mSelectedTracks) {
+                            DBAccessUtils.markTrackAsNotStarted(AlbumActivity.this, trackId);
+                        }
                         actionMode.finish();
                         return true;
                     case R.id.menu_mark_as_completed:
-                        markSelectedTracksAsCompleted();
+                        for (long trackId : mSelectedTracks) {
+                            DBAccessUtils.markTracksAsCompleted(AlbumActivity.this, trackId);
+                        }
                         actionMode.finish();
                         return true;
                     default:
                         return false;
                 }
-
             }
 
             @Override
@@ -231,7 +233,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 BitmapUtils.setImage(mAlbumInfoCoverIV, coverPath, reqSize);
 
                 // Set the album info time
-                setCompletedAlbumTime();
+                String timeStr = DBAccessUtils.getAlbumCompletionString(this, mAlbumId);
+                mAlbumInfoTimeTV.setText(timeStr);
             }
         }
         mAlbumInfoTitleTV.setText(mAlbumName);
@@ -268,12 +271,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         return(super.onOptionsItemSelected(item));
     }
 
-    private void setCompletedAlbumTime() {
-        boolean progressInPercent = mPrefs.getBoolean(getString(R.string.settings_progress_percentage_key), Boolean.getBoolean(getString(R.string.settings_progress_percentage_default)));
-        String timeStr = Utils.getAlbumCompletion(this, mAlbumId, progressInPercent, getResources());
-        mAlbumInfoTimeTV.setText(timeStr);
-    }
-
+    /*
+     * Scroll to the last non-completed track in the list view
+     */
     private void scrollToNotCompletedAudio(ListView listView) {
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
@@ -290,7 +290,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             return;
         }
 
-        // Loop through the database rows and sum up the audio durations and completed time
+        // Loop through the database rows and check for non-completed tracks
         int scrollTo = 0;
         while (c.moveToNext()) {
             int duration = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
@@ -305,6 +305,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         listView.setSelection(Math.max(scrollTo - 1, 0));
     }
 
+    /*
+     * Show a confirmation dialog and let the user decide whether to delete the selected
+     * tracks from the database
+     */
     private void deleteSelectedTracksFromDBWithConfirmation() {
         Long[] selectedTracks = new Long[mSelectedTracks.size()];
         final Long[] selectedTracksArr = mSelectedTracks.toArray(selectedTracks);
@@ -317,23 +321,14 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 // User clicked the "Ok" button, so delete the tracks from the database
                 int deletionCount = 0;
                 for (long trackId : selectedTracksArr) {
-                    Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, trackId);
-                    Uri deleteUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
-
-                    // Don't allow delete action if the track still exists
-                    AudioFile audio = AudioFile.getAudioFile(AlbumActivity.this, uri, mDirectory);
-                    if (! (new File(audio.getPath())).exists()) {
-                        getContentResolver().delete(deleteUri, null, null);
-                        deletionCount ++;
-
-                        // Delete all bookmarks for the deleted track
-                        deleteBookmarksForTrack(trackId);
+                    boolean deleted = DBAccessUtils.deleteTrackFromDB(AlbumActivity.this, trackId);
+                    if (deleted) {
+                        DBAccessUtils.deleteBookmarksForTrack(AlbumActivity.this, trackId);
+                        deletionCount++;
                     }
-
                 }
                 String deletedTracks = getResources().getString(R.string.tracks_deleted, deletionCount);
                 Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
-
             }
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
@@ -348,76 +343,5 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
-    }
-
-    private void deleteBookmarksForTrack(long trackId) {
-        // Get all bookmarks associated with the trackId
-        String[] columns = new String[]{AnchorContract.BookmarkEntry._ID, AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE};
-        String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
-        String[] selArgs = {Long.toString(trackId)};
-
-        Cursor c = getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI,
-                columns, sel, selArgs, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return;
-        }
-
-        while (c.moveToNext()) {
-            // Delete bookmarks associated with the track from the database
-            int bookmarkId = c.getInt(c.getColumnIndex(AnchorContract.BookmarkEntry._ID));
-            Uri deleteUri = ContentUris.withAppendedId(AnchorContract.BookmarkEntry.CONTENT_URI, bookmarkId);
-            getContentResolver().delete(deleteUri, null, null);
-        }
-        c.close();
-    }
-
-    private void markSelectedTracksAsNotStarted() {
-        // Set the completedTime column of the audiofiles table for each selected track to 0
-        for (long trackId : mSelectedTracks) {
-            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
-            ContentValues values = new ContentValues();
-            values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, 0);
-            getContentResolver().update(uri, values, null, null);
-            getContentResolver().notifyChange(uri, null);
-        }
-    }
-
-    private void markSelectedTracksAsCompleted() {
-        // Set the completedTime column of the audiofiles table for each selected track to the totalTime
-        // of the track
-        for (long trackId : mSelectedTracks) {
-            // Get total time for a selected track
-            String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_TIME};
-            String sel = AnchorContract.AudioEntry._ID + "=?";
-            String[] selArgs = {Long.toString(trackId)};
-
-            Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
-                    columns, sel, selArgs, null, null);
-
-            // Bail early if the cursor is null
-            if (c == null) {
-                return;
-            } else if (c.getCount() < 1) {
-                c.close();
-                return;
-            }
-
-            int totalTime = 0;
-            while (c.moveToNext()) {
-                totalTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-            }
-            c.close();
-
-            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
-            ContentValues values = new ContentValues();
-            values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, totalTime);
-            getContentResolver().update(uri, values, null, null);
-            getContentResolver().notifyChange(uri, null);
-        }
     }
 }

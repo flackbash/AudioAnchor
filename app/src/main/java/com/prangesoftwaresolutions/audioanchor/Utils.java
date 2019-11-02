@@ -2,11 +2,7 @@ package com.prangesoftwaresolutions.audioanchor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.database.Cursor;
 import android.preference.PreferenceManager;
-
-import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -17,11 +13,13 @@ import java.io.FilenameFilter;
 
 class Utils {
 
-    //call in onCreate before setContentView and super.onCreate to apply theme
+    /*
+     * Set the Activity Theme according to the user preferences.
+     * Call in onCreate before setContentView and super.onCreate to apply theme
+     */
     static void setActivityTheme(Context context)
     {
         SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(context);
-
         boolean darkTheme = prefManager.getBoolean(context.getString(R.string.settings_dark_key), Boolean.getBoolean(context.getString(R.string.settings_dark_default)));
 
         if(darkTheme) {
@@ -32,41 +30,9 @@ class Utils {
         }
     }
 
-    static String getAlbumCompletion(Context context, long albumID, boolean showInPercentage, Resources resources)
-    {
-        String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(albumID)};
-
-        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
-                columns, sel, selArgs, null, null);
-
-        if(c == null)
-            return "";
-
-        // Loop through the database rows and sum up the audio durations and completed time
-        int sumDuration = 0;
-        int sumCompletedTime = 0;
-        while (c.moveToNext()) {
-            sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-            sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-        }
-        c.close();
-
-        // Set the text for the album time TextView
-        String timeStr;
-        if (!showInPercentage) {
-            String durationStr = Utils.formatTime(sumDuration, sumDuration);
-            String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
-            timeStr = resources.getString(R.string.time_completed, completedTimeStr, durationStr);
-        } else {
-            int percent = Math.round(((float)sumCompletedTime / sumDuration) * 100);
-            timeStr = resources.getString(R.string.time_completed_percent, percent);
-        }
-
-        return timeStr;
-    }
-
+    /*
+     * Get path of the album cover image for the specified directory.
+     */
     static String getImagePath(File dir) {
         // Search only for files that are images
         FilenameFilter imgFilter = new FilenameFilter() {
@@ -84,6 +50,7 @@ class Utils {
         }
         return null;
     }
+
 
     /*
      * Bring milli seconds into a proper time format.
@@ -120,6 +87,10 @@ class Utils {
         return output;
     }
 
+
+    /*
+     * Turn a time string into the number of milliseconds
+     */
     static long getMillisFromString(String time) {
         long millis;
         String[] timeParts = time.split(":");

@@ -20,6 +20,7 @@
     <string name="jumped_to_bookmark">Jumped to bookmark \"%s\" at %s</string>
     <string name="bookmark_deleted">Bookmark deleted.</string>
     <string name="tracks_deleted">%d track(s) deleted from database.</string>
+    <string name="files_deleted">%d album(s) and %d track(s) deleted from database.</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>
@@ -97,6 +98,8 @@
     <string name="mark_as_not_started">Mark as not started</string>
     <string name="mark_as_completed">Mark as completed</string>
     <string name="items_selected">%d selected</string>
+    <string name="mark_all_as_not_started">Mark all tracks as not started</string>
+    <string name="mark_all_as_completed">Mark all tracks as completed</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
@@ -106,7 +109,7 @@
     <string name="dialog_msg_close">Close</string>
     <string name="dialog_msg_delete">Delete</string>
     <string name="dialog_msg_goto">Enter the time to which you want to jump</string>
-    <string name="dialog_msg_delete_album">Are you sure you want to delete the album and its contents from the database?</string>
+    <string name="dialog_msg_delete_album">Are you sure you want to delete the selected album(s) and their contents from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
     <string name="dialog_msg_delete_audio">Are you sure you want to delete the selected track(s) from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
 

@@ -65,13 +65,10 @@ public class AlbumCursorAdapter extends CursorAdapter {
         String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
         titleTV.setText(title);
 
-        //get the progress of this album and update the view
+        // Get the progress of this album and update the view
         TextView progressTV = view.findViewById(R.id.album_info_time_album);
         int id = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
-        boolean showInPercentages = mPrefs.getBoolean(context.getString(R.string.settings_progress_percentage_key), Boolean.getBoolean(context.getString(R.string.settings_progress_percentage_default)));
-
-        String timeStr = Utils.getAlbumCompletion(context, id, showInPercentages, context.getResources());
-
+        String timeStr = DBAccessUtils.getAlbumCompletionString(context, id);
         progressTV.setText(timeStr);
 
         // Get the path of the thumbnail of the current album and set the src of the image view
