@@ -1,5 +1,6 @@
 package com.prangesoftwaresolutions.audioanchor;
 
+import android.annotation.TargetApi;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -75,22 +76,22 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // Notification builder
     NotificationCompat.Builder mNotificationBuilder;
 
-    //Used to pause/resume MediaPlayer
+    // Used to pause/resume MediaPlayer
     private boolean resumeAfterCall = false;
 
-    //AudioFocus
+    // AudioFocus
     private AudioManager audioManager;
 
     // Communication with clients
     private final IBinder iBinder = new LocalBinder();
     LocalBroadcastManager mBroadcaster;
 
-    //List of available Audio files
+    // List of available Audio files
     private ArrayList<AudioFile> mAudioMap;
     private int mAudioIndex = -1;
     private AudioFile activeAudio; //an object on the currently playing audio
 
-    //Handle incoming phone calls
+    // Handle incoming phone calls
     private boolean ongoingCall = false;
     private PhoneStateListener phoneStateListener;
     private TelephonyManager telephonyManager;
@@ -103,6 +104,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private boolean mCoverFromMetadata;
     private boolean mTitleFromMetadata;
     private int mAutorewind;
+
+    // Shared Preferences
+    SharedPreferences mSharedPreferences;
 
     /**
      * Service lifecycle methods
@@ -119,12 +123,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mMetadataRetriever = new MediaMetadataRetriever();
 
         // Set up the shared preferences.
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mAutoplay = sharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
-        mAutoplayRestart = sharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
-        mCoverFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
-        mTitleFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
-        mAutorewind = Integer.valueOf(sharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mAutoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
+        mAutoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
+        mCoverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
+        mTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
+        mAutorewind = Integer.valueOf(mSharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
 
         // Perform one-time setup procedures
         // Manage incoming phone calls during playback.
@@ -230,6 +234,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             mMediaPlayer.reset();
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.setDataSource(path);
+
+            // Set playback speed according to preferences
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.valueOf(getString(R.string.preference_playback_speed_default)));
+                mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed((float)(speed / 10.0)));
+            }
+
             mMediaPlayer.prepare();
             mMediaPlayer.seekTo(position);
         } catch (IOException e) {
@@ -797,6 +808,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     void setVolume(float volume) {
         if (mMediaPlayer != null) {
             mMediaPlayer.setVolume(volume, volume);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    void setPlaybackSpeed(float speed) {
+        if (mMediaPlayer == null) return;
+
+        boolean isPlaying = mMediaPlayer.isPlaying();
+        if (!isPlaying) {
+            initMediaPlayer(activeAudio.getPath(), mMediaPlayer.getCurrentPosition());
+        } else {
+            mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed(speed));
         }
     }
 

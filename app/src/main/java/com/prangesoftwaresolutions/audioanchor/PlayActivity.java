@@ -96,6 +96,9 @@ public class PlayActivity extends AppCompatActivity {
     private boolean mCoverFromMetadata;
     private boolean mTitleFromMetadata;
 
+    // Shared preferences
+    SharedPreferences mSharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.setActivityTheme(this);
@@ -119,14 +122,14 @@ public class PlayActivity extends AppCompatActivity {
         mSleepCountDownTV = findViewById(R.id.play_sleep_time);
 
         // Get preferences
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mCoverFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
-        mTitleFromMetadata = sharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
-        mShakeEnabledSetting = sharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
-        mShakeSensitivitySetting = sharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
-        mFadeoutTime = Integer.valueOf(sharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
-        mLastSleepTime = sharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.valueOf(getString(R.string.preference_last_sleep_val)));
-        mDirectory = sharedPreferences.getString(getString(R.string.preference_filename), null);
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mCoverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
+        mTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
+        mShakeEnabledSetting = mSharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
+        mShakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
+        mFadeoutTime = Integer.valueOf(mSharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
+        mLastSleepTime = mSharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.valueOf(getString(R.string.preference_last_sleep_val)));
+        mDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
 
         mAudioFile = DBAccessUtils.getAudioFile(this, mCurrentUri, mDirectory);
         mMetadataRetriever = new MediaMetadataRetriever();
@@ -275,6 +278,9 @@ public class PlayActivity extends AppCompatActivity {
                 return true;
             case R.id.menu_show_bookmarks:
                 showShowBookmarksDialog();
+                return true;
+            case R.id.menu_playback_speed:
+                showPlaybackSpeedDialog();
                 return true;
             case android.R.id.home:
                 onBackPressed();
@@ -802,5 +808,70 @@ public class PlayActivity extends AppCompatActivity {
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    /*
+     * Show a dialog that let's the user specify the playback speed
+     */
+    void showPlaybackSpeedDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_playback_speed, null);
+        builder.setView(dialogView);
+
+        final TextView playbackSpeedTV = dialogView.findViewById(R.id.playback_speed_tv);
+        SeekBar playbackSpeedSB = dialogView.findViewById(R.id.playback_speed_sb);
+        playbackSpeedSB.setMax(20);  // min + max = 5 + 20 = 25 --> max playback speed 2.5
+        int currSpeed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.valueOf(getString(R.string.preference_playback_speed_default)));
+        int progress = getProgressFromPlaybackSpeed(currSpeed);
+        playbackSpeedSB.setProgress(progress);
+        playbackSpeedSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    int speed = getPlaybackSpeedFromProgress(progress);
+                    float speedFloat = (float)(speed / 10.0);
+                    playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                int speed = getPlaybackSpeedFromProgress(seekBar.getProgress());
+
+                // Store new playback speed in shared preferences
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+                editor.putInt(getString(R.string.preference_playback_speed_key), speed);
+                editor.apply();
+
+                // Set playback speed to speed selected by the user
+                float speedFloat = (float)(speed / 10.0);
+                mPlayer.setPlaybackSpeed(speedFloat);
+            }
+        });
+
+        builder.setTitle(R.string.playback_speed);
+
+        // Set the text of the TextView to the default speed
+        int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.valueOf(getString(R.string.preference_playback_speed_default)));
+        float speedFloat = (float)(speed / 10.0);
+        playbackSpeedTV.setText(getString(R.string.playback_speed_label, speedFloat));
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    int getPlaybackSpeedFromProgress(int progress) {
+        int min = 5;
+        return progress + min;
+    }
+
+    int getProgressFromPlaybackSpeed(int speed) {
+        int min = 5;
+        return speed - min;
     }
 }

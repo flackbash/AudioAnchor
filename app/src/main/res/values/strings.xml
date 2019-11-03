@@ -26,6 +26,8 @@
     <string name="preference_filename" translatable="false">storage_directory</string>
     <string name="preference_last_sleep_val" translatable="false">10</string>
     <string name="preference_last_sleep_key" translatable="false">preference_last_sleep</string>
+    <string name="preference_playback_speed_key" translatable="false">preference_playback_speed</string>
+    <string name="preference_playback_speed_default" translatable="false">10</string>
 
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Autoplay</string>
@@ -100,6 +102,8 @@
     <string name="items_selected">%d selected</string>
     <string name="mark_all_as_not_started">Mark all tracks as not started</string>
     <string name="mark_all_as_completed">Mark all tracks as completed</string>
+    <string name="playback_speed">Playback speed</string>
+    <string name="playback_speed_label" translatable="false">%.1f</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>

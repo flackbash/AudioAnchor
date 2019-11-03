@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_sleep_timer"
+        android:icon="@drawable/ic_sleep_timer"
+        android:orderInCategory="100"
+        android:title="@string/sleep_timer"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_goto"
+        android:icon="@drawable/ic_goto"
+        android:orderInCategory="101"
+        android:title="@string/go_to"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_set_bookmark"
+        android:icon="@drawable/ic_bookmark"
+        android:orderInCategory="98"
+        android:title="@string/set_bookmark"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_show_bookmarks"
+        android:icon="@drawable/ic_bookmark"
+        android:orderInCategory="99"
+        android:title="@string/bookmarks"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_playback_speed"
+        android:icon="@drawable/ic_speed"
+        android:orderInCategory="102"
+        android:title="@string/playback_speed"
+        app:showAsAction="never" />
+</menu>
