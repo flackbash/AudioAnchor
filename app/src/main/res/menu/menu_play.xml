@@ -3,27 +3,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menu_set_bookmark"
+        android:icon="@drawable/ic_bookmark"
+        android:orderInCategory="80"
+        android:title="@string/set_bookmark"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/menu_sleep_timer"
         android:icon="@drawable/ic_sleep_timer"
-        android:orderInCategory="100"
+        android:orderInCategory="90"
         android:title="@string/sleep_timer"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
+
     <item
         android:id="@+id/menu_goto"
         android:icon="@drawable/ic_goto"
-        android:orderInCategory="101"
+        android:orderInCategory="100"
         android:title="@string/go_to"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/menu_set_bookmark"
-        android:icon="@drawable/ic_bookmark"
-        android:orderInCategory="98"
-        android:title="@string/set_bookmark"
-        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/menu_show_bookmarks"
         android:icon="@drawable/ic_bookmark"
-        android:orderInCategory="99"
+        android:orderInCategory="110"
         android:title="@string/bookmarks"
         app:showAsAction="never" />
 </menu>
