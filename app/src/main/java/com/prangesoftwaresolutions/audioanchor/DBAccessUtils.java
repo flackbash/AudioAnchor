@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
@@ -17,14 +18,10 @@ import java.util.ArrayList;
 class DBAccessUtils {
 
     /*
-     * Get the string for the album completion time given the album id
+     * Get the completion time and the duration of the album with the given id
      */
-    static String getAlbumCompletionString(Context context, long albumID)
+    static int[] getAlbumTimes(Context context, long albumID)
     {
-        // Check whether to return time string as percentage
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean progressInPercent = prefs.getBoolean(context.getResources().getString(R.string.settings_progress_percentage_key), Boolean.getBoolean(context.getResources().getString(R.string.settings_progress_percentage_default)));
-
         // Query the database for the track completion times
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
@@ -34,10 +31,10 @@ class DBAccessUtils {
                 columns, sel, selArgs, null, null);
 
         if(c == null) {
-            return "";
+            return new int[0];
         }  else if (c.getCount() < 1) {
             c.close();
-            return "";
+            return new int[0];
         }
 
         // Loop through the database rows and sum up the audio durations and completed times
@@ -48,19 +45,10 @@ class DBAccessUtils {
             sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
         }
         c.close();
-
-        // Generate the string for the album completion time
-        String timeStr;
-        if (progressInPercent) {
-            int percent = Math.round(((float)sumCompletedTime / sumDuration) * 100);
-            timeStr = context.getResources().getString(R.string.time_completed_percent, percent);
-        } else {
-            String durationStr = Utils.formatTime(sumDuration, sumDuration);
-            String completedTimeStr = Utils.formatTime(sumCompletedTime, sumDuration);
-            timeStr = context.getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
-        }
-
-        return timeStr;
+        int[] times = new int[2];
+        times[0] = sumCompletedTime;
+        times[1] = sumDuration;
+        return times;
     }
 
 
@@ -239,18 +227,32 @@ class DBAccessUtils {
      * Mark track with the specified id as not started, i.e. set completedTime to 0 in the db
      */
     static void markTrackAsNotStarted(Context context, long trackId) {
+        // Do not mark as not started if the track is currently active in the MediaPlayerService
+        StorageUtil storage = new StorageUtil(context);
+        if (storage.loadAudioId() == trackId) {
+            Toast.makeText(context, R.string.cannot_mark_as_not_started, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Mark as not started
         Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, 0);
         context.getContentResolver().update(uri, values, null, null);
-        context.getContentResolver().notifyChange(uri, null);
     }
 
 
     /*
      * Mark track with the specified id as completed, i.e. set completedTime to totalTime in the db
      */
-    static void markTracksAsCompleted(Context context, long trackId) {
+    static void markTrackAsCompleted(Context context, long trackId) {
+        // Do not mark as completed if the track is currently active in the MediaPlayerService
+        StorageUtil storage = new StorageUtil(context);
+        if (storage.loadAudioId() == trackId) {
+            Toast.makeText(context, R.string.cannot_mark_as_completed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Get total time for the specified track
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry._ID + "=?";
@@ -278,7 +280,6 @@ class DBAccessUtils {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, totalTime);
         context.getContentResolver().update(uri, values, null, null);
-        context.getContentResolver().notifyChange(uri, null);
     }
 
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:drawable="@drawable/ic_unchecked"/>
-    <item android:drawable="@drawable/ic_pause_grey"
+    <item android:drawable="@drawable/ic_speaker_grey"
         android:bottom="@dimen/standard_margin"
         android:right="@dimen/standard_margin"
         android:top="@dimen/standard_margin"

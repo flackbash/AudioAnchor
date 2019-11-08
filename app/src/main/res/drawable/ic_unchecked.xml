@@ -5,10 +5,10 @@
         android:right="@dimen/small_margin"
         android:top="@dimen/small_margin"
         android:left="@dimen/small_margin">
-        <shape xmlns:android="http://schemas.android.com/apk/res/android"
+        <shape
             android:shape="oval">
             <solid
-                android:color="@color/colorBackgroundLight" />
+                android:color="?colorUncheckedIcon" />
             <size
                 android:width="32dp"
                 android:height="32dp"/>

@@ -15,12 +15,12 @@ public class SleepTimer {
     private CountDownTimer mSleepTimer;
 
     private final MediaPlayerService mPlayer;
-    private final TextView mSleepCountDownTV;
+    private TextView mSleepCountDownTV;
     private long mCurrentMillisLeft;
     private int mSecSleepTime;
     private int mFadeOutSec;
 
-    //shake stuff
+    // Shake stuff
     private boolean mShakeDetectionEnabled;
     private final SensorManager mSensorMng;
     private final ShakeDetector mShakeDetector;
@@ -71,11 +71,11 @@ public class SleepTimer {
             public void onTick(long l) {
                 mCurrentMillisLeft = l;
 
-                //update text
+                // Update text
                 String timeString = Utils.formatTime(l, secSleepTime*1000);
                 mSleepCountDownTV.setText(timeString);
 
-                //fade-out
+                // Fade-out
                 if ((l/1000) < mFadeOutSec) {
                     mPlayer.decreaseVolume((int) (mFadeOutSec - (l/1000)), mFadeOutSec);
                 }
@@ -87,6 +87,20 @@ public class SleepTimer {
                 disableTimer();
             }
         };
+    }
+
+    void setNewSleepCountDownTV(TextView countDownTV) {
+        boolean visible = false;
+        if (mSleepCountDownTV.getVisibility() == View.VISIBLE) {
+            visible = true;
+        }
+        mSleepCountDownTV = countDownTV;
+
+        if (visible) {
+            String timeString = Utils.formatTime(mCurrentMillisLeft, mSecSleepTime * 1000);
+            mSleepCountDownTV.setText(timeString);
+            mSleepCountDownTV.setVisibility(View.VISIBLE);
+        }
     }
 
     private void startShakeDetection()
@@ -107,7 +121,7 @@ public class SleepTimer {
             mSleepTimer.cancel();
             mSleepCountDownTV.setVisibility(View.GONE);
 
-            //we need to avoid the application resetting the volume on slower systems before pause.
+            // We need to avoid the application resetting the volume on slower systems before pause.
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
@@ -152,7 +166,7 @@ public class SleepTimer {
         }
     }
 
-    //for callback when timer is finished
+    // For callback when timer is finished
     public void finished() {
     }
 }
@@ -174,17 +188,17 @@ class ShakeDetector implements SensorEventListener
         mShakeTresh = newVal;
     }
 
-    //callback for when a shake has been detected
+    // Callback for when a shake has been detected
     void shakeDetected() {
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        // from https://developer.android.com/guide/topics/sensors/sensors_motion#sensors-motion-accel
+        // From https://developer.android.com/guide/topics/sensors/sensors_motion#sensors-motion-accel
         final int sampleMsec = 100;
         final int settleTime = 2000; //let the filter settle
 
-        //we only sample @ mSampleMsec
+        // We only sample @ mSampleMsec
         if(System.currentTimeMillis() - mLastMeasurementT < sampleMsec) {
             return;
         }

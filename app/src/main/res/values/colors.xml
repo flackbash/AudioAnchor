@@ -8,8 +8,11 @@
     <color name="colorBackgroundLight">#44B8BCC7</color>
     <color name="colorBackgroundLightNoTrans">#E3E4E9</color>
     <color name="colorBackgroundStrong">#BBDBDDE3</color>
+    <color name="colorBackgroundStrongNoTrans">#DBDDE3</color>
+    <color name="colorBackgroundMediumNoTransDarkTheme">#999a9e</color>
     <color name="colorBackgroundLightDarkTheme">#BB6D6E71</color>
     <color name="colorBackgroundStrongDarkTheme">#BB000000</color>
 
+    <color name="colorBackgroundMediumNoTrans">#5b5c5e</color>
     <color name="colorGreyBlue">#536872</color>
 </resources>

@@ -14,7 +14,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.hardware.SensorManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +24,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.Menu;
@@ -46,18 +46,18 @@ import java.util.ArrayList;
 
 public class PlayActivity extends AppCompatActivity {
 
-    public static final String Broadcast_PLAY_NEW_AUDIO = "com.prangesoftwaresolutions.audioanchor.PlayNewAudio";
-    public static final String Broadcast_PAUSE_AUDIO = "com.prangesoftwaresolutions.audioanchor.PauseAudio";
+    public static final String BROADCAST_PLAY_AUDIO = "com.prangesoftwaresolutions.audioanchor.PlayAudio";
+    public static final String BROADCAST_PAUSE_AUDIO = "com.prangesoftwaresolutions.audioanchor.PauseAudio";
 
     private MediaPlayerService mPlayer;
     boolean serviceBound = false;
+    boolean mStopServiceOnDestroy = false;
     BroadcastReceiver mPlayStatusReceiver;
     BroadcastReceiver mNewAudioFileReceiver;
     MediaMetadataRetriever mMetadataRetriever;
 
     // Audio File variables
     AudioFile mAudioFile;
-    private Uri mCurrentUri;
     private String mDirectory;
 
     // The Views
@@ -79,14 +79,7 @@ public class PlayActivity extends AppCompatActivity {
     Runnable mRunnable;
 
     // SleepTimer variables
-    SleepTimer mSleepTimer;
-    boolean mShakeEnabledSetting;
-    int mShakeSensitivitySetting;
-    int mFadeoutTime;
     int mLastSleepTime;
-
-    // Sensor manager
-    SensorManager mSensorManager;
 
     // Bookmark Adapter and Bookmark ListView
     BookmarkCursorAdapter mBookmarkAdapter;
@@ -106,7 +99,7 @@ public class PlayActivity extends AppCompatActivity {
         setContentView(R.layout.activity_play);
 
         // Get the current uri from the intent
-        mCurrentUri = getIntent().getData();
+        Uri mCurrentUri = getIntent().getData();
 
         mCoverIV = findViewById(R.id.play_cover);
         mTitleTV = findViewById(R.id.play_audio_file_title);
@@ -125,9 +118,6 @@ public class PlayActivity extends AppCompatActivity {
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mCoverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
         mTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
-        mShakeEnabledSetting = mSharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
-        mShakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
-        mFadeoutTime = Integer.valueOf(mSharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
         mLastSleepTime = mSharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.valueOf(getString(R.string.preference_last_sleep_val)));
         mDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
 
@@ -137,23 +127,28 @@ public class PlayActivity extends AppCompatActivity {
         setNewAudioFile();
         setAlbumCover();
 
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
         mHandler = new Handler();
-
 
         // Start the play service
         startService();
 
+        // BroadcastReceivers, all related to service events
         mPlayStatusReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.e("PlayActivity", "Received Play Status Broadcast");
                 String s = intent.getStringExtra(MediaPlayerService.SERVICE_MESSAGE_PLAY_STATUS);
                 if (s != null) {
-                    if (s.equals(MediaPlayerService.MSG_PLAY)) {
-                        mPlayIV.setImageResource(R.drawable.pause_button);
-                    } else if (s.equals(MediaPlayerService.MSG_PAUSE)) {
-                        mPlayIV.setImageResource(R.drawable.play_button);
+                    switch (s) {
+                        case MediaPlayerService.MSG_PLAY:
+                            mPlayIV.setImageResource(R.drawable.pause_button);
+                            break;
+                        case MediaPlayerService.MSG_PAUSE:
+                            mPlayIV.setImageResource(R.drawable.play_button);
+                            break;
+                        case MediaPlayerService.MSG_STOP:
+                            mPlayIV.setImageResource(R.drawable.play_button);
+                            break;
                     }
                 }
             }
@@ -226,22 +221,19 @@ public class PlayActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
+        // Register BroadcastReceivers
+        LocalBroadcastManager.getInstance(this).registerReceiver(mPlayStatusReceiver, new IntentFilter(MediaPlayerService.SERVICE_PLAY_STATUS_CHANGE));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mNewAudioFileReceiver, new IntentFilter(MediaPlayerService.SERVICE_NEW_AUDIO));
+        // This needs to be a receiver for global broadcasts, as the deleteIntent is broadcast by
+        // Android's notification framework
+        registerReceiver(mRemoveNotificationReceiver, new IntentFilter(MediaPlayerService.BROADCAST_REMOVE_NOTIFICATION));
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        LocalBroadcastManager.getInstance(this).registerReceiver((mPlayStatusReceiver),
-                new IntentFilter(MediaPlayerService.SERVICE_PLAY_STATUS_CHANGE)
-        );
-        LocalBroadcastManager.getInstance(this).registerReceiver((mNewAudioFileReceiver),
-                new IntentFilter(MediaPlayerService.SERVICE_NEW_AUDIO)
-        );
-        if (mPlayer != null && mPlayer.isPlaying()) {
-            mPlayIV.setImageResource(R.drawable.pause_button);
-        } else{
-            mPlayIV.setImageResource(R.drawable.play_button);
-        }
+        Log.e("PlayActivity", "OnStart called");
+
         if (mPlayer != null) {
             mAudioFile = mPlayer.getCurrentAudioFile();
             setNewAudioFile();
@@ -251,11 +243,20 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
+    protected void onDestroy() {
+        if (serviceBound) {
+            Log.e("PlayActivity", "Unbinding Service");
+            unbindService(serviceConnection);
+        }
+        if (mStopServiceOnDestroy && mPlayer != null) {
+            Log.e("PlayActivity", "Stopping Service");
+            mPlayer.stopSelf();
+        }
+
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mPlayStatusReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mNewAudioFileReceiver);
-        super.onStop();
-
+        unregisterReceiver(mRemoveNotificationReceiver);
+        super.onDestroy();
     }
 
     @Override
@@ -307,6 +308,7 @@ public class PlayActivity extends AppCompatActivity {
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.e("PlayActivity", "OnServiceConnected called");
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
             mPlayer = binder.getService();
@@ -316,12 +318,16 @@ public class PlayActivity extends AppCompatActivity {
             // Initialize the seek bar for the current audio file
             initializeSeekBar();
 
-            // Update the time column of the audiofiles table if it has not yet been set
-            if (mAudioFile.getTime() == 0) {
-                mAudioFile.setTime(mPlayer.getDuration());
-                ContentValues values = new ContentValues();
-                values.put(AnchorContract.AudioEntry.COLUMN_TIME, mAudioFile.getTime());
-                getContentResolver().update(mCurrentUri, values, null, null);
+            // Set the play ImageView
+            if (mPlayer.isPlaying()) {
+                mPlayIV.setImageResource(R.drawable.pause_button);
+            } else{
+                mPlayIV.setImageResource(R.drawable.play_button);
+            }
+
+            // Connect SleepTimerTV if a sleep timer is active
+            if (mPlayer.getSleepTimer() != null) {
+                mPlayer.getSleepTimer().setNewSleepCountDownTV(mSleepCountDownTV);
             }
         }
 
@@ -342,16 +348,15 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     private void playAudio() {
-        // Send a broadcast to the service -> PLAY_NEW_AUDIO
+        // Send a broadcast to the service that the audio should be played
         startService();
-        Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
-        sendBroadcast(broadcastIntent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(BROADCAST_PLAY_AUDIO));
+        mStopServiceOnDestroy = false;
     }
 
     private void pauseAudio() {
-        // Send a broadcast to the service -> PLAY_NEW_AUDIO
-        Intent broadcastIntent = new Intent(Broadcast_PAUSE_AUDIO);
-        sendBroadcast(broadcastIntent);
+        // Send a broadcast to the service that the audio should be paused
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(BROADCAST_PAUSE_AUDIO));
     }
 
     private void storeAudioFiles() {
@@ -368,10 +373,11 @@ public class PlayActivity extends AppCompatActivity {
         StorageUtil storage = new StorageUtil(getApplicationContext());
         storage.storeAudio(audioList);
         storage.storeAudioIndex(audioIndex);
+        storage.storeAudioId(mAudioFile.getId());
     }
 
     private void loadAudioFile(int audioIndex) {
-        //Load data from SharedPreferences
+        // Load data from SharedPreferences
         StorageUtil storage = new StorageUtil(getApplicationContext());
         ArrayList<AudioFile> audioList = new ArrayList<>(storage.loadAudio());
         mAudioFile = audioList.get(audioIndex);
@@ -379,20 +385,16 @@ public class PlayActivity extends AppCompatActivity {
         setAlbumCover();
     }
 
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if(mSleepTimer != null)
-            mSleepTimer.disableTimer();
-
-        if (serviceBound) {
-            unbindService(serviceConnection);
-            //service is active
-            mPlayer.stopSelf();
+    /*
+     * Unbind PlayActivity from MediaPlayerService when the user removes the notification
+     */
+    private BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e("PlayActivity", "Received broadcast 'remove notification'");
+            mStopServiceOnDestroy = true;
         }
-    }
+    };
 
     @Override
     public void onBackPressed() {
@@ -415,15 +417,6 @@ public class PlayActivity extends AppCompatActivity {
         mTitleTV.setText(title);
         mTimeTV.setText(Utils.formatTime(mAudioFile.getTime(), mAudioFile.getTime()));
         mAlbumTV.setText(mAudioFile.getAlbumTitle());
-
-        // Update the time column of the audiofiles table if it has not yet been set
-        if (mPlayer != null && mAudioFile.getTime() == 0) {
-            mAudioFile.setTime(mPlayer.getDuration());
-            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mAudioFile.getId());
-            ContentValues values = new ContentValues();
-            values.put(AnchorContract.AudioEntry.COLUMN_TIME, mAudioFile.getTime());
-            getContentResolver().update(uri, values, null, null);
-        }
     }
 
     /*
@@ -447,14 +440,11 @@ public class PlayActivity extends AppCompatActivity {
 
             byte [] coverData = mmr.getEmbeddedPicture();
 
-            // convert the byte array to a bitmap
-            if(coverData != null)
-            {
+            // Convert the byte array to a bitmap
+            if(coverData != null) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
                 mCoverIV.setImageBitmap(bitmap);
-            }
-            else
-            {
+            } else {
                 BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
             }
         } else {
@@ -505,32 +495,22 @@ public class PlayActivity extends AppCompatActivity {
             // User clicked the OK button so set the sleep timer
             public void onClick(DialogInterface dialog, int id) {
                 String minutesString = setTime.getText().toString();
-                if (minutesString.isEmpty() || minutesString.equals("0")) {
-                    if(mSleepTimer != null) //make it possible to disable timer by entering 0/empty
-                        mSleepTimer.disableTimer();
-                    return;
+                int minutes;
+                if (minutesString.isEmpty()) {
+                    minutes = 0;
+                } else {
+                    minutes = Integer.parseInt(minutesString);
                 }
-                final int minutes = Integer.parseInt(minutesString);
 
-                //save selection in preferences
+                if (mPlayer != null) {
+                    mPlayer.startSleepTimer(minutes, mSleepCountDownTV);
+                }
+
+                // Save selection in preferences
                 mLastSleepTime = minutes;
-                final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                SharedPreferences.Editor editor = sharedPreferences.edit();
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
                 editor.putInt(getString(R.string.preference_last_sleep_key), mLastSleepTime);
                 editor.apply();
-
-                //create and start timer
-                if(mSleepTimer == null) {
-                    mSleepTimer = new SleepTimer(mSleepCountDownTV, mPlayer, mSensorManager) {
-                        @Override
-                        public void finished() {
-                            pauseAudio();
-                        }
-                    };
-                }
-
-                mSleepTimer.createTimer(minutes * 60, mFadeoutTime, mShakeEnabledSetting, mShakeSensitivitySetting / 100f);
-                mSleepTimer.startTimer(false);
             }
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {

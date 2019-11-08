@@ -426,6 +426,8 @@ public class AnchorProvider extends ContentProvider {
         if (rowsUpdated != 0) {
             getContext().getContentResolver().notifyChange(uri, null);
             getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
+            if (uri != AnchorContract.AlbumEntry.CONTENT_URI)
+                getContext().getContentResolver().notifyChange(AnchorContract.AlbumEntry.CONTENT_URI, null);
         }
 
         return rowsUpdated;

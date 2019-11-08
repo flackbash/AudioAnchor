@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * CursorAdapter for the ListView in the Album Activity
@@ -85,8 +87,10 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         // Get the path of the thumbnail of the current recipe and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_file_item_thumbnail);
 
-        // Set the audio status thumbnail to transparent, paused or finished
-        if (completedTime >= duration && duration != 0) {
+        // Set the audio status thumbnail to playing, finished, paused or not started (=transparent)
+        if (isCurrentItemActive(cursor)) {
+            thumbnailIV.setImageResource(R.drawable.ic_playing);
+        } else if (completedTime >= duration && duration != 0) {
             thumbnailIV.setImageResource(R.drawable.ic_checked);
         } else if (completedTime > 0) {
             thumbnailIV.setImageResource(R.drawable.ic_paused);
@@ -101,6 +105,25 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         } else {
             deletableIV.setVisibility(View.GONE);
         }
+    }
 
+    /*
+     * Check if the service is running for the current audio file
+     */
+    private boolean isCurrentItemActive(Cursor cursor) {
+        boolean serviceStarted = Utils.isMediaPlayerServiceRunning(mContext);
+        if (serviceStarted) {
+            StorageUtil storage = new StorageUtil(mContext.getApplicationContext());
+            ArrayList<AudioFile> audioList = new ArrayList<>(storage.loadAudio());
+            int audioIndex = storage.loadAudioIndex();
+            if (audioIndex < audioList.size() && audioIndex != -1) {
+                // Index is in a valid range
+                AudioFile activeAudio = audioList.get(audioIndex);
+                int playingAudioId = activeAudio.getId();
+                int audioId = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry._ID));
+                return playingAudioId == audioId;
+            }
+        }
+        return false;
     }
 }

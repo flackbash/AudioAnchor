@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * CursorAdapter for the ListView in the Main Activity
@@ -68,29 +69,35 @@ public class AlbumCursorAdapter extends CursorAdapter {
         // Get the progress of this album and update the view
         TextView progressTV = view.findViewById(R.id.album_info_time_album);
         int id = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
-        String timeStr = DBAccessUtils.getAlbumCompletionString(context, id);
+        int[] times = DBAccessUtils.getAlbumTimes(context, id);
+        String timeStr = Utils.getTimeString(context, times[0], times[1]);
         progressTV.setText(timeStr);
 
         // Get the path of the thumbnail of the current album and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
-        String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-        int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
-        if (path != null) {
-            path = directory + File.separator + path;
-            if (new File(path).exists()) {
-                Bitmap storedImage = getBitmapFromMemCache(path);
-                if (storedImage != null) {
-                    thumbnailIV.setImageBitmap(storedImage);
+
+        if (isCurrentItemActive(cursor)) {
+            thumbnailIV.setImageResource(R.drawable.ic_playing);
+        } else {
+            String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+            int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
+            if (path != null) {
+                path = directory + File.separator + path;
+                if (new File(path).exists()) {
+                    Bitmap storedImage = getBitmapFromMemCache(path);
+                    if (storedImage != null) {
+                        thumbnailIV.setImageBitmap(storedImage);
+                    } else {
+                        Bitmap image = BitmapUtils.decodeSampledBitmap(path, reqSize, reqSize);
+                        thumbnailIV.setImageBitmap(image);
+                        addBitmapToMemoryCache(path, image);
+                    }
                 } else {
-                    Bitmap image = BitmapUtils.decodeSampledBitmap(path, reqSize, reqSize);
-                    thumbnailIV.setImageBitmap(image);
-                    addBitmapToMemoryCache(path, image);
+                    setEmptyCoverImage(thumbnailIV, reqSize);
                 }
             } else {
                 setEmptyCoverImage(thumbnailIV, reqSize);
             }
-        } else {
-            setEmptyCoverImage(thumbnailIV, reqSize);
         }
 
         // Show the deletable image if the file does not exist anymore
@@ -122,5 +129,25 @@ public class AlbumCursorAdapter extends CursorAdapter {
 
     private Bitmap getBitmapFromMemCache(String key) {
         return mImageCache.get(key);
+    }
+
+    /*
+     * Check if the service is running for an audio file from the current album
+     */
+    private boolean isCurrentItemActive(Cursor cursor) {
+        boolean serviceStarted = Utils.isMediaPlayerServiceRunning(mContext);
+        if (serviceStarted) {
+            StorageUtil storage = new StorageUtil(mContext.getApplicationContext());
+            ArrayList<AudioFile> audioList = new ArrayList<>(storage.loadAudio());
+            int audioIndex = storage.loadAudioIndex();
+            if (audioIndex < audioList.size() && audioIndex != -1) {
+                // Index is in a valid range
+                AudioFile activeAudio = audioList.get(audioIndex);
+                int playingAlbumId = activeAudio.getAlbumId();
+                int albumId = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
+                return playingAlbumId == albumId;
+            }
+        }
+        return false;
     }
 }

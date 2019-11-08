@@ -47,15 +47,27 @@ class StorageUtil {
         editor.apply();
     }
 
+    void storeAudioId(int id) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("audioId", id);
+        editor.apply();
+    }
+
     int loadAudioIndex() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
-        return preferences.getInt("audioIndex", -1);//return -1 if no data found
+        return preferences.getInt("audioIndex", -1);
+    }
+
+    int loadAudioId() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        return preferences.getInt("audioId", -1);
     }
 
     void clearCachedAudioPlaylist() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
-        editor.commit();
+        editor.apply();
     }
 }

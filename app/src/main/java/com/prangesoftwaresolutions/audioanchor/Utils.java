@@ -1,5 +1,6 @@
 package com.prangesoftwaresolutions.audioanchor;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -121,5 +122,38 @@ class Utils {
         }
 
         return millis;
+    }
+
+    /*
+     * Return the time string as percentage or xx:xx / xx:xx depending on the user preferences
+     */
+    static String getTimeString(Context context, int completedTime, int duration) {
+        // Check whether to return time string as percentage
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean progressInPercent = prefs.getBoolean(context.getResources().getString(R.string.settings_progress_percentage_key), Boolean.getBoolean(context.getResources().getString(R.string.settings_progress_percentage_default)));
+
+        String timeStr;
+        if (progressInPercent) {
+            int percent = Math.round(((float)completedTime / duration) * 100);
+            timeStr = context.getResources().getString(R.string.time_completed_percent, percent);
+        } else {
+            String durationStr = Utils.formatTime(duration, duration);
+            String completedTimeStr = Utils.formatTime(completedTime, duration);
+            timeStr = context.getResources().getString(R.string.time_completed, completedTimeStr, durationStr);
+        }
+        return timeStr;
+    }
+
+
+    static boolean isMediaPlayerServiceRunning(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (manager != null) {
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (MediaPlayerService.class.getName().equals(service.service.getClassName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -9,6 +9,7 @@
     <!-- Margins and padding -->
     <dimen name="tiny_margin">4dp</dimen>
     <dimen name="small_margin">8dp</dimen>
+    <dimen name="medium_margin">12dp</dimen>
     <dimen name="standard_margin">16dp</dimen>
     <dimen name="large_margin">24dp</dimen>
 

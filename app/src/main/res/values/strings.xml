@@ -21,6 +21,8 @@
     <string name="bookmark_deleted">Bookmark deleted.</string>
     <string name="tracks_deleted">%d track(s) deleted from database.</string>
     <string name="files_deleted">%d album(s) and %d track(s) deleted from database.</string>
+    <string name="cannot_mark_as_not_started">Cannot mark currently playing track as not started.</string>
+    <string name="cannot_mark_as_completed">Cannot mark currently playing track as completed.</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>
