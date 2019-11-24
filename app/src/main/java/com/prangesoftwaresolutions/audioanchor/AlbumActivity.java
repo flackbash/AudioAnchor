@@ -472,18 +472,15 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                // Get the ListView item for the current audio file
                View v = mListView.getChildAt(index - mListView.getFirstVisiblePosition());
 
-               if (v == null) {
-                   mHandler.postDelayed(this,100);
-                   return;
-               }
-               TextView durationTV = v.findViewById(R.id.audio_file_item_duration);
-
                if(mPlayer!=null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getId() == mCurrUpdatedAudioId){
                    // Set the progress string for the currently playing ListView item
-                   int duration = mPlayer.getCurrentAudioFile().getTime();
                    int completedTime = mPlayer.getCurrentPosition();
-                   String timeStr = Utils.getTimeString(AlbumActivity.this, completedTime, duration);
-                   durationTV.setText(timeStr);
+                   if (v != null) {
+                       TextView durationTV = v.findViewById(R.id.audio_file_item_duration);
+                       int duration = mPlayer.getCurrentAudioFile().getTime();
+                       String timeStr = Utils.getTimeString(AlbumActivity.this, completedTime, duration);
+                       durationTV.setText(timeStr);
+                   }
 
                    // Set the progress string for the album
                    int currCompletedAlbumTime = mAlbumLastCompletedTime - mCurrAudioLastCompletedTime + completedTime;
