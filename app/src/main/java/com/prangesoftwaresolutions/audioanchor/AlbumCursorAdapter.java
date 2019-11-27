@@ -77,8 +77,15 @@ public class AlbumCursorAdapter extends CursorAdapter {
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
 
         if (isCurrentItemActive(cursor)) {
+            boolean darkTheme = mPrefs.getBoolean(mContext.getString(R.string.settings_dark_key), Boolean.getBoolean(mContext.getString(R.string.settings_dark_default)));
+            if (darkTheme) {
+                thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked_dark_theme);
+            } else {
+                thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked);
+            }
             thumbnailIV.setImageResource(R.drawable.ic_playing);
         } else {
+            thumbnailIV.setBackground(null);
             String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
             int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
             if (path != null) {

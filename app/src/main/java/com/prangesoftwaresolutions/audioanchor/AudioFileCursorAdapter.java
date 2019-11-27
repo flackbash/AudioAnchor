@@ -88,6 +88,12 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         ImageView thumbnailIV = view.findViewById(R.id.audio_file_item_thumbnail);
 
         // Set the audio status thumbnail to playing, finished, paused or not started (=transparent)
+        boolean darkTheme = mPrefs.getBoolean(mContext.getString(R.string.settings_dark_key), Boolean.getBoolean(mContext.getString(R.string.settings_dark_default)));
+        if (darkTheme) {
+            thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked_dark_theme);
+        } else {
+            thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked);
+        }
         if (isCurrentItemActive(cursor)) {
             thumbnailIV.setImageResource(R.drawable.ic_playing);
         } else if (completedTime >= duration && duration != 0) {
@@ -95,7 +101,7 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         } else if (completedTime > 0) {
             thumbnailIV.setImageResource(R.drawable.ic_paused);
         } else {
-            thumbnailIV.setImageResource(R.drawable.ic_unchecked);
+            thumbnailIV.setImageDrawable(null);
         }
 
         // Show the deletable image if the file does not exist anymore

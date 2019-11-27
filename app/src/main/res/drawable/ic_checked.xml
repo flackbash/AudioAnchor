@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:drawable="@drawable/ic_unchecked"/>
     <item android:drawable="@drawable/ic_check_grey"
         android:bottom="@dimen/medium_margin"
         android:right="@dimen/medium_margin"

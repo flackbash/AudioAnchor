@@ -11,7 +11,7 @@
         android:id="@+id/audio_file_item_thumbnail"
         android:layout_width="@dimen/audio_file_item_height"
         android:layout_height="@dimen/audio_file_item_height"
-        android:src="@drawable/ic_unchecked"/>
+        android:background="@drawable/ic_unchecked"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
