@@ -30,11 +30,13 @@ class DBAccessUtils {
         Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
                 columns, sel, selArgs, null, null);
 
+        int[] times = new int[2];
+
         if(c == null) {
-            return new int[0];
+            return times;
         }  else if (c.getCount() < 1) {
             c.close();
-            return new int[0];
+            return times;
         }
 
         // Loop through the database rows and sum up the audio durations and completed times
@@ -45,7 +47,7 @@ class DBAccessUtils {
             sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
         }
         c.close();
-        int[] times = new int[2];
+
         times[0] = sumCompletedTime;
         times[1] = sumDuration;
         return times;
