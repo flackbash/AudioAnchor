@@ -384,7 +384,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             }
 
             Log.e("AlbumActivity", "Update currAudioLastCompletedTime");
-            setCompletedTimeUpdater();
+            if (mPlayer.getCurrentAudioFile().getAlbumId() == mAlbumId) {
+                setCompletedTimeUpdater();
+            }
         }
 
         @Override
