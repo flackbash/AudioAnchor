@@ -40,6 +40,12 @@ public class SleepTimer {
     }
 
     void createTimer(final int secSleepTime, int fadeOutSec, boolean shakeDetectionEnabled, float shakeForceRequiredPercent) {
+        // Let the user disable the timer by entering 0 or nothing
+        if (secSleepTime == 0) {
+            disableTimer();
+            return;
+        }
+
         final float mShakeForceMax = 20f;
         final float mShakeForceMin = 0.5f;
 
