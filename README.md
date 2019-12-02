@@ -8,6 +8,7 @@
 AudioAnchor offers a clean and intuitive interface for listening to audio files while keeping track of the listening progress.\
 Additional features include:
 - set bookmarks
+- adjust playback speed
 - export and import listening progress as sql database
 - sleep timer
 - lock screen media controls (for Android 5.0 Lollipop and higher)
@@ -28,9 +29,6 @@ Add cover images to the subdirectories to have a neat looking app as shown in th
 </pre>
 
 Browse and play your audio files just as you would in any other audio player.
-
-**Note:** The audio player stops playing when you press the back button in the PlayActivity.
-This is also when your progress get's saved.
 
 ## Permissions
 AudioAnchor asks for the following permissions:

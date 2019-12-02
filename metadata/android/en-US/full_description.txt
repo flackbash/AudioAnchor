@@ -4,10 +4,11 @@ audio books and podcasts.
 '''Features:'''
 
 AudioAnchor offers a clean and intuitive interface for listening to audio 
-files while keeping track of the listening process. Additional features
+files while keeping track of the listening progress. Additional features
 include:
 
 * set bookmarks
+* adjust playback speed
 * export and import your listening progress as sql database
 * sleep timer
 .
