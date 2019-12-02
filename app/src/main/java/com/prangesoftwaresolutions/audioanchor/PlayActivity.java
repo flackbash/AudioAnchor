@@ -88,6 +88,7 @@ public class PlayActivity extends AppCompatActivity {
     // Settings flags
     private boolean mCoverFromMetadata;
     private boolean mTitleFromMetadata;
+    boolean mDarkTheme;
 
     // Shared preferences
     SharedPreferences mSharedPreferences;
@@ -120,6 +121,8 @@ public class PlayActivity extends AppCompatActivity {
         mTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
         mLastSleepTime = mSharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.valueOf(getString(R.string.preference_last_sleep_val)));
         mDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
+        mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
+
 
         mAudioFile = DBAccessUtils.getAudioFile(this, mCurrentUri, mDirectory);
         mMetadataRetriever = new MediaMetadataRetriever();
@@ -243,6 +246,18 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onRestart() {
+        // Recreate if theme, getCoverFromMetadata or getTitleFromMetadata has changed
+        boolean currentDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
+        boolean currentGetCoverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
+        boolean currentGetTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
+        if (mDarkTheme != currentDarkTheme || mCoverFromMetadata != currentGetCoverFromMetadata || mTitleFromMetadata != currentGetTitleFromMetadata) {
+            recreate();
+        }
+        super.onRestart();
+    }
+
+    @Override
     protected void onDestroy() {
         if (serviceBound) {
             Log.e("PlayActivity", "Unbinding Service");
@@ -282,6 +297,10 @@ public class PlayActivity extends AppCompatActivity {
                 return true;
             case R.id.menu_playback_speed:
                 showPlaybackSpeedDialog();
+                return true;
+            case R.id.menu_settings:
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
             case android.R.id.home:
                 onBackPressed();

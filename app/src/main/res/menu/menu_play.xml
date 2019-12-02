@@ -29,4 +29,11 @@
         android:orderInCategory="110"
         android:title="@string/bookmarks"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:orderInCategory="120"
+        android:title="@string/settings"
+        app:showAsAction="never" />
 </menu>

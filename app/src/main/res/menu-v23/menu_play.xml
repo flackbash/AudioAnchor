@@ -21,7 +21,7 @@
         android:icon="@drawable/ic_speed"
         android:orderInCategory="95"
         android:title="@string/playback_speed"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/menu_goto"
@@ -35,6 +35,13 @@
         android:icon="@drawable/ic_bookmark"
         android:orderInCategory="110"
         android:title="@string/bookmarks"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:orderInCategory="120"
+        android:title="@string/settings"
         app:showAsAction="never" />
 
 </menu>
