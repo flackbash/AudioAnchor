@@ -56,7 +56,7 @@
     <string name="settings_shake_default" translatable="false">false</string>
     <string name="settings_shake_sensitivity_label">Shake sensitivity</string>
     <string name="settings_shake_sensitivity_key" translatable="false">settings_shake_sensitivity</string>
-    <string name="settings_shake_sensitivity_default" translatable="false">25</string>
+    <string name="settings_shake_sensitivity_default" translatable="false">75</string>
     <string name="settings_shake_sensitivity_max" translatable="false">100</string>
     <string name="settings_title_from_metadata_label">Get track title from metadata</string>
     <string name="settings_title_from_metadata_key" translatable="false">settings_title_from_metadata</string>
