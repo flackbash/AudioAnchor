@@ -26,9 +26,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -37,7 +37,6 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
@@ -213,15 +212,17 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    mPlayer.setCurrentPosition(progress*1000);
+                    mPlayer.setCurrentPosition(progress * 1000);
                 }
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
         // Register BroadcastReceivers
@@ -307,7 +308,7 @@ public class PlayActivity extends AppCompatActivity {
                 return true;
         }
 
-        return(super.onOptionsItemSelected(item));
+        return (super.onOptionsItemSelected(item));
     }
 
 
@@ -340,7 +341,7 @@ public class PlayActivity extends AppCompatActivity {
             // Set the play ImageView
             if (mPlayer.isPlaying()) {
                 mPlayIV.setImageResource(R.drawable.pause_button);
-            } else{
+            } else {
                 mPlayIV.setImageResource(R.drawable.play_button);
             }
 
@@ -383,9 +384,9 @@ public class PlayActivity extends AppCompatActivity {
         String sortOrder = "LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
         ArrayList<AudioFile> audioList = DBAccessUtils.getAllAudioFilesFromAlbum(this, mAudioFile.getAlbumId(), sortOrder, mDirectory);
         int audioIndex = -1;
-        for(int i = 0; i < audioList.size(); i++) {
+        for (int i = 0; i < audioList.size(); i++) {
             AudioFile audioFile = audioList.get(i);
-            if(audioFile.getId() == mAudioFile.getId()) {
+            if (audioFile.getId() == mAudioFile.getId()) {
                 audioIndex = i;
             }
         }
@@ -457,10 +458,10 @@ public class PlayActivity extends AppCompatActivity {
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             mmr.setDataSource(mAudioFile.getPath());
 
-            byte [] coverData = mmr.getEmbeddedPicture();
+            byte[] coverData = mmr.getEmbeddedPicture();
 
             // Convert the byte array to a bitmap
-            if(coverData != null) {
+            if (coverData != null) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
                 mCoverIV.setImageBitmap(bitmap);
             } else {
@@ -477,25 +478,25 @@ public class PlayActivity extends AppCompatActivity {
     /*
      * Initialize the SeekBar
      */
-    void initializeSeekBar(){
+    void initializeSeekBar() {
         mRunnable = new Runnable() {
             boolean firstRun = true;
-            
+
             @Override
             public void run() {
-                if(mPlayer!=null){
-                    if(firstRun) {
-                        mSeekBar.setMax(mPlayer.getDuration()/1000);
+                if (mPlayer != null) {
+                    if (firstRun) {
+                        mSeekBar.setMax(mPlayer.getDuration() / 1000);
                         firstRun = false;
                     }
                     int currentPosition = mPlayer.getCurrentPosition();
-                    mSeekBar.setProgress(currentPosition/1000);
+                    mSeekBar.setProgress(currentPosition / 1000);
                     mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mAudioFile.getTime()));
                 }
-                mHandler.postDelayed(mRunnable,100);
+                mHandler.postDelayed(mRunnable, 100);
             }
         };
-        mHandler.postDelayed(mRunnable,100);
+        mHandler.postDelayed(mRunnable, 100);
     }
 
     void showSleepTimerDialog() {
@@ -728,7 +729,7 @@ public class PlayActivity extends AppCompatActivity {
                 // Set the current position of the player to the clicked bookmark
                 TextView positionTV = view.findViewById(R.id.bookmark_position_tv);
                 String positionString = positionTV.getText().toString();
-                int millis = (int)Utils.getMillisFromString(positionString);
+                int millis = (int) Utils.getMillisFromString(positionString);
                 mPlayer.setCurrentPosition(millis);
 
                 // Notify the user about the time jump via a toast
@@ -828,7 +829,7 @@ public class PlayActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
                     int speed = getPlaybackSpeedFromProgress(progress);
-                    float speedFloat = (float)(speed / 10.0);
+                    float speedFloat = (float) (speed / 10.0);
                     playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
                 }
             }
@@ -847,7 +848,7 @@ public class PlayActivity extends AppCompatActivity {
                 editor.apply();
 
                 // Set playback speed to speed selected by the user
-                float speedFloat = (float)(speed / 10.0);
+                float speedFloat = (float) (speed / 10.0);
                 mPlayer.setPlaybackSpeed(speedFloat);
             }
         });
@@ -856,7 +857,7 @@ public class PlayActivity extends AppCompatActivity {
 
         // Set the text of the TextView to the default speed
         int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.valueOf(getString(R.string.preference_playback_speed_default)));
-        float speedFloat = (float)(speed / 10.0);
+        float speedFloat = (float) (speed / 10.0);
         playbackSpeedTV.setText(getString(R.string.playback_speed_label, speedFloat));
 
         // Create and show the AlertDialog

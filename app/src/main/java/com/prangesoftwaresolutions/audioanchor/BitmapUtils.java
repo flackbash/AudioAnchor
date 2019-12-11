@@ -25,7 +25,7 @@ class BitmapUtils {
             return;
         }
         File f = new File(file);
-        if(!f.exists()){
+        if (!f.exists()) {
             return;
         }
         Bitmap bmp = decodeSampledBitmap(file, reqSize, reqSize);

@@ -12,13 +12,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/medium_font_size"
-        android:text="bookmark1"/>
+        android:text="bookmark1" />
+
     <TextView
         android:id="@+id/bookmark_position_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/small_font_size"
-        android:text="02:28:12"/>
+        android:text="02:28:12" />
 
 </LinearLayout>
 

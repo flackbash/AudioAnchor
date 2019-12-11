@@ -5,8 +5,8 @@
         android:title="@string/delete_from_db" />
     <item
         android:id="@+id/menu_mark_as_not_started"
-        android:title="@string/mark_as_not_started"/>
+        android:title="@string/mark_as_not_started" />
     <item
         android:id="@+id/menu_mark_as_completed"
-        android:title="@string/mark_as_completed"/>
+        android:title="@string/mark_as_completed" />
 </menu>

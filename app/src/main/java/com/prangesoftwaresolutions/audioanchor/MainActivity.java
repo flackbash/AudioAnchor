@@ -16,9 +16,10 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaMetadataRetriever;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -30,7 +31,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         }
 
                         // Mark all tracks in the selected albums as not started
-                        for (long trackId : trackIds){
+                        for (long trackId : trackIds) {
                             DBAccessUtils.markTrackAsNotStarted(MainActivity.this, trackId);
                         }
                         actionMode.finish();
@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         }
 
                         // Mark all tracks in the selected albums as completed
-                        for (long trackId : trackIds){
+                        for (long trackId : trackIds) {
                             DBAccessUtils.markTrackAsCompleted(MainActivity.this, trackId);
                         }
                         actionMode.finish();
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 AnchorContract.AlbumEntry.COLUMN_TITLE,
                 AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
 
-        String sortOrder = "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" +AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
+        String sortOrder = "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
 
         return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, null, null, sortOrder);
     }
@@ -483,7 +483,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     private void bindToServiceIfRunning() {
         if (!mServiceBound && !mDoNotBindService && Utils.isMediaPlayerServiceRunning(this)) {
-            Log.e("MainActivity" , "Service is running - binding service");
+            Log.e("MainActivity", "Service is running - binding service");
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
             mServiceBound = true;
@@ -578,22 +578,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 View v = mListView.getChildAt(mCurrPlayingAlbumPosition - mListView.getFirstVisiblePosition());
 
                 if (v == null) {
-                    mHandler.postDelayed(mRunnable,100);
+                    mHandler.postDelayed(mRunnable, 100);
                     return;
                 }
                 TextView durationTV = v.findViewById(R.id.album_info_time_album);
 
-                if(mPlayer!=null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getId() == mCurrUpdatedAudioId){
+                if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getId() == mCurrUpdatedAudioId) {
                     // Set the progress string for the album of the currently playing audio file
                     int completedTime = mPlayer.getCurrentPosition();
                     int currCompletedAlbumTime = mAlbumLastCompletedTime - mCurrAudioLastCompletedTime + completedTime;
                     String albumTimeStr = Utils.getTimeString(MainActivity.this, currCompletedAlbumTime, mAlbumDuration);
                     durationTV.setText(albumTimeStr);
                 }
-                mHandler.postDelayed(mRunnable,100);
+                mHandler.postDelayed(mRunnable, 100);
             }
         };
-        mHandler.postDelayed(mRunnable,100);
+        mHandler.postDelayed(mRunnable, 100);
     }
 
     private void showChangeDirectorySelector() {
@@ -613,7 +613,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         fileDialog.showDialog();
     }
 
-    private void setDirectory(File directory){
+    private void setDirectory(File directory) {
         mDirectory = directory;
         updateDBTables();
 
@@ -698,8 +698,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Delete missing directories from the database
         boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
-        if(!keepDeleted) {
-            for (String title: albumTitles.keySet()) {
+        if (!keepDeleted) {
+            for (String title : albumTitles.keySet()) {
                 int id = albumTitles.get(title);
                 // Delete the album in the albums table
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
@@ -760,7 +760,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Delete missing audio files from the database
         boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
         if (!keepDeleted) {
-            for (String title: audioTitles.keySet()) {
+            for (String title : audioTitles.keySet()) {
                 Integer id = audioTitles.get(title);
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
                 getContentResolver().delete(uri, null, null);
@@ -989,7 +989,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             File[] newFiles = {newDB, newDBShm, newDBWal};
 
             int fileExists = 0;
-            for (int i=0; i < importFiles.length; i++) {
+            for (int i = 0; i < importFiles.length; i++) {
                 if (importFiles[i].exists()) {
                     FileChannel src = new FileInputStream(importFiles[i]).getChannel();
                     FileChannel dst = new FileOutputStream(newFiles[i]).getChannel();

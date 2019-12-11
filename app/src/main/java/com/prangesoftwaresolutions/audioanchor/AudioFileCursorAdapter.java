@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,7 +73,7 @@ public class AudioFileCursorAdapter extends CursorAdapter {
 
         String timeStr;
         if (progressInPercent) {
-            int percent = Math.round(((float)completedTime / duration) * 100);
+            int percent = Math.round(((float) completedTime / duration) * 100);
             timeStr = mContext.getResources().getString(R.string.time_completed_percent, percent);
 
         } else {

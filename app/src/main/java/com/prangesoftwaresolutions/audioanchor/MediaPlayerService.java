@@ -23,11 +23,11 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -187,7 +187,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         super.onDestroy();
         Log.e("MediaPlayerService", "OnDestroy called");
 
-        if(mSleepTimer != null)
+        if (mSleepTimer != null)
             mSleepTimer.disableTimer();
 
         if (mMediaPlayer != null) {
@@ -237,7 +237,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             // Set playback speed according to preferences
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.valueOf(getString(R.string.preference_playback_speed_default)));
-                mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed((float)(speed / 10.0)));
+                mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed((float) (speed / 10.0)));
             }
 
             mMediaPlayer.prepare();
@@ -560,20 +560,20 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         Bitmap notificationCover;
         boolean coverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
 
-        if(coverFromMetadata){
+        if (coverFromMetadata) {
             mMetadataRetriever.setDataSource(mActiveAudio.getPath());
-            byte [] coverData = mMetadataRetriever.getEmbeddedPicture();
+            byte[] coverData = mMetadataRetriever.getEmbeddedPicture();
 
             if (coverData != null) {
                 notificationCover = BitmapUtils.decodeSampledBitmap(coverData, size, size);
-            } else if (mActiveAudio.getCoverPath() != null){
-                notificationCover = BitmapUtils.decodeSampledBitmap(mActiveAudio.getCoverPath(),size, size);
+            } else if (mActiveAudio.getCoverPath() != null) {
+                notificationCover = BitmapUtils.decodeSampledBitmap(mActiveAudio.getCoverPath(), size, size);
             } else {
                 notificationCover = BitmapUtils.decodeSampledBitmap(getResources(), R.drawable.empty_cover_grey_blue, size, size);
             }
         } else {
-            if (mActiveAudio.getCoverPath() != null){
-                notificationCover = BitmapUtils.decodeSampledBitmap(mActiveAudio.getCoverPath(),size, size);
+            if (mActiveAudio.getCoverPath() != null) {
+                notificationCover = BitmapUtils.decodeSampledBitmap(mActiveAudio.getCoverPath(), size, size);
             } else {
                 notificationCover = BitmapUtils.decodeSampledBitmap(getResources(), R.drawable.empty_cover_grey_blue, size, size);
             }
@@ -750,7 +750,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * Skip the specified amount of seconds forward
      */
     void forward(int seconds) {
-        int newPos = Math.min(getDuration(), mMediaPlayer.getCurrentPosition() + seconds*1000);
+        int newPos = Math.min(getDuration(), mMediaPlayer.getCurrentPosition() + seconds * 1000);
         mMediaPlayer.seekTo(newPos);
         updateAudioFileStatus();
     }
@@ -759,7 +759,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * Skip the specified amount of seconds backward
      */
     void backward(int seconds) {
-        int newPos = Math.max(0,mMediaPlayer.getCurrentPosition() - seconds*1000);
+        int newPos = Math.max(0, mMediaPlayer.getCurrentPosition() - seconds * 1000);
         mMediaPlayer.seekTo(newPos);
         updateAudioFileStatus();
     }
@@ -822,7 +822,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     public void sendPlayStatusResult(String message) {
         Intent intent = new Intent(SERVICE_PLAY_STATUS_CHANGE);
-        if(message != null) {
+        if (message != null) {
             intent.putExtra(SERVICE_MESSAGE_PLAY_STATUS, message);
             mBroadcaster.sendBroadcast(intent);
         }
@@ -853,7 +853,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      */
     void startSleepTimer(int minutes, TextView countDownTV) {
         // Create and start timer
-        if(mSleepTimer == null) {
+        if (mSleepTimer == null) {
             mSleepTimer = new SleepTimer(countDownTV, this, mSensorManager) {
                 @Override
                 public void finished() {

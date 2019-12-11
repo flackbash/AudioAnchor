@@ -171,8 +171,7 @@ public class FileDialog {
             }
             childDirectories.get(parentFile.getAbsolutePath()).add(currentPath.getName());
             return parentFile;
-        }
-        else return new File(currentPath, fileChosen);
+        } else return new File(currentPath, fileChosen);
     }
 
     private void setFileEndsWith(String fileEndsWith) {

@@ -1,6 +1,7 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -8,7 +9,6 @@ import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.MenuItem;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -22,7 +22,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        if(mPrefListener == null) {
+        if (mPrefListener == null) {
             mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
@@ -42,15 +42,14 @@ public class SettingsActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             onBackPressed();
-            return  true;
+            return true;
         }
         return super.onOptionsItemSelected(item);
 
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
         mPreferences.unregisterOnSharedPreferenceChangeListener(mPrefListener);
     }
@@ -83,7 +82,7 @@ public class SettingsActivity extends AppCompatActivity {
             updatePrefSummary(pref);
 
             if (s.equals(getString(R.string.settings_autoplay_key))) {
-                boolean isChecked = ((SwitchPreference)pref).isChecked();
+                boolean isChecked = ((SwitchPreference) pref).isChecked();
                 final SwitchPreference autoplayPositionPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_restart_key));
                 if (isChecked) {
                     autoplayPositionPref.setEnabled(true);

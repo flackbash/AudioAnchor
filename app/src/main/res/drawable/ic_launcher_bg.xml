@@ -9,5 +9,5 @@
         android:centerX="0.5"
         android:startColor="@color/colorPrimaryDark"
         android:type="linear"
-        android:height="300dp"/>
+        android:height="300dp" />
 </shape>

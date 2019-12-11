@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -9,12 +8,14 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="5">
+
         <ImageView
             android:id="@+id/play_cover"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/empty_cover_grey_blue"
-            android:scaleType="fitCenter"/>
+            android:scaleType="fitCenter" />
+
         <TextView
             android:id="@+id/play_audio_file_title"
             android:layout_width="match_parent"
@@ -24,6 +25,7 @@
             android:padding="@dimen/small_margin"
             android:text="@string/title"
             android:background="?playActivityHeaderBG" />
+
         <TextView
             android:id="@+id/play_album_title"
             android:layout_width="match_parent"
@@ -33,8 +35,7 @@
             android:layout_below="@+id/play_audio_file_title"
             android:gravity="center_horizontal"
             android:text="@string/album"
-            android:background="?playActivityHeaderBG"
-            />
+            android:background="?playActivityHeaderBG" />
     </RelativeLayout>
 
     <LinearLayout
@@ -58,8 +59,8 @@
                 android:src="@drawable/play_button"
                 android:layout_centerHorizontal="true"
                 android:layout_marginStart="@dimen/small_margin"
-                android:layout_marginEnd="@dimen/small_margin"
-                />
+                android:layout_marginEnd="@dimen/small_margin" />
+
             <ImageView
                 android:id="@+id/play_forward"
                 android:layout_width="@dimen/skip_button_height"
@@ -67,8 +68,8 @@
                 android:src="@drawable/forward_button"
                 android:layout_toEndOf="@+id/play_forward_10"
                 android:layout_marginStart="@dimen/small_margin"
-                android:layout_centerVertical="true"
-                />
+                android:layout_centerVertical="true" />
+
             <ImageView
                 android:id="@+id/play_backward"
                 android:layout_width="@dimen/skip_button_height"
@@ -76,8 +77,8 @@
                 android:src="@drawable/backward_button"
                 android:layout_toStartOf="@+id/play_backward_10"
                 android:layout_marginEnd="@dimen/small_margin"
-                android:layout_centerVertical="true"
-                />
+                android:layout_centerVertical="true" />
+
             <ImageView
                 android:id="@+id/play_backward_10"
                 android:layout_width="@dimen/skip_button_height_big"
@@ -85,8 +86,8 @@
                 android:src="@drawable/backward_10_button"
                 android:layout_toStartOf="@+id/play_play"
                 android:layout_marginEnd="@dimen/small_margin"
-                android:layout_centerVertical="true"
-                />
+                android:layout_centerVertical="true" />
+
             <ImageView
                 android:id="@+id/play_forward_10"
                 android:layout_width="@dimen/skip_button_height_big"
@@ -94,19 +95,20 @@
                 android:src="@drawable/forward_10_button"
                 android:layout_toEndOf="@+id/play_play"
                 android:layout_marginStart="@dimen/small_margin"
-                android:layout_centerVertical="true"
-                />
+                android:layout_centerVertical="true" />
 
         </RelativeLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <SeekBar
                 android:id="@+id/play_seekbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/small_margin"
-                />
+                android:layout_marginTop="@dimen/small_margin" />
+
             <TextView
                 android:id="@+id/play_completed_time"
                 android:layout_width="wrap_content"
@@ -115,7 +117,8 @@
                 android:paddingStart="@dimen/small_margin"
                 android:paddingEnd="@dimen/small_margin"
                 android:textSize="@dimen/small_font_size"
-                android:text="00:00"/>
+                android:text="00:00" />
+
             <TextView
                 android:id="@+id/play_time"
                 android:layout_width="wrap_content"
@@ -125,7 +128,8 @@
                 android:paddingEnd="@dimen/small_margin"
                 android:layout_alignParentEnd="true"
                 android:textSize="@dimen/small_font_size"
-                android:text="00:00"/>
+                android:text="00:00" />
+
             <TextView
                 android:id="@+id/play_sleep_time"
                 android:layout_width="match_parent"
@@ -137,7 +141,7 @@
                 android:layout_toStartOf="@+id/play_time"
                 android:textSize="@dimen/small_font_size"
                 android:gravity="center_horizontal"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
         </RelativeLayout>
 

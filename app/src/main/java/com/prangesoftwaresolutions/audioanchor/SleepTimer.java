@@ -52,7 +52,7 @@ public class SleepTimer {
         mFadeOutSec = fadeOutSec;
         mShakeDetectionEnabled = shakeDetectionEnabled;
 
-        if(shakeForceRequiredPercent <= 1f && shakeForceRequiredPercent >= 0f) {
+        if (shakeForceRequiredPercent <= 1f && shakeForceRequiredPercent >= 0f) {
             mShakeForceRequired = ((mShakeForceMax - mShakeForceMin) * shakeForceRequiredPercent) + mShakeForceMin;
             mShakeDetector.setShakeTresh(mShakeForceRequired);
         }
@@ -68,7 +68,7 @@ public class SleepTimer {
         String timeString = Utils.formatTime(millis, millis);
         mSleepCountDownTV.setText(timeString);
 
-        if(mSleepTimer != null)
+        if (mSleepTimer != null)
             mSleepTimer.cancel();
 
         mSleepTimer = new CountDownTimer(millis, 1000) {
@@ -78,12 +78,12 @@ public class SleepTimer {
                 mCurrentMillisLeft = l;
 
                 // Update text
-                String timeString = Utils.formatTime(l, secSleepTime*1000);
+                String timeString = Utils.formatTime(l, secSleepTime * 1000);
                 mSleepCountDownTV.setText(timeString);
 
                 // Fade-out
-                if ((l/1000) < mFadeOutSec) {
-                    mPlayer.decreaseVolume((int) (mFadeOutSec - (l/1000)), mFadeOutSec);
+                if ((l / 1000) < mFadeOutSec) {
+                    mPlayer.decreaseVolume((int) (mFadeOutSec - (l / 1000)), mFadeOutSec);
                 }
             }
 
@@ -109,9 +109,8 @@ public class SleepTimer {
         }
     }
 
-    private void startShakeDetection()
-    {
-        if(mSensorMng != null) {
+    private void startShakeDetection() {
+        if (mSensorMng != null) {
             Sensor sensor = mSensorMng.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             mSensorMng.registerListener(
                     mShakeDetector,
@@ -123,7 +122,7 @@ public class SleepTimer {
     void disableTimer() {
         mCurrentMillisLeft = 0;
 
-        if(mSleepTimer != null) {
+        if (mSleepTimer != null) {
             mSleepTimer.cancel();
             mSleepCountDownTV.setVisibility(View.GONE);
 
@@ -137,37 +136,36 @@ public class SleepTimer {
             }, 500);
         }
 
-        if(mSensorMng != null) {
+        if (mSensorMng != null) {
             mSensorMng.unregisterListener(mShakeDetector);
         }
     }
 
     private void restartTimer() {
-        if(mCurrentMillisLeft > 0) {
+        if (mCurrentMillisLeft > 0) {
             mSleepTimer.cancel();
             mPlayer.setVolume(1.0f);
             createTimer(mSecSleepTime);
         }
 
-        if(mSensorMng != null) {
+        if (mSensorMng != null) {
             mSensorMng.unregisterListener(mShakeDetector);
         }
     }
 
     void startTimer(boolean onlyIfPlaying) {
-        if(mCurrentMillisLeft <= 0)
+        if (mCurrentMillisLeft <= 0)
             return;
 
-        if(onlyIfPlaying) {
-            if(mPlayer.isPlaying()) {
+        if (onlyIfPlaying) {
+            if (mPlayer.isPlaying()) {
                 mSleepTimer.start();
-                if(mShakeDetectionEnabled)
+                if (mShakeDetectionEnabled)
                     startShakeDetection();
             }
-        }
-        else {
+        } else {
             mSleepTimer.start();
-            if(mShakeDetectionEnabled)
+            if (mShakeDetectionEnabled)
                 startShakeDetection();
         }
     }
@@ -177,15 +175,14 @@ public class SleepTimer {
     }
 }
 
-class ShakeDetector implements SensorEventListener
-{
+class ShakeDetector implements SensorEventListener {
     private final float[] mGravity = {0, 0, 0};
     private final float[] mLinearAcc = {0, 0, 0};
     private long mLastMeasurementT = 0;
     private float mShakeTresh;
     final private long mStartTime;
 
-    ShakeDetector (float forceRequired) {
+    ShakeDetector(float forceRequired) {
         mShakeTresh = forceRequired;
         mStartTime = System.currentTimeMillis();
     }
@@ -205,7 +202,7 @@ class ShakeDetector implements SensorEventListener
         final int settleTime = 2000; //let the filter settle
 
         // We only sample @ mSampleMsec
-        if(System.currentTimeMillis() - mLastMeasurementT < sampleMsec) {
+        if (System.currentTimeMillis() - mLastMeasurementT < sampleMsec) {
             return;
         }
         mLastMeasurementT = System.currentTimeMillis();
@@ -223,7 +220,7 @@ class ShakeDetector implements SensorEventListener
         mLinearAcc[2] = sensorEvent.values[2] - mGravity[2];
 
         float totalAcc = mLinearAcc[0] + mLinearAcc[1] + mLinearAcc[2];
-        if(totalAcc > mShakeTresh && System.currentTimeMillis() - mStartTime > settleTime) {
+        if (totalAcc > mShakeTresh && System.currentTimeMillis() - mStartTime > settleTime) {
             shakeDetected();
             Log.d("SHAKE", "Shake with force of: " + totalAcc);
         }

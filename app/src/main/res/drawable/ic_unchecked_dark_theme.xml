@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:bottom="@dimen/small_margin"
         android:right="@dimen/small_margin"
         android:top="@dimen/small_margin"
         android:left="@dimen/small_margin">
-        <shape
-            android:shape="oval">
-            <solid
-                android:color="@color/colorBackgroundMediumNoTransDarkTheme" />
+        <shape android:shape="oval">
+            <solid android:color="@color/colorBackgroundMediumNoTransDarkTheme" />
             <size
                 android:width="32dp"
-                android:height="32dp"/>
+                android:height="32dp" />
         </shape>
     </item>
 </layer-list>
