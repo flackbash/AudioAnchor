@@ -128,12 +128,7 @@ public class SleepTimer {
 
             // We need to avoid the application resetting the volume on slower systems before pause.
             Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mPlayer.setVolume(1.0f);
-                }
-            }, 500);
+            handler.postDelayed(() -> mPlayer.setVolume(1.0f), 500);
         }
 
         if (mSensorMng != null) {

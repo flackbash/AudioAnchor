@@ -497,10 +497,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     if (event.getRepeatCount() == 0) {
                         switch (keycode) {
                             case KeyEvent.KEYCODE_MEDIA_STOP:
+                            case KeyEvent.KEYCODE_MEDIA_PAUSE:
                                 pause();
                                 break;
                             case KeyEvent.KEYCODE_HEADSETHOOK:
                             case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                            case KeyEvent.KEYCODE_MEDIA_PLAY:
                                 if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
                                 else play();
                                 break;
@@ -509,13 +511,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                                 break;
                             case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
                                 backward(30);
-                                break;
-                            case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                                pause();
-                                break;
-                            case KeyEvent.KEYCODE_MEDIA_PLAY:
-                                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
-                                else play();
                                 break;
                         }
                         return true;

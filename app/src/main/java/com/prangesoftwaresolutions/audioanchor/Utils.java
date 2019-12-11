@@ -34,12 +34,10 @@ class Utils {
      */
     static String getImagePath(File dir) {
         // Search only for files that are images
-        FilenameFilter imgFilter = new FilenameFilter() {
-            public boolean accept(File dir, String filename) {
-                File sel = new File(dir, filename);
-                // Only list files that are readable and images
-                return sel.getName().endsWith(".jpg") || sel.getName().endsWith(".jpeg") || sel.getName().endsWith(".png");
-            }
+        FilenameFilter imgFilter = (dir1, filename) -> {
+            File sel = new File(dir1, filename);
+            // Only list files that are readable and images
+            return sel.getName().endsWith(".jpg") || sel.getName().endsWith(".jpeg") || sel.getName().endsWith(".png");
         };
 
         String[] fileList = dir.list(imgFilter);

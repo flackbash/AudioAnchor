@@ -23,12 +23,9 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         if (mPrefListener == null) {
-            mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-                @Override
-                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                    if (key.equals(getString(R.string.settings_dark_key))) {
-                        recreate();
-                    }
+            mPrefListener = (prefs, key) -> {
+                if (key.equals(getString(R.string.settings_dark_key))) {
+                    recreate();
                 }
             };
         }

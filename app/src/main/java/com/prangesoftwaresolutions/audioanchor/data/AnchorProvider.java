@@ -203,7 +203,6 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM:
                 return AnchorContract.AlbumEntry.CONTENT_LIST_TYPE;
             case BOOKMARK:
-                return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
             case AUDIO_ALBUM:
                 return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
             case AUDIO_ID:
@@ -211,7 +210,6 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM_ID:
                 return AnchorContract.AlbumEntry.CONTENT_ITEM_TYPE;
             case BOOKMARK_ID:
-                return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
             case AUDIO_ALBUM_ID:
                 return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
             default:
@@ -519,9 +517,7 @@ public class AnchorProvider extends ContentProvider {
         // Check whether the time will be updated and that it is not null
         if (values.containsKey(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME)) {
             String val = values.getAsString(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME);
-            if (val == null) {
-                return false;
-            }
+            return val != null;
         }
         return true;
     }
@@ -534,9 +530,7 @@ public class AnchorProvider extends ContentProvider {
         // Check whether the title will be updated and that the new title is not null
         if (values.containsKey(AnchorContract.AlbumEntry.COLUMN_TITLE)) {
             String val = values.getAsString(AnchorContract.AlbumEntry.COLUMN_TITLE);
-            if (val == null) {
-                return false;
-            }
+            return val != null;
         }
         return true;
     }
@@ -563,9 +557,7 @@ public class AnchorProvider extends ContentProvider {
         // Check whether the audio file id will be updated and that the new id is not null
         if (values.containsKey(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE)) {
             String val = values.getAsString(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE);
-            if (val == null) {
-                return false;
-            }
+            return val != null;
         }
         return true;
     }
