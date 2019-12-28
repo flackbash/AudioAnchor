@@ -1,0 +1,79 @@
+<resources>
+    <string name="channel_name">Pokaż sterowanie multimediami</string>
+    <string name="channel_description">Kanał powiadomień do wyświetlania elementów sterujących mediami.</string>
+
+    <!-- Toast messages -->
+    <string name="no_albums">Nie znaleziono żadnych albumów w podanym katalogu.</string>
+    <string name="no_audio_files">Nie znaleziono żadnych plików audio w tym albumie.</string>
+    <string name="play_error">Wybrany plik audio nie nie może być odtwarzany. Możliwe, że ten plik już nie istnieje.</string>
+    <string name="permission_denied">Nie udzielono niezbędnej zgody. Zamknięto AudioAnchor.</string>
+    <string name="write_permission_denied">Nie udzielono niezbędnej zgody. Eksport nie może zostać wykonany.</string>
+    <string name="time_format_error">Proszę wpisać prawidłowy czas w formacie hh:mm:ss.</string>
+    <string name="import_success">Importowanie udane :)</string>
+    <string name="import_fail">Coś poszło nie tak. Import nie powiódł się.</string>
+    <string name="export_success">Wyeksportowano bazę danych do %s</string>
+    <string name="export_fail">Coś poszło nie tak. Eksport nie powiódł się.</string>
+    <string name="synchronize_success">Zsynchronizowano katalog.</string>
+    <string name="audio_file_error">Wystąpił problem z plikami audio w tym katalogu.</string>
+    <string name="empty_title_error">Proszę wpisać tytuł swojej zakładki.</string>
+    <string name="jumped_to_bookmark">Skoczono do zakładki \"%s\" w %s</string>
+    <string name="bookmark_deleted">Usunięto zakładkę.</string>
+    <string name="tracks_deleted">Usunięto %d ścieżkę(-ki) dźwiękową(-wych) z bazy danych.</string>
+    <string name="files_deleted">Usunięto %d album(y/ów) i %d ścieżek dźwiękowych z bazy danych.</string>
+    <string name="cannot_mark_as_not_started">Nie można oznaczyć aktualnie odtwarzanego utworu jako nierozpoczęty.</string>
+    <string name="cannot_mark_as_completed">Nie można oznaczyć aktualnie odtwarzanego utworu jako ukończony.</string>
+
+    <!-- Settings strings -->
+    <string name="settings_autoplay_label">Auto-odtwarzanie</string>
+    <string name="settings_autoplay_restart_label">Odtwarzaj utwory od początku w kolejce auto-odtwarzania</string>
+    <string name="settings_progress_percentage_label">Pokaż postęp w procentach</string>
+    <string name="settings_keep_deleted_label">Zachowaj postęp usuniętych plików w bazie danych</string>
+    <string name="settings_cover_from_metadata_label">Uzyskaj obraz okładki z metadanych</string>
+    <string name="settings_sleep_timer_category">Wyłącznik czasowy</string>
+    <string name="settings_sleep_fadeout_label">Czas wygaszania</string>
+    <string name="settings_shake_label">Potrząśnij, aby zresetować wyłącznik czasowy</string>
+    <string name="settings_shake_sensitivity_label">Czułość wstrząsania</string>
+    <string name="settings_title_from_metadata_label">Uzyskaj tytuł utworu z metadanych</string>
+    <string name="settings_dark_label">Ciemny motyw</string>
+    <string name="settings_display_category">Display</string>
+    <string name="settings_playback_category">Odtwarzanie</string>
+    <string name="settings_miscellaneous_category">Różne</string>
+
+    <!-- Layout Texts -->
+    <string name="title">Tytuł</string>
+    <string name="album">Album</string>
+    <string name="choose_directory">Wybierz katalog</string>
+    <string name="settings">Ustawienia</string>
+    <string name="time_completed_percent">ukończono %d%%</string>
+    <string name="sleep_timer">Wyłącznik czasowy</string>
+    <string name="go_to">Przejdź do</string>
+    <string name="set_bookmark">Ustaw zakładkę</string>
+    <string name="edit_bookmark">Edytuj zakładkę</string>
+    <string name="about">O aplikacji</string>
+    <string name="export_db">Eksportuj bazę danych</string>
+    <string name="import_db">Importuj bazę danych</string>
+    <string name="synchronize">Synchronizuj</string>
+    <string name="set_bookmark_name">Wpisz nazwę zakładki</string>
+    <string name="set_bookmark_at">Ustaw zakładkę w</string>
+    <string name="no_bookmarks">Nie ma zakładek dla tego pliku audio</string>
+    <string name="bookmarks">Zakładki</string>
+    <string name="delete_from_db">Usuń z bazy danych</string>
+    <string name="mark_as_not_started">Oznacz jako nie rozpoczęty</string>
+    <string name="mark_as_completed">Oznacz jako ukończony</string>
+    <string name="items_selected">%d zaznaczonych</string>
+    <string name="mark_all_as_not_started">Oznacz wszystkie ścieżki dźwiękowe jako nie rozpoczęte</string>
+    <string name="mark_all_as_completed">Oznacz wszystkie ścieżki dźwiękowe jako ukończone</string>
+    <string name="playback_speed">Prędkość odtwarzania</string>
+
+    <!-- Dialog strings -->
+    <string name="dialog_msg_change_dir">Zmiana katalogu spowoduje zresetowanie wszystkich zapisanych stanów odtwarzanych plików audio. Czy chcesz zmienić katalog?</string>
+    <string name="dialog_msg_sleep_timer">Wprowadź liczbę minut, przez które odtwarzacz powinien dalej odtwarzać</string>
+    <string name="dialog_msg_ok">OK</string>
+    <string name="dialog_msg_cancel">Anuluj</string>
+    <string name="dialog_msg_close">Zamknij</string>
+    <string name="dialog_msg_delete">Usuń</string>
+    <string name="dialog_msg_goto">Wprowadź czas, do którego chcesz skoczyć</string>
+    <string name="dialog_msg_delete_album">Czy na pewno chcesz usunąć wybrany album(y) i ich zawartość z bazy danych? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</string>
+    <string name="dialog_msg_delete_audio">Czy na pewno chcesz usunąć wybraną ścieżkę(-ki) z bazy danych? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</string>
+    <string name="dialog_msg_delete_bookmark">Usunąć tę zakładkę?</string>
+</resources>
