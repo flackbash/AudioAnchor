@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
-        <shape
-            android:shape="rectangle">
+        <shape android:shape="rectangle">
             <corners android:radius="120dp" />
 
             <gradient
@@ -11,7 +10,7 @@
                 android:centerX="0.5"
                 android:startColor="@color/colorPrimaryDark"
                 android:type="linear"
-                android:height="300dp"/>
+                android:height="300dp" />
         </shape>
     </item>
     <item android:drawable="@drawable/audioanchor_icon_small"></item>

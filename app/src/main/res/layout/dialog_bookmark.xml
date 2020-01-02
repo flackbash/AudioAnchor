@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -11,7 +10,7 @@
         android:layout_height="wrap_content"
         android:textSize="@dimen/medium_font_size"
         android:text="@string/set_bookmark_name"
-        android:layout_marginTop="@dimen/standard_margin"/>
+        android:layout_marginTop="@dimen/standard_margin" />
 
     <EditText
         android:id="@+id/bookmark_title_et"
@@ -23,13 +22,13 @@
         android:inputType="text"
         android:minWidth="@dimen/standard_text_view_width"
         android:gravity="center_horizontal"
-        android:layout_marginBottom="@dimen/standard_margin"/>
+        android:layout_marginBottom="@dimen/standard_margin" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/medium_font_size"
-        android:text="@string/set_bookmark_at"/>
+        android:text="@string/set_bookmark_at" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,13 +44,15 @@
             android:inputType="time"
             android:padding="@dimen/small_margin"
             android:gravity="center_horizontal"
-            android:maxLength="2"/>
+            android:maxLength="2" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/medium_font_size"
             android:gravity="center_horizontal"
-            android:text=":"/>
+            android:text=":" />
+
         <EditText
             android:id="@+id/goto_minutes"
             android:layout_width="wrap_content"
@@ -60,13 +61,15 @@
             android:inputType="time"
             android:padding="@dimen/small_margin"
             android:gravity="center_horizontal"
-            android:maxLength="2"/>
+            android:maxLength="2" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/medium_font_size"
             android:gravity="center_horizontal"
-            android:text=":"/>
+            android:text=":" />
+
         <EditText
             android:id="@+id/goto_seconds"
             android:layout_width="wrap_content"
@@ -75,7 +78,7 @@
             android:inputType="time"
             android:padding="@dimen/small_margin"
             android:gravity="center_horizontal"
-            android:maxLength="2"/>
+            android:maxLength="2" />
 
     </LinearLayout>
 

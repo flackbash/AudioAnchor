@@ -28,7 +28,7 @@
             android:textSize="@dimen/big_font_size"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
-            android:singleLine="true"/>
+            android:singleLine="true" />
 
         <TextView
             android:id="@+id/album_info_time_album"
@@ -38,7 +38,7 @@
             android:paddingStart="@dimen/small_margin"
             android:paddingEnd="@dimen/small_margin"
             android:textSize="@dimen/small_font_size"
-            android:layout_below="@id/audio_storage_item_title"/>
+            android:layout_below="@id/audio_storage_item_title" />
 
         <ImageView
             android:id="@+id/album_item_deletable_img"
@@ -48,7 +48,7 @@
             android:layout_alignParentBottom="true"
             android:src="@drawable/ic_deletable"
             android:tint="?colorDeletableIcon"
-            android:visibility="gone"/>
+            android:visibility="gone" />
     </RelativeLayout>
 
 </LinearLayout>

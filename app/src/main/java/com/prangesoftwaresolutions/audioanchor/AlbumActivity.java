@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
@@ -14,6 +13,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -21,14 +21,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -40,7 +38,7 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import java.io.File;
 import java.util.ArrayList;
 
-public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
+public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     // The album uri and file
     private long mAlbumId;
@@ -114,40 +112,37 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         mListView.setEmptyView(mEmptyTV);
 
         // Implement onItemClickListener for the list view
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
-                Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, rowId);
+        mListView.setOnItemClickListener((adapterView, view, i, rowId) -> {
+            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, rowId);
 
-                // Check if the audio file exists
-                AudioFile audio = DBAccessUtils.getAudioFile(AlbumActivity.this, uri, mDirectory);
-                if (!(new File(audio.getPath())).exists()) {
-                    Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                // If the MediaPlayerService is bound, check if it is playing the file that was
-                // clicked. If not, stop the current service and let the PlayActivity start a new
-                // one
-                if (mServiceBound && mPlayer.getCurrentAudioFile().getId() != audio.getId()) {
-                    Log.e("AlbumActivity", "Unbinding Service ");
-                    unbindService(serviceConnection);
-                    mServiceBound = false;
-                    LocalBroadcastManager.getInstance(AlbumActivity.this).sendBroadcast(new Intent(MediaPlayerService.BROADCAST_UNBIND_CURRENT_SERVICE));
-                    mPlayer.stopSelf();
-                }
-
-                // When returning to the Album or MainActivity next time, the service should be
-                // bound again (unless the notification was removed in which case the flag is set to
-                // true in the RemoveNotificationReceiver)
-                mDoNotBindService = false;
-                LocalBroadcastManager.getInstance(AlbumActivity.this).sendBroadcast(new Intent(MediaPlayerService.BROADCAST_RESET));
-
-                // Open the PlayActivity for the clicked audio file
-                Intent intent = new Intent(AlbumActivity.this, PlayActivity.class);
-                intent.setData(uri);
-                startActivity( intent );
+            // Check if the audio file exists
+            AudioFile audio = DBAccessUtils.getAudioFile(AlbumActivity.this, uri, mDirectory);
+            if (!(new File(audio.getPath())).exists()) {
+                Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_LONG).show();
+                return;
             }
+
+            // If the MediaPlayerService is bound, check if it is playing the file that was
+            // clicked. If not, stop the current service and let the PlayActivity start a new
+            // one
+            if (mServiceBound && mPlayer.getCurrentAudioFile().getId() != audio.getId()) {
+                Log.e("AlbumActivity", "Unbinding Service ");
+                unbindService(serviceConnection);
+                mServiceBound = false;
+                LocalBroadcastManager.getInstance(AlbumActivity.this).sendBroadcast(new Intent(MediaPlayerService.BROADCAST_UNBIND_CURRENT_SERVICE));
+                mPlayer.stopSelf();
+            }
+
+            // When returning to the Album or MainActivity next time, the service should be
+            // bound again (unless the notification was removed in which case the flag is set to
+            // true in the RemoveNotificationReceiver)
+            mDoNotBindService = false;
+            LocalBroadcastManager.getInstance(AlbumActivity.this).sendBroadcast(new Intent(MediaPlayerService.BROADCAST_RESET));
+
+            // Open the PlayActivity for the clicked audio file
+            Intent intent = new Intent(AlbumActivity.this, PlayActivity.class);
+            intent.setData(uri);
+            startActivity(intent);
         });
 
         // See https://developer.android.com/guide/topics/ui/menus.html#CAB for details
@@ -216,19 +211,16 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         });
 
         // Set up the FAB onClickListener
-        mPlayPauseFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mPlayer == null) {
-                    return;
-                }
-                if (mPlayer.isPlaying()) {
-                    Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PAUSE_AUDIO);
-                    LocalBroadcastManager.getInstance(AlbumActivity.this).sendBroadcast(broadcastIntent);
-                } else {
-                    Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PLAY_AUDIO);
-                    LocalBroadcastManager.getInstance(AlbumActivity.this).sendBroadcast(broadcastIntent);
-                }
+        mPlayPauseFAB.setOnClickListener(view -> {
+            if (mPlayer == null) {
+                return;
+            }
+            if (mPlayer.isPlaying()) {
+                Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PAUSE_AUDIO);
+                LocalBroadcastManager.getInstance(AlbumActivity.this).sendBroadcast(broadcastIntent);
+            } else {
+                Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PLAY_AUDIO);
+                LocalBroadcastManager.getInstance(AlbumActivity.this).sendBroadcast(broadcastIntent);
             }
         });
 
@@ -359,7 +351,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 return true;
         }
 
-        return(super.onOptionsItemSelected(item));
+        return (super.onOptionsItemSelected(item));
     }
 
     /*
@@ -401,7 +393,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     private void bindToServiceIfRunning() {
         Log.e("AlbumActivity", "service bound: " + mServiceBound + "do not bind service: " + mDoNotBindService);
         if (!mServiceBound && !mDoNotBindService && Utils.isMediaPlayerServiceRunning(this)) {
-            Log.e("AlbumActivity" , "Service is running - binding service");
+            Log.e("AlbumActivity", "Service is running - binding service");
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
             mServiceBound = true;
@@ -414,20 +406,20 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     private BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-        Log.e("AlbumActivity", "Received broadcast 'remove notification'");
-        if (mServiceBound) {
-            unbindService(serviceConnection);
-            mServiceBound = false;
-        }
-        mPlayPauseFAB.setVisibility(View.GONE);
-        mDoNotBindService = true;
+            Log.e("AlbumActivity", "Received broadcast 'remove notification'");
+            if (mServiceBound) {
+                unbindService(serviceConnection);
+                mServiceBound = false;
+            }
+            mPlayPauseFAB.setVisibility(View.GONE);
+            mDoNotBindService = true;
         }
     };
 
     /*
      * Receive broadcasts about the current play status of the MediaPlayerService
      */
-   private BroadcastReceiver mPlayStatusReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mPlayStatusReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("AlbumActivity", "Received PlayStatus Broadcast");
@@ -452,48 +444,48 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         }
     };
 
-   /*
-    * Update the progress for the currently playing ListView item as well as the album progress
-    * while a track is playing
-    */
-   private void setCompletedTimeUpdater() {
-       mHandler = new Handler();
-       mRunnable = new Runnable() {
-           @Override
-           public void run() {
-               // Stop runnable when service is unbound
-               if (!mServiceBound) {
-                   mHandler.removeCallbacks(mRunnable);
-                   return;
-               }
+    /*
+     * Update the progress for the currently playing ListView item as well as the album progress
+     * while a track is playing
+     */
+    private void setCompletedTimeUpdater() {
+        mHandler = new Handler();
+        mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // Stop runnable when service is unbound
+                if (!mServiceBound) {
+                    mHandler.removeCallbacks(mRunnable);
+                    return;
+                }
 
-               // Get index of the current audio file in the list view
-               StorageUtil storage = new StorageUtil(getApplicationContext());
-               int index = storage.loadAudioIndex();
+                // Get index of the current audio file in the list view
+                StorageUtil storage = new StorageUtil(getApplicationContext());
+                int index = storage.loadAudioIndex();
 
-               // Get the ListView item for the current audio file
-               View v = mListView.getChildAt(index - mListView.getFirstVisiblePosition());
+                // Get the ListView item for the current audio file
+                View v = mListView.getChildAt(index - mListView.getFirstVisiblePosition());
 
-               if(mPlayer!=null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getId() == mCurrUpdatedAudioId){
-                   // Set the progress string for the currently playing ListView item
-                   int completedTime = mPlayer.getCurrentPosition();
-                   if (v != null) {
-                       TextView durationTV = v.findViewById(R.id.audio_file_item_duration);
-                       int duration = mPlayer.getCurrentAudioFile().getTime();
-                       String timeStr = Utils.getTimeString(AlbumActivity.this, completedTime, duration);
-                       durationTV.setText(timeStr);
-                   }
+                if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getId() == mCurrUpdatedAudioId) {
+                    // Set the progress string for the currently playing ListView item
+                    int completedTime = mPlayer.getCurrentPosition();
+                    if (v != null) {
+                        TextView durationTV = v.findViewById(R.id.audio_file_item_duration);
+                        int duration = mPlayer.getCurrentAudioFile().getTime();
+                        String timeStr = Utils.getTimeString(AlbumActivity.this, completedTime, duration);
+                        durationTV.setText(timeStr);
+                    }
 
-                   // Set the progress string for the album
-                   int currCompletedAlbumTime = mAlbumLastCompletedTime - mCurrAudioLastCompletedTime + completedTime;
-                   String albumTimeStr = Utils.getTimeString(AlbumActivity.this, currCompletedAlbumTime, mAlbumDuration);
-                   mAlbumInfoTimeTV.setText(albumTimeStr);
-               }
-               mHandler.postDelayed(this,100);
-           }
-       };
-       mHandler.postDelayed(mRunnable,100);
-   }
+                    // Set the progress string for the album
+                    int currCompletedAlbumTime = mAlbumLastCompletedTime - mCurrAudioLastCompletedTime + completedTime;
+                    String albumTimeStr = Utils.getTimeString(AlbumActivity.this, currCompletedAlbumTime, mAlbumDuration);
+                    mAlbumInfoTimeTV.setText(albumTimeStr);
+                }
+                mHandler.postDelayed(this, 100);
+            }
+        };
+        mHandler.postDelayed(mRunnable, 100);
+    }
 
     /*
      * Scroll to the last non-completed track in the list view
@@ -540,27 +532,23 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_delete_audio);
-        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Ok" button, so delete the tracks from the database
-                int deletionCount = 0;
-                for (long trackId : selectedTracksArr) {
-                    boolean deleted = DBAccessUtils.deleteTrackFromDB(AlbumActivity.this, trackId);
-                    if (deleted) {
-                        DBAccessUtils.deleteBookmarksForTrack(AlbumActivity.this, trackId);
-                        deletionCount++;
-                    }
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            // User clicked the "Ok" button, so delete the tracks from the database
+            int deletionCount = 0;
+            for (long trackId : selectedTracksArr) {
+                boolean deleted = DBAccessUtils.deleteTrackFromDB(AlbumActivity.this, trackId);
+                if (deleted) {
+                    DBAccessUtils.deleteBookmarksForTrack(AlbumActivity.this, trackId);
+                    deletionCount++;
                 }
-                String deletedTracks = getResources().getString(R.string.tracks_deleted, deletionCount);
-                Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
             }
+            String deletedTracks = getResources().getString(R.string.tracks_deleted, deletionCount);
+            Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
         });
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
             }
         });
 

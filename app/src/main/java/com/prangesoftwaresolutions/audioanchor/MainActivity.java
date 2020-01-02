@@ -8,7 +8,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
@@ -16,9 +15,10 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaMetadataRetriever;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -30,14 +30,12 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -117,16 +115,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mEmptyTV = findViewById(R.id.emptyList);
         mListView.setEmptyView(mEmptyTV);
 
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
-                // Open the AlbumActivity for the clicked album
-                Intent intent = new Intent(MainActivity.this, AlbumActivity.class);
-                intent.putExtra(getString(R.string.album_id), rowId);
-                String albumName = ((TextView) view.findViewById(R.id.audio_storage_item_title)).getText().toString();
-                intent.putExtra(getString(R.string.album_name), albumName);
-                startActivity(intent);
-            }
+        mListView.setOnItemClickListener((adapterView, view, i, rowId) -> {
+            // Open the AlbumActivity for the clicked album
+            Intent intent = new Intent(MainActivity.this, AlbumActivity.class);
+            intent.putExtra(getString(R.string.album_id), rowId);
+            String albumName = ((TextView) view.findViewById(R.id.audio_storage_item_title)).getText().toString();
+            intent.putExtra(getString(R.string.album_name), albumName);
+            startActivity(intent);
         });
 
         // See https://developer.android.com/guide/topics/ui/menus.html#CAB for details
@@ -183,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         }
 
                         // Mark all tracks in the selected albums as not started
-                        for (long trackId : trackIds){
+                        for (long trackId : trackIds) {
                             DBAccessUtils.markTrackAsNotStarted(MainActivity.this, trackId);
                         }
                         actionMode.finish();
@@ -196,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         }
 
                         // Mark all tracks in the selected albums as completed
-                        for (long trackId : trackIds){
+                        for (long trackId : trackIds) {
                             DBAccessUtils.markTrackAsCompleted(MainActivity.this, trackId);
                         }
                         actionMode.finish();
@@ -217,21 +212,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mPlayPauseFAB = findViewById(R.id.play_pause_fab);
 
         // Set up the FAB onClickListener
-        mPlayPauseFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mPlayer == null) {
-                    return;
-                }
-                if (mPlayer.isPlaying()) {
-                    Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PAUSE_AUDIO);
-                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(broadcastIntent);
-                    mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
-                } else {
-                    Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PLAY_AUDIO);
-                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(broadcastIntent);
-                    mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
-                }
+        mPlayPauseFAB.setOnClickListener(view -> {
+            if (mPlayer == null) {
+                return;
+            }
+            if (mPlayer.isPlaying()) {
+                Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PAUSE_AUDIO);
+                LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(broadcastIntent);
+                mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+            } else {
+                Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PLAY_AUDIO);
+                LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(broadcastIntent);
+                mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
             }
         });
 
@@ -272,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 AnchorContract.AlbumEntry.COLUMN_TITLE,
                 AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
 
-        String sortOrder = "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" +AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
+        String sortOrder = "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
 
         return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, null, null, sortOrder);
     }
@@ -483,7 +475,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     private void bindToServiceIfRunning() {
         if (!mServiceBound && !mDoNotBindService && Utils.isMediaPlayerServiceRunning(this)) {
-            Log.e("MainActivity" , "Service is running - binding service");
+            Log.e("MainActivity", "Service is running - binding service");
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
             mServiceBound = true;
@@ -565,55 +557,50 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     private void setCompletedTimeUpdater() {
         mHandler = new Handler();
-        mRunnable = new Runnable() {
-            @Override
-            public void run() {
-                // Stop runnable when service is unbound
-                if (!mServiceBound) {
-                    mHandler.removeCallbacks(mRunnable);
-                    return;
-                }
-
-                // Get the ListView item for the current audio file
-                View v = mListView.getChildAt(mCurrPlayingAlbumPosition - mListView.getFirstVisiblePosition());
-
-                if (v == null) {
-                    mHandler.postDelayed(mRunnable,100);
-                    return;
-                }
-                TextView durationTV = v.findViewById(R.id.album_info_time_album);
-
-                if(mPlayer!=null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getId() == mCurrUpdatedAudioId){
-                    // Set the progress string for the album of the currently playing audio file
-                    int completedTime = mPlayer.getCurrentPosition();
-                    int currCompletedAlbumTime = mAlbumLastCompletedTime - mCurrAudioLastCompletedTime + completedTime;
-                    String albumTimeStr = Utils.getTimeString(MainActivity.this, currCompletedAlbumTime, mAlbumDuration);
-                    durationTV.setText(albumTimeStr);
-                }
-                mHandler.postDelayed(mRunnable,100);
+        mRunnable = () -> {
+            // Stop runnable when service is unbound
+            if (!mServiceBound) {
+                mHandler.removeCallbacks(mRunnable);
+                return;
             }
+
+            // Get the ListView item for the current audio file
+            View v = mListView.getChildAt(mCurrPlayingAlbumPosition - mListView.getFirstVisiblePosition());
+
+            if (v == null) {
+                mHandler.postDelayed(mRunnable, 100);
+                return;
+            }
+            TextView durationTV = v.findViewById(R.id.album_info_time_album);
+
+            if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getId() == mCurrUpdatedAudioId) {
+                // Set the progress string for the album of the currently playing audio file
+                int completedTime = mPlayer.getCurrentPosition();
+                int currCompletedAlbumTime = mAlbumLastCompletedTime - mCurrAudioLastCompletedTime + completedTime;
+                String albumTimeStr = Utils.getTimeString(MainActivity.this, currCompletedAlbumTime, mAlbumDuration);
+                durationTV.setText(albumTimeStr);
+            }
+            mHandler.postDelayed(mRunnable, 100);
         };
-        mHandler.postDelayed(mRunnable,100);
+        mHandler.postDelayed(mRunnable, 100);
     }
 
     private void showChangeDirectorySelector() {
         File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
         FileDialog fileDialog = new FileDialog(this, baseDirectory, null);
         fileDialog.setSelectDirectoryOption(true);
-        fileDialog.addDirectoryListener(new FileDialog.DirectorySelectedListener() {
-            public void directorySelected(File directory) {
-                // Set the storage directory to the selected directory
-                if (mDirectory != null) {
-                    changeDirectoryWithConfirmation(directory);
-                } else {
-                    setDirectory(directory);
-                }
+        fileDialog.addDirectoryListener(directory -> {
+            // Set the storage directory to the selected directory
+            if (mDirectory != null) {
+                changeDirectoryWithConfirmation(directory);
+            } else {
+                setDirectory(directory);
             }
         });
         fileDialog.showDialog();
     }
 
-    private void setDirectory(File directory){
+    private void setDirectory(File directory) {
         mDirectory = directory;
         updateDBTables();
 
@@ -635,20 +622,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // for the positive and negative buttons on the dialog.
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_change_dir);
-        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Ok" button, so change the directory.
-                getContentResolver().delete(AnchorContract.AlbumEntry.CONTENT_URI, null, null);
-                getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, null, null);
-                setDirectory(directory);
-            }
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            // User clicked the "Ok" button, so change the directory.
+            getContentResolver().delete(AnchorContract.AlbumEntry.CONTENT_URI, null, null);
+            getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, null, null);
+            setDirectory(directory);
         });
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
             }
         });
 
@@ -663,12 +646,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     void updateDBTables() {
         // Get all subdirectories of the selected audio storage directory.
-        FilenameFilter filter = new FilenameFilter() {
-            public boolean accept(File dir, String filename) {
-                File sel = new File(dir, filename);
-                // Only list files that are readable and directories
-                return sel.canRead() && sel.isDirectory();
-            }
+        FilenameFilter filter = (dir, filename) -> {
+            File sel = new File(dir, filename);
+            // Only list files that are readable and directories
+            return sel.canRead() && sel.isDirectory();
         };
 
         String[] directoryList;
@@ -698,8 +679,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Delete missing directories from the database
         boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
-        if(!keepDeleted) {
-            for (String title: albumTitles.keySet()) {
+        if (!keepDeleted) {
+            for (String title : albumTitles.keySet()) {
                 int id = albumTitles.get(title);
                 // Delete the album in the albums table
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
@@ -718,12 +699,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     void updateAudioFileTable(String albumDirName, long albumId) {
         // Get all audio files in the album.
-        FilenameFilter filter = new FilenameFilter() {
-            public boolean accept(File dir, String filename) {
-                File sel = new File(dir, filename);
-                // Only list files that are readable and audio files
-                return sel.getName().endsWith(".mp3") || sel.getName().endsWith(".wma") || sel.getName().endsWith(".ogg") || sel.getName().endsWith(".wav") || sel.getName().endsWith(".flac") || sel.getName().endsWith(".m4a") || sel.getName().endsWith(".m4b");
-            }
+        FilenameFilter filter = (dir, filename) -> {
+            File sel = new File(dir, filename);
+            // Only list files that are readable and audio files
+            return sel.getName().endsWith(".mp3") || sel.getName().endsWith(".wma") || sel.getName().endsWith(".ogg") || sel.getName().endsWith(".wav") || sel.getName().endsWith(".flac") || sel.getName().endsWith(".m4a") || sel.getName().endsWith(".m4b");
         };
 
         // Get all files in the album directory.
@@ -760,7 +739,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Delete missing audio files from the database
         boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
         if (!keepDeleted) {
-            for (String title: audioTitles.keySet()) {
+            for (String title : audioTitles.keySet()) {
                 Integer id = audioTitles.get(title);
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
                 getContentResolver().delete(uri, null, null);
@@ -901,11 +880,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
         FileDialog fileDialog = new FileDialog(this, baseDirectory, null);
         fileDialog.setSelectDirectoryOption(true);
-        fileDialog.addDirectoryListener(new FileDialog.DirectorySelectedListener() {
-            public void directorySelected(File directory) {
-                exportDatabase(directory);
-            }
-        });
+        fileDialog.addDirectoryListener(this::exportDatabase);
         fileDialog.showDialog();
     }
 
@@ -960,12 +935,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void showImportFileSelector() {
         File baseDirectory = Environment.getExternalStorageDirectory();
         FileDialog fileDialog = new FileDialog(this, baseDirectory, ".db");
-        fileDialog.addFileListener(new FileDialog.FileSelectedListener() {
-            @Override
-            public void fileSelected(File file) {
-                importDatabase(file);
-                updateDBTables();
-            }
+        fileDialog.addFileListener(file -> {
+            importDatabase(file);
+            updateDBTables();
         });
         fileDialog.showDialog();
     }
@@ -989,7 +961,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             File[] newFiles = {newDB, newDBShm, newDBWal};
 
             int fileExists = 0;
-            for (int i=0; i < importFiles.length; i++) {
+            for (int i = 0; i < importFiles.length; i++) {
                 if (importFiles[i].exists()) {
                     FileChannel src = new FileInputStream(importFiles[i]).getChannel();
                     FileChannel dst = new FileOutputStream(newFiles[i]).getChannel();
@@ -1056,32 +1028,28 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_delete_album);
-        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Ok" button, so delete the album and / or tracks from the database
-                int trackDeletionCount = 0;
-                for (long trackId : selectedTracks) {
-                    boolean deleted = DBAccessUtils.deleteTrackFromDB(MainActivity.this, trackId);
-                    if (deleted) {
-                        DBAccessUtils.deleteBookmarksForTrack(MainActivity.this, trackId);
-                        trackDeletionCount++;
-                    }
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            // User clicked the "Ok" button, so delete the album and / or tracks from the database
+            int trackDeletionCount = 0;
+            for (long trackId : selectedTracks) {
+                boolean deleted = DBAccessUtils.deleteTrackFromDB(MainActivity.this, trackId);
+                if (deleted) {
+                    DBAccessUtils.deleteBookmarksForTrack(MainActivity.this, trackId);
+                    trackDeletionCount++;
                 }
-                int albumDeletionCount = 0;
-                for (long albumId : selectedAlbumsArr) {
-                    boolean deleted = DBAccessUtils.deleteAlbumFromDB(MainActivity.this, albumId);
-                    if (deleted) albumDeletionCount++;
-                }
-                String deletedFiles = getResources().getString(R.string.files_deleted, albumDeletionCount, trackDeletionCount);
-                Toast.makeText(getApplicationContext(), deletedFiles, Toast.LENGTH_LONG).show();
             }
+            int albumDeletionCount = 0;
+            for (long albumId : selectedAlbumsArr) {
+                boolean deleted = DBAccessUtils.deleteAlbumFromDB(MainActivity.this, albumId);
+                if (deleted) albumDeletionCount++;
+            }
+            String deletedFiles = getResources().getString(R.string.files_deleted, albumDeletionCount, trackDeletionCount);
+            Toast.makeText(getApplicationContext(), deletedFiles, Toast.LENGTH_LONG).show();
         });
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
             }
         });
 

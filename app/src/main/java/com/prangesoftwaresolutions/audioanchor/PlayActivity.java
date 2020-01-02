@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -26,18 +25,16 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
@@ -147,8 +144,6 @@ public class PlayActivity extends AppCompatActivity {
                             mPlayIV.setImageResource(R.drawable.pause_button);
                             break;
                         case MediaPlayerService.MSG_PAUSE:
-                            mPlayIV.setImageResource(R.drawable.play_button);
-                            break;
                         case MediaPlayerService.MSG_STOP:
                             mPlayIV.setImageResource(R.drawable.play_button);
                             break;
@@ -168,60 +163,37 @@ public class PlayActivity extends AppCompatActivity {
             }
         };
 
-        mPlayIV.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        mPlayIV.setOnClickListener(view -> {
 
-                if (!mPlayer.isPlaying()) {
-                    playAudio();
-                } else {
-                    pauseAudio();
-                }
-
+            if (!mPlayer.isPlaying()) {
+                playAudio();
+            } else {
+                pauseAudio();
             }
+
         });
 
-        mBackIV.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mPlayer.backward(30);
-            }
-        });
-        mBack10IV.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mPlayer.backward(10);
-            }
-        });
+        mBackIV.setOnClickListener(view -> mPlayer.backward(30));
+        mBack10IV.setOnClickListener(view -> mPlayer.backward(10));
 
-        mForwardIV.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mPlayer.forward(30);
-
-            }
-        });
-        mForward10IV.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mPlayer.forward(10);
-
-            }
-        });
+        mForwardIV.setOnClickListener(view -> mPlayer.forward(30));
+        mForward10IV.setOnClickListener(view -> mPlayer.forward(10));
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    mPlayer.setCurrentPosition(progress*1000);
+                    mPlayer.setCurrentPosition(progress * 1000);
                 }
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
         // Register BroadcastReceivers
@@ -307,7 +279,7 @@ public class PlayActivity extends AppCompatActivity {
                 return true;
         }
 
-        return(super.onOptionsItemSelected(item));
+        return (super.onOptionsItemSelected(item));
     }
 
 
@@ -340,7 +312,7 @@ public class PlayActivity extends AppCompatActivity {
             // Set the play ImageView
             if (mPlayer.isPlaying()) {
                 mPlayIV.setImageResource(R.drawable.pause_button);
-            } else{
+            } else {
                 mPlayIV.setImageResource(R.drawable.play_button);
             }
 
@@ -383,9 +355,9 @@ public class PlayActivity extends AppCompatActivity {
         String sortOrder = "LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
         ArrayList<AudioFile> audioList = DBAccessUtils.getAllAudioFilesFromAlbum(this, mAudioFile.getAlbumId(), sortOrder, mDirectory);
         int audioIndex = -1;
-        for(int i = 0; i < audioList.size(); i++) {
+        for (int i = 0; i < audioList.size(); i++) {
             AudioFile audioFile = audioList.get(i);
-            if(audioFile.getId() == mAudioFile.getId()) {
+            if (audioFile.getId() == mAudioFile.getId()) {
                 audioIndex = i;
             }
         }
@@ -457,10 +429,10 @@ public class PlayActivity extends AppCompatActivity {
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             mmr.setDataSource(mAudioFile.getPath());
 
-            byte [] coverData = mmr.getEmbeddedPicture();
+            byte[] coverData = mmr.getEmbeddedPicture();
 
             // Convert the byte array to a bitmap
-            if(coverData != null) {
+            if (coverData != null) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
                 mCoverIV.setImageBitmap(bitmap);
             } else {
@@ -477,25 +449,25 @@ public class PlayActivity extends AppCompatActivity {
     /*
      * Initialize the SeekBar
      */
-    void initializeSeekBar(){
+    void initializeSeekBar() {
         mRunnable = new Runnable() {
             boolean firstRun = true;
-            
+
             @Override
             public void run() {
-                if(mPlayer!=null){
-                    if(firstRun) {
-                        mSeekBar.setMax(mPlayer.getDuration()/1000);
+                if (mPlayer != null) {
+                    if (firstRun) {
+                        mSeekBar.setMax(mPlayer.getDuration() / 1000);
                         firstRun = false;
                     }
                     int currentPosition = mPlayer.getCurrentPosition();
-                    mSeekBar.setProgress(currentPosition/1000);
+                    mSeekBar.setProgress(currentPosition / 1000);
                     mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mAudioFile.getTime()));
                 }
-                mHandler.postDelayed(mRunnable,100);
+                mHandler.postDelayed(mRunnable, 100);
             }
         };
-        mHandler.postDelayed(mRunnable,100);
+        mHandler.postDelayed(mRunnable, 100);
     }
 
     void showSleepTimerDialog() {
@@ -510,34 +482,30 @@ public class PlayActivity extends AppCompatActivity {
         builder.setView(dialogView);
         builder.setTitle(R.string.sleep_timer);
         builder.setMessage(R.string.dialog_msg_sleep_timer);
-        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
-            // User clicked the OK button so set the sleep timer
-            public void onClick(DialogInterface dialog, int id) {
-                String minutesString = setTime.getText().toString();
-                int minutes;
-                if (minutesString.isEmpty()) {
-                    minutes = 0;
-                } else {
-                    minutes = Integer.parseInt(minutesString);
-                }
-
-                if (mPlayer != null) {
-                    mPlayer.startSleepTimer(minutes, mSleepCountDownTV);
-                }
-
-                // Save selection in preferences
-                mLastSleepTime = minutes;
-                SharedPreferences.Editor editor = mSharedPreferences.edit();
-                editor.putInt(getString(R.string.preference_last_sleep_key), mLastSleepTime);
-                editor.apply();
+        // User clicked the OK button so set the sleep timer
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            String minutesString = setTime.getText().toString();
+            int minutes;
+            if (minutesString.isEmpty()) {
+                minutes = 0;
+            } else {
+                minutes = Integer.parseInt(minutesString);
             }
+
+            if (mPlayer != null) {
+                mPlayer.startSleepTimer(minutes, mSleepCountDownTV);
+            }
+
+            // Save selection in preferences
+            mLastSleepTime = minutes;
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putInt(getString(R.string.preference_last_sleep_key), mLastSleepTime);
+            editor.apply();
         });
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
             }
         });
 
@@ -566,28 +534,24 @@ public class PlayActivity extends AppCompatActivity {
 
         builder.setTitle(R.string.go_to);
         builder.setMessage(R.string.dialog_msg_goto);
-        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
-            // User clicked the OK button so set the sleep timer
-            public void onClick(DialogInterface dialog, int id) {
-                String hours = gotoHours.getText().toString();
-                String minutes = gotoMinutes.getText().toString();
-                String seconds = gotoSeconds.getText().toString();
-                String timeString = hours + ":" + minutes + ":" + seconds;
+        // User clicked the OK button so set the sleep timer
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            String hours = gotoHours.getText().toString();
+            String minutes = gotoMinutes.getText().toString();
+            String seconds = gotoSeconds.getText().toString();
+            String timeString = hours + ":" + minutes + ":" + seconds;
 
-                try {
-                    long millis = Utils.getMillisFromString(timeString);
-                    mPlayer.setCurrentPosition((int) millis);
-                } catch (NumberFormatException e) {
-                    Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
-                }
+            try {
+                long millis = Utils.getMillisFromString(timeString);
+                mPlayer.setCurrentPosition((int) millis);
+            } catch (NumberFormatException e) {
+                Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
             }
         });
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
             }
         });
 
@@ -640,59 +604,53 @@ public class PlayActivity extends AppCompatActivity {
         gotoMinutes.setText(currPosArr[1]);
         gotoSeconds.setText(currPosArr[2]);
 
-        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
-            // User clicked the OK button so save the bookmark
-            public void onClick(DialogInterface dialog, int id) {
-                String title = bookmarkTitleET.getText().toString();
+        // User clicked the OK button so save the bookmark
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            String title = bookmarkTitleET.getText().toString();
 
-                String hours = gotoHours.getText().toString();
-                String minutes = gotoMinutes.getText().toString();
-                String seconds = gotoSeconds.getText().toString();
-                String timeString = hours + ":" + minutes + ":" + seconds;
+            String hours = gotoHours.getText().toString();
+            String minutes = gotoMinutes.getText().toString();
+            String seconds = gotoSeconds.getText().toString();
+            String timeString = hours + ":" + minutes + ":" + seconds;
 
-                if (title.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), R.string.empty_title_error, Toast.LENGTH_SHORT).show();
-                } else {
-                    try {
-                        long millis = Utils.getMillisFromString(timeString);
-                        int audioFileId = mAudioFile.getId();
-                        ContentValues values = new ContentValues();
-                        values.put(AnchorContract.BookmarkEntry.COLUMN_TITLE, title);
-                        values.put(AnchorContract.BookmarkEntry.COLUMN_POSITION, millis);
-                        values.put(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE, audioFileId);
-                        if (uri != null) {
-                            // Update the bookmark in the bookmarks table
-                            String sel = AnchorContract.BookmarkEntry._ID + "=?";
-                            String[] selArgs = {Long.toString(ContentUris.parseId(uri))};
-                            getContentResolver().update(uri, values, sel, selArgs);
+            if (title.isEmpty()) {
+                Toast.makeText(getApplicationContext(), R.string.empty_title_error, Toast.LENGTH_SHORT).show();
+            } else {
+                try {
+                    long millis = Utils.getMillisFromString(timeString);
+                    int audioFileId = mAudioFile.getId();
+                    ContentValues values = new ContentValues();
+                    values.put(AnchorContract.BookmarkEntry.COLUMN_TITLE, title);
+                    values.put(AnchorContract.BookmarkEntry.COLUMN_POSITION, millis);
+                    values.put(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE, audioFileId);
+                    if (uri != null) {
+                        // Update the bookmark in the bookmarks table
+                        String sel = AnchorContract.BookmarkEntry._ID + "=?";
+                        String[] selArgs = {Long.toString(ContentUris.parseId(uri))};
+                        getContentResolver().update(uri, values, sel, selArgs);
 
-                            // Reload the ListView
-                            Cursor c = getBookmarks();
-                            mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
-                            mBookmarkListView.setAdapter(mBookmarkAdapter);
-                        } else {
-                            getContentResolver().insert(AnchorContract.BookmarkEntry.CONTENT_URI, values);
-                        }
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
+                        // Reload the ListView
+                        Cursor c = getBookmarks();
+                        mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
+                        mBookmarkListView.setAdapter(mBookmarkAdapter);
+                    } else {
+                        getContentResolver().insert(AnchorContract.BookmarkEntry.CONTENT_URI, values);
                     }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
                 }
             }
         });
         if (uri != null) {
-            builder.setNeutralButton(R.string.dialog_msg_delete, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // User clicked the "Delete" button, so delete the bookmark
-                    deleteBookmarkWithConfirmation(uri);
-                }
+            builder.setNeutralButton(R.string.dialog_msg_delete, (dialog, id) -> {
+                // User clicked the "Delete" button, so delete the bookmark
+                deleteBookmarkWithConfirmation(uri);
             });
         }
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
             }
         });
 
@@ -722,39 +680,31 @@ public class PlayActivity extends AppCompatActivity {
         mBookmarkListView.setEmptyView(emptyTV);
 
         // Implement onItemClickListener for the list view
-        mBookmarkListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long rowId) {
-                // Set the current position of the player to the clicked bookmark
-                TextView positionTV = view.findViewById(R.id.bookmark_position_tv);
-                String positionString = positionTV.getText().toString();
-                int millis = (int)Utils.getMillisFromString(positionString);
-                mPlayer.setCurrentPosition(millis);
+        mBookmarkListView.setOnItemClickListener((adapterView, view, i, rowId) -> {
+            // Set the current position of the player to the clicked bookmark
+            TextView positionTV = view.findViewById(R.id.bookmark_position_tv);
+            String positionString = positionTV.getText().toString();
+            int millis = (int) Utils.getMillisFromString(positionString);
+            mPlayer.setCurrentPosition(millis);
 
-                // Notify the user about the time jump via a toast
-                TextView nameTV = view.findViewById(R.id.bookmark_title_tv);
-                String name = nameTV.getText().toString();
-                String jumpToast = getResources().getString(R.string.jumped_to_bookmark, name, positionString);
-                Toast.makeText(getApplicationContext(), jumpToast, Toast.LENGTH_SHORT).show();
-            }
+            // Notify the user about the time jump via a toast
+            TextView nameTV = view.findViewById(R.id.bookmark_title_tv);
+            String name = nameTV.getText().toString();
+            String jumpToast = getResources().getString(R.string.jumped_to_bookmark, name, positionString);
+            Toast.makeText(getApplicationContext(), jumpToast, Toast.LENGTH_SHORT).show();
         });
 
-        mBookmarkListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Uri uri = ContentUris.withAppendedId(AnchorContract.BookmarkEntry.CONTENT_URI, l);
-                showSetBookmarkDialog(uri);
-                return true;
-            }
+        mBookmarkListView.setOnItemLongClickListener((adapterView, view, i, l) -> {
+            Uri uri = ContentUris.withAppendedId(AnchorContract.BookmarkEntry.CONTENT_URI, l);
+            showSetBookmarkDialog(uri);
+            return true;
         });
 
         builder.setTitle(R.string.bookmarks);
-        builder.setPositiveButton(R.string.dialog_msg_close, new DialogInterface.OnClickListener() {
-            // User clicked the OK button so set the sleep timer
-            public void onClick(DialogInterface dialog, int id) {
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
+        // User clicked the OK button so set the sleep timer
+        builder.setPositiveButton(R.string.dialog_msg_close, (dialog, id) -> {
+            if (dialog != null) {
+                dialog.dismiss();
             }
         });
 
@@ -784,23 +734,19 @@ public class PlayActivity extends AppCompatActivity {
     void deleteBookmarkWithConfirmation(final Uri uri) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_delete_bookmark);
-        builder.setPositiveButton(R.string.dialog_msg_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Ok" button, so delete the bookmark.
-                getContentResolver().delete(uri, null, null);
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            // User clicked the "Ok" button, so delete the bookmark.
+            getContentResolver().delete(uri, null, null);
 
-                // Reload the ListView
-                Cursor c = getBookmarks();
-                mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
-                mBookmarkListView.setAdapter(mBookmarkAdapter);
-            }
+            // Reload the ListView
+            Cursor c = getBookmarks();
+            mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
+            mBookmarkListView.setAdapter(mBookmarkAdapter);
         });
-        builder.setNegativeButton(R.string.dialog_msg_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
             }
         });
 
@@ -828,7 +774,7 @@ public class PlayActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
                     int speed = getPlaybackSpeedFromProgress(progress);
-                    float speedFloat = (float)(speed / 10.0);
+                    float speedFloat = (float) (speed / 10.0);
                     playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
                 }
             }
@@ -847,7 +793,7 @@ public class PlayActivity extends AppCompatActivity {
                 editor.apply();
 
                 // Set playback speed to speed selected by the user
-                float speedFloat = (float)(speed / 10.0);
+                float speedFloat = (float) (speed / 10.0);
                 mPlayer.setPlaybackSpeed(speedFloat);
             }
         });
@@ -856,7 +802,7 @@ public class PlayActivity extends AppCompatActivity {
 
         // Set the text of the TextView to the default speed
         int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.valueOf(getString(R.string.preference_playback_speed_default)));
-        float speedFloat = (float)(speed / 10.0);
+        float speedFloat = (float) (speed / 10.0);
         playbackSpeedTV.setText(getString(R.string.playback_speed_label, speedFloat));
 
         // Create and show the AlertDialog

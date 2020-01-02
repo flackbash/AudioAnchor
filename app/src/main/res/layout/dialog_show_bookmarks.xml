@@ -3,12 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
     <ListView
         android:id="@+id/list_bookmarks"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/standard_margin"/>
+        android:layout_margin="@dimen/standard_margin" />
 
     <TextView
         android:id="@+id/emptyView_bookmarks"
@@ -18,5 +19,5 @@
         android:textAlignment="center"
         android:layout_margin="@dimen/standard_margin"
         android:textAppearance="?android:textAppearanceMedium"
-        android:text="@string/no_bookmarks"/>
+        android:text="@string/no_bookmarks" />
 </RelativeLayout>

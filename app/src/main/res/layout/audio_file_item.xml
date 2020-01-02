@@ -11,7 +11,7 @@
         android:id="@+id/audio_file_item_thumbnail"
         android:layout_width="@dimen/audio_file_item_height"
         android:layout_height="@dimen/audio_file_item_height"
-        android:background="@drawable/ic_unchecked"/>
+        android:background="@drawable/ic_unchecked" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -25,7 +25,7 @@
             android:paddingStart="@dimen/small_margin"
             android:paddingEnd="@dimen/small_margin"
             android:paddingTop="@dimen/small_margin"
-            android:text="@string/title"/>
+            android:text="@string/title" />
 
         <TextView
             android:id="@+id/audio_file_item_duration"
@@ -34,7 +34,7 @@
             android:textSize="@dimen/small_font_size"
             android:paddingStart="@dimen/small_margin"
             android:paddingEnd="@dimen/small_margin"
-            android:layout_below="@id/audio_file_item_title"/>
+            android:layout_below="@id/audio_file_item_title" />
 
         <ImageView
             android:id="@+id/audio_file_item_deletable_img"
@@ -44,7 +44,7 @@
             android:layout_alignParentBottom="true"
             android:src="@drawable/ic_deletable"
             android:tint="?colorDeletableIcon"
-            android:visibility="gone"/>
+            android:visibility="gone" />
     </RelativeLayout>
 
 

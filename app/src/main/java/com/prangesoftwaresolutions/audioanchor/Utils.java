@@ -18,15 +18,13 @@ class Utils {
      * Set the Activity Theme according to the user preferences.
      * Call in onCreate before setContentView and super.onCreate to apply theme
      */
-    static void setActivityTheme(Context context)
-    {
+    static void setActivityTheme(Context context) {
         SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(context);
         boolean darkTheme = prefManager.getBoolean(context.getString(R.string.settings_dark_key), Boolean.getBoolean(context.getString(R.string.settings_dark_default)));
 
-        if(darkTheme) {
+        if (darkTheme) {
             context.setTheme(R.style.AppThemeDark);
-        }
-        else {
+        } else {
             context.setTheme(R.style.AppTheme);
         }
     }
@@ -36,12 +34,10 @@ class Utils {
      */
     static String getImagePath(File dir) {
         // Search only for files that are images
-        FilenameFilter imgFilter = new FilenameFilter() {
-            public boolean accept(File dir, String filename) {
-                File sel = new File(dir, filename);
-                // Only list files that are readable and images
-                return sel.getName().endsWith(".jpg") || sel.getName().endsWith(".jpeg") || sel.getName().endsWith(".png");
-            }
+        FilenameFilter imgFilter = (dir1, filename) -> {
+            File sel = new File(dir1, filename);
+            // Only list files that are readable and images
+            return sel.getName().endsWith(".jpg") || sel.getName().endsWith(".jpeg") || sel.getName().endsWith(".png");
         };
 
         String[] fileList = dir.list(imgFilter);
@@ -108,8 +104,8 @@ class Utils {
             }
         }
 
-        int seconds = Integer.parseInt(timeParts[length-1]);
-        int minutes = Integer.parseInt(timeParts[length-2]);
+        int seconds = Integer.parseInt(timeParts[length - 1]);
+        int minutes = Integer.parseInt(timeParts[length - 2]);
         if (seconds > 59 || minutes > 59) {
             throw new NumberFormatException("Illegal time format.");
         }
@@ -134,7 +130,7 @@ class Utils {
 
         String timeStr;
         if (progressInPercent) {
-            int percent = Math.round(((float)completedTime / duration) * 100);
+            int percent = Math.round(((float) completedTime / duration) * 100);
             timeStr = context.getResources().getString(R.string.time_completed_percent, percent);
         } else {
             String durationStr = Utils.formatTime(duration, duration);

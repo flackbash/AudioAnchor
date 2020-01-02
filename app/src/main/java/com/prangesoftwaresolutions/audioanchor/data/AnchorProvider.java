@@ -103,7 +103,7 @@ public class AnchorProvider extends ContentProvider {
             case AUDIO_ALBUM:
                 StringBuilder projBuilder = new StringBuilder();
                 if (projection != null) {
-                    for (int i=0; i<projection.length;i++) {
+                    for (int i = 0; i < projection.length; i++) {
                         if (i > 0) projBuilder.append(", ");
                         projBuilder.append(projection[i]).append(" AS ").append(projection[i].replace(AnchorContract.AudioEntry.TABLE_NAME, "").replace(".", ""));
                     }
@@ -111,9 +111,9 @@ public class AnchorProvider extends ContentProvider {
                 String projectionString = projBuilder.toString();
 
                 String query = "SELECT " + projectionString + " FROM " + AnchorContract.AudioEntry.TABLE_NAME +
-                                  " INNER JOIN " + AnchorContract.AlbumEntry.TABLE_NAME +
-                                  " ON " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=" + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID +
-                                  " WHERE " + selection + " ORDER BY " + sortOrder;
+                        " INNER JOIN " + AnchorContract.AlbumEntry.TABLE_NAME +
+                        " ON " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=" + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID +
+                        " WHERE " + selection + " ORDER BY " + sortOrder;
                 cursor = database.rawQuery(query, selectionArgs);
                 break;
             case AUDIO_DISTINCT:
@@ -137,7 +137,7 @@ public class AnchorProvider extends ContentProvider {
             case AUDIO_ID:
                 // Query a single row given by the ID in the URI
                 selection = AnchorContract.AudioEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // Perform query on the recipe table for the given recipe id.
                 cursor = database.query(AnchorContract.AudioEntry.TABLE_NAME, projection, selection, selectionArgs,
@@ -146,7 +146,7 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM_ID:
                 // Query a single row given by the ID in the URI
                 selection = AnchorContract.AlbumEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // Perform query on the recipe table for the given recipe id.
                 cursor = database.query(AnchorContract.AlbumEntry.TABLE_NAME, projection, selection, selectionArgs,
@@ -155,7 +155,7 @@ public class AnchorProvider extends ContentProvider {
             case BOOKMARK_ID:
                 // Query a single row given by the ID in the URI
                 selection = AnchorContract.AlbumEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // Perform query on the recipe table for the given recipe id.
                 cursor = database.query(AnchorContract.BookmarkEntry.TABLE_NAME, projection, selection, selectionArgs,
@@ -164,11 +164,11 @@ public class AnchorProvider extends ContentProvider {
             case AUDIO_ALBUM_ID:
                 // Query a single row of the joined Audio and Album table given by the Audio ID in the URI
                 selection = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 projBuilder = new StringBuilder();
                 if (projection != null) {
-                    for (int i=0; i<projection.length;i++) {
+                    for (int i = 0; i < projection.length; i++) {
                         if (i > 0) projBuilder.append(", ");
                         projBuilder.append(projection[i]).append(" AS ").append(projection[i].replace(AnchorContract.AudioEntry.TABLE_NAME + ".", "").replace(".", ""));
                     }
@@ -177,7 +177,7 @@ public class AnchorProvider extends ContentProvider {
 
                 query = "SELECT " + projectionString + " FROM " + AnchorContract.AudioEntry.TABLE_NAME +
                         " INNER JOIN " + AnchorContract.AlbumEntry.TABLE_NAME +
-                        " ON " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "="  + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID +
+                        " ON " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=" + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID +
                         " WHERE " + selection + " ORDER BY " + sortOrder;
 
                 cursor = database.rawQuery(query, selectionArgs);
@@ -203,7 +203,6 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM:
                 return AnchorContract.AlbumEntry.CONTENT_LIST_TYPE;
             case BOOKMARK:
-                return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
             case AUDIO_ALBUM:
                 return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
             case AUDIO_ID:
@@ -211,7 +210,6 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM_ID:
                 return AnchorContract.AlbumEntry.CONTENT_ITEM_TYPE;
             case BOOKMARK_ID:
-                return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
             case AUDIO_ALBUM_ID:
                 return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
             default:
@@ -519,9 +517,7 @@ public class AnchorProvider extends ContentProvider {
         // Check whether the time will be updated and that it is not null
         if (values.containsKey(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME)) {
             String val = values.getAsString(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME);
-            if (val == null) {
-                return false;
-            }
+            return val != null;
         }
         return true;
     }
@@ -534,9 +530,7 @@ public class AnchorProvider extends ContentProvider {
         // Check whether the title will be updated and that the new title is not null
         if (values.containsKey(AnchorContract.AlbumEntry.COLUMN_TITLE)) {
             String val = values.getAsString(AnchorContract.AlbumEntry.COLUMN_TITLE);
-            if (val == null) {
-                return false;
-            }
+            return val != null;
         }
         return true;
     }
@@ -563,9 +557,7 @@ public class AnchorProvider extends ContentProvider {
         // Check whether the audio file id will be updated and that the new id is not null
         if (values.containsKey(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE)) {
             String val = values.getAsString(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE);
-            if (val == null) {
-                return false;
-            }
+            return val != null;
         }
         return true;
     }

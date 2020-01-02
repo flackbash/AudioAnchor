@@ -20,8 +20,7 @@ class DBAccessUtils {
     /*
      * Get the completion time and the duration of the album with the given id
      */
-    static int[] getAlbumTimes(Context context, long albumID)
-    {
+    static int[] getAlbumTimes(Context context, long albumID) {
         // Query the database for the track completion times
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
@@ -32,9 +31,9 @@ class DBAccessUtils {
 
         int[] times = new int[2];
 
-        if(c == null) {
+        if (c == null) {
             return times;
-        }  else if (c.getCount() < 1) {
+        } else if (c.getCount() < 1) {
             c.close();
             return times;
         }
@@ -84,7 +83,7 @@ class DBAccessUtils {
             int time = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
             String albumTitle = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_TITLE));
             String albumCoverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-            audioFile =  new AudioFile(id, title, albumId, time, completedTime, albumTitle, albumCoverPath, baseDirectory);
+            audioFile = new AudioFile(id, title, albumId, time, completedTime, albumTitle, albumCoverPath, baseDirectory);
         } else {
             c.close();
             throw new SQLException();
@@ -149,7 +148,7 @@ class DBAccessUtils {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String directory = prefs.getString(context.getResources().getString(R.string.preference_filename), null);
         AudioFile audio = getAudioFile(context, uri, directory);
-        if (! (new File(audio.getPath())).exists()) {
+        if (!(new File(audio.getPath())).exists()) {
             // Delete track from database
             context.getContentResolver().delete(deleteUri, null, null);
             return true;
