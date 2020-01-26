@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -26,8 +27,9 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -71,7 +73,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // MediaSession
     private MediaSessionManager mediaSessionManager;
     private MediaSessionCompat mediaSession;
-    private MediaControllerCompat.TransportControls transportControls;
 
     // Metadata Retriever
     MediaMetadataRetriever mMetadataRetriever;
@@ -89,12 +90,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // AudioFocus
     private AudioManager audioManager;
 
+    // Lock Manager
+    LockManager mLockManager;
+
     // Communication with clients
     private final IBinder iBinder = new LocalBinder();
     LocalBroadcastManager mBroadcaster;
 
     // List of available Audio files
-    private ArrayList<AudioFile> mAudioMap;
+    private ArrayList<Integer> mAudioIdQueue;
     private int mAudioIndex = -1;
     private AudioFile mActiveAudio;
 
@@ -109,7 +113,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // SleepTimer variables
     SleepTimer mSleepTimer;
     SensorManager mSensorManager;
-
 
     @Override
     public void onCreate() {
@@ -133,42 +136,53 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Sensor manager for the sleep timer reset shake detection
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        // Set up AudioManager
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        // Set up the LockManager
+        mLockManager = new LockManager(this);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e("OnStartCommand", "OnStartCommand called");
-        if (mAudioMap == null || mAudioIndex == -1) {
+        Log.e("MediaPlayerService", "calling onStartCommand()");
+        if (mAudioIdQueue == null || mAudioIndex == -1) {
             try {
                 // Load data from SharedPreferences
                 StorageUtil storage = new StorageUtil(this);
-                mAudioMap = new ArrayList<>(storage.loadAudio());
+                mAudioIdQueue = new ArrayList<>(storage.loadAudioIds());
                 mAudioIndex = storage.loadAudioIndex();
 
-                if (mAudioIndex < mAudioMap.size() && mAudioIndex != -1) {
+                if (mAudioIndex < mAudioIdQueue.size() && mAudioIndex != -1) {
                     // Index is in a valid range
-                    mActiveAudio = mAudioMap.get(mAudioIndex);
+                    int activeAudioId = mAudioIdQueue.get(mAudioIndex);
+                    mActiveAudio = DBAccessUtils.getAudioFileById(this, activeAudioId);
                 } else {
+                    stopForeground(true);
                     stopSelf();
                 }
             } catch (NullPointerException e) {
+                stopForeground(true);
                 stopSelf();
             }
         }
 
         if (!requestAudioFocus()) {
+            stopForeground(true);
             stopSelf();
         }
 
         if (mediaSession == null) {
             initMediaSession();
             initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime());
-            buildNotification();
+            buildNotification(true);
         }
 
         // Handle Intent action from MediaSession.TransportControls
         handleIncomingActions(intent);
-        return super.onStartCommand(intent, flags, startId);
+
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -185,8 +199,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.e("MediaPlayerService", "OnDestroy called");
-
+        Log.e("MediaPlayerService", "calling onDestroy()");
         if (mSleepTimer != null)
             mSleepTimer.disableTimer();
 
@@ -194,6 +207,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             stopMedia();
             mMediaPlayer.release();
             mMediaPlayer = null;
+        }
+        if (mediaSession != null) {
+            mediaSession.release();
         }
         removeAudioFocus();
 
@@ -203,6 +219,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
 
         removeNotification();
+
+        mLockManager.releaseWakeLock();
+        mLockManager = null;
 
         // Unregister BroadcastReceivers
         unregisterReceiver(mBecomingNoisyReceiver);
@@ -244,6 +263,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             mMediaPlayer.seekTo(position);
         } catch (IOException e) {
             e.printStackTrace();
+            stopForeground(true);
             stopSelf();
         }
     }
@@ -258,11 +278,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean autoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
 
         if (autoplay) {
-            if (mAudioIndex + 1 < mAudioMap.size()) {
+            if (mAudioIndex + 1 < mAudioIdQueue.size()) {
                 mAudioIndex++;
                 StorageUtil storage = new StorageUtil(this);
                 storage.storeAudioIndex(mAudioIndex);
-                mActiveAudio = mAudioMap.get(mAudioIndex);
+                int activeAudioId = mAudioIdQueue.get(mAudioIndex);
+                mActiveAudio = DBAccessUtils.getAudioFileById(this, activeAudioId);
                 storage.storeAudioId(mActiveAudio.getId());
                 sendNewAudioFile(mAudioIndex);
                 playingNext = true;
@@ -286,12 +307,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             // Send broadcast that the notification was removed
             // The MediaPlayerService receiver will then also stop the service by calling stopSelf()
             sendBroadcast(new Intent(BROADCAST_REMOVE_NOTIFICATION));
+
+            mLockManager.releaseWakeLock();
         }
     }
 
     @Override
     public void onAudioFocusChange(int focusState) {
-        Log.e("MediaPlayerService", "AudioFocusChange");
+        Log.e("MediaPlayerService", "calling onAudioFocusChange()");
         // Invoked when the audio focus of the system is updated.
         switch (focusState) {
             case AudioManager.AUDIOFOCUS_GAIN:
@@ -328,7 +351,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * Request AudioFocus
      */
     private boolean requestAudioFocus() {
-        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         int result = 0;
         if (audioManager != null) {
             result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
@@ -379,8 +401,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            stopSelf();
             Log.e("MediaPlayerService", "Received broadcast 'remove notification'");
+            stopForeground(true);
+            stopSelf();
         }
     };
 
@@ -433,14 +456,21 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         }
 
+        ComponentName mediaButtonReceiverComponentName = new ComponentName(getApplicationContext(), MediaButtonReceiver.class);
+
+        Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        mediaButtonIntent.setComponent(mediaButtonReceiverComponentName);
+
+        PendingIntent mediaButtonReceiverPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, mediaButtonIntent, 0);
+
         // Create a new MediaSession
-        mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioAnchor");
-        // Get MediaSessions transport controls
-        transportControls = mediaSession.getController().getTransportControls();
+        mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioAnchor", mediaButtonReceiverComponentName, mediaButtonReceiverPendingIntent);
         // Set MediaSession -> ready to receive media commands
         mediaSession.setActive(true);
         // Indicate that the MediaSession handles transport control commands through its MediaSessionCompat.Callback.
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS);
+        // Set MediaButtonReceiver to be able to restart the inactive MediaSession using media buttons
+        mediaSession.setMediaButtonReceiver(mediaButtonReceiverPendingIntent);
 
         // Set mediaSession's MetaData
         updateMetaData();
@@ -472,9 +502,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             @Override
             public void onStop() {
                 super.onStop();
-                Log.e("MediaPlayerService", "onStop called");
+                Log.e("MediaPlayerService", "MediaSession Callback: calling onStop()");
+                stopMedia();
                 removeNotification();
                 // Stop the service
+                stopForeground(true);
                 stopSelf();
             }
 
@@ -576,7 +608,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         return notificationCover;
     }
 
-    private void buildNotification() {
+    private void buildNotification(boolean initialCall) {
         createNotificationChannel();
 
         int notificationAction = R.drawable.ic_media_pause;
@@ -608,7 +640,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Set up intent to start PlayActivity when the notification is clicked
         Intent startActivityIntent = new Intent(this, PlayActivity.class);
-        startActivityIntent.setData(ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, mActiveAudio.getId()));
+        startActivityIntent.putExtra(getString(R.string.curr_audio_id), (long)mActiveAudio.getId());
         PendingIntent launchIntent = PendingIntent.getActivity(this, 0,
                 startActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -647,9 +679,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .addAction(notificationAction, title, play_pauseAction)
                 .addAction(R.drawable.ic_media_forward, "forward", playbackAction(2));
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notificationManager != null) {
-            notificationManager.notify(NOTIFICATION_ID, mNotificationBuilder.build());
+        if (initialCall) {
+            startForeground(NOTIFICATION_ID, mNotificationBuilder.build());
+        } else {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                notificationManager.notify(NOTIFICATION_ID, mNotificationBuilder.build());
+            }
         }
     }
 
@@ -690,12 +726,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         String actionString = playbackAction.getAction();
         if (actionString.equalsIgnoreCase(ACTION_PLAY)) {
-            transportControls.play();
+            play();
         } else if (actionString.equalsIgnoreCase(ACTION_PAUSE)) {
-            transportControls.pause();
+            pause();
         } else if (actionString.equalsIgnoreCase(ACTION_TOGGLE_PAUSE)) {
-            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) transportControls.pause();
-            else transportControls.play();
+            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
+            else play();
         } else if (actionString.equalsIgnoreCase(ACTION_FORWARD)) {
             forward(30);
         } else if (actionString.equalsIgnoreCase(ACTION_BACKWARD)) {
@@ -715,30 +751,45 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
         int autorewindTime = Integer.valueOf(mSharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
 
+        // Request a partial wake lock for the duration of the playback
+        mLockManager.acquireWakeLock();
+
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying() && (autoplay || getCurrentPosition() != getDuration())) {
             mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition() - autorewindTime * 1000);
             mMediaPlayer.start();
             sendPlayStatusResult(MSG_PLAY);
-            buildNotification();
+            mediaSession.setActive(true);
+            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+            buildNotification(false);
         }
     }
 
     void stopMedia() {
+        // Release the partial wake lock to save battery
+        mLockManager.releaseWakeLock();
+
         if (mMediaPlayer != null) {
             updateAudioFileStatus();
             sendPlayStatusResult(MSG_STOP);
             mMediaPlayer.stop();
-            buildNotification();
+            setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
         }
+        mediaSession.setActive(false);
+        stopForeground(false);
     }
 
     void pause() {
+        // Release the partial wake lock to save battery
+        mLockManager.releaseWakeLock();
+
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
             updateAudioFileStatus();
             sendPlayStatusResult(MSG_PAUSE);
-            buildNotification();
+            setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+            buildNotification(false);
         }
+        stopForeground(false);
     }
 
     /*
@@ -873,5 +924,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     AudioFile getCurrentAudioFile() {
         return mActiveAudio;
+    }
+
+    private void setMediaPlaybackState(int state) {
+        PlaybackStateCompat.Builder playbackstateBuilder = new PlaybackStateCompat.Builder();
+        if( state == PlaybackStateCompat.STATE_PLAYING ) {
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE);
+        } else {
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY);
+        }
+        playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
+        mediaSession.setPlaybackState(playbackstateBuilder.build());
     }
 }

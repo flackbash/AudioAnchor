@@ -3,7 +3,6 @@ package com.prangesoftwaresolutions.audioanchor;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.content.Loader;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -113,10 +111,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Implement onItemClickListener for the list view
         mListView.setOnItemClickListener((adapterView, view, i, rowId) -> {
-            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, rowId);
-
             // Check if the audio file exists
-            AudioFile audio = DBAccessUtils.getAudioFile(AlbumActivity.this, uri, mDirectory);
+            AudioFile audio = DBAccessUtils.getAudioFileById(AlbumActivity.this, rowId);
             if (!(new File(audio.getPath())).exists()) {
                 Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_LONG).show();
                 return;
@@ -141,7 +137,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
             // Open the PlayActivity for the clicked audio file
             Intent intent = new Intent(AlbumActivity.this, PlayActivity.class);
-            intent.setData(uri);
+            intent.putExtra(getString(R.string.curr_audio_id), rowId);
             startActivity(intent);
         });
 

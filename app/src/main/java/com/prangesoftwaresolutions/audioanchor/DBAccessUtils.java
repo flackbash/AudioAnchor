@@ -56,7 +56,8 @@ class DBAccessUtils {
     /*
      * Get the audio file for the specified uri
      */
-    static AudioFile getAudioFile(Context context, Uri AudioFileAlbumUri, String baseDirectory) {
+    static AudioFile getAudioFileById(Context context, long audioId) {
+        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, audioId);
         String[] projection = {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE,
@@ -65,7 +66,7 @@ class DBAccessUtils {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME,
                 AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_TITLE,
                 AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
-        Cursor c = context.getContentResolver().query(AudioFileAlbumUri, projection, null, null, null);
+        Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
 
         if (c == null) {
             throw new SQLException();
@@ -75,6 +76,8 @@ class DBAccessUtils {
         }
 
         AudioFile audioFile;
+        SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(context);
+        String baseDirectory = prefManager.getString(context.getString(R.string.preference_filename), null);
         if (c.moveToFirst()) {
             int id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
             String title = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
@@ -93,20 +96,13 @@ class DBAccessUtils {
     }
 
     /*
-     * Get all audio files for the specified album
+     * Get all audio ids for the specified album
      */
-    static ArrayList<AudioFile> getAllAudioFilesFromAlbum(Context context, int albumId, String sortOrder, String baseDirectory) {
-        String[] projection = {
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME,
-                AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_TITLE,
-                AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
+    static ArrayList<Integer> getAllAudioIdsFromAlbum(Context context, int albumId, String sortOrder) {
+        String[] projection = { AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID };
 
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(albumId)};
+        String[] selArgs = { Long.toString(albumId) };
         Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, projection, sel, selArgs, sortOrder);
 
         if (c == null) {
@@ -116,16 +112,11 @@ class DBAccessUtils {
             throw new SQLException();
         }
 
-        ArrayList<AudioFile> audioFiles = new ArrayList<>();
+        ArrayList<Integer> audioIds = new ArrayList<>();
         if (c.moveToFirst()) {
             do {
                 int id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-                String title = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
-                int completedTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-                int time = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-                String albumTitle = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_TITLE));
-                String albumCoverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-                audioFiles.add(new AudioFile(id, title, albumId, time, completedTime, albumTitle, albumCoverPath, baseDirectory));
+                audioIds.add(id);
             } while (c.moveToNext());
 
         } else {
@@ -133,7 +124,7 @@ class DBAccessUtils {
             throw new SQLException();
         }
         c.close();
-        return audioFiles;
+        return audioIds;
     }
 
 
@@ -141,13 +132,10 @@ class DBAccessUtils {
      * Delete track with the specified id from the database
      */
     static boolean deleteTrackFromDB(Context context, long trackId) {
-        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, trackId);
         Uri deleteUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
 
         // Don't allow delete action if the track still exists
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String directory = prefs.getString(context.getResources().getString(R.string.preference_filename), null);
-        AudioFile audio = getAudioFile(context, uri, directory);
+        AudioFile audio = getAudioFileById(context, trackId);
         if (!(new File(audio.getPath())).exists()) {
             // Delete track from database
             context.getContentResolver().delete(deleteUri, null, null);

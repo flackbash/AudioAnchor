@@ -15,6 +15,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -55,7 +56,6 @@ public class PlayActivity extends AppCompatActivity {
 
     // Audio File variables
     AudioFile mAudioFile;
-    private String mDirectory;
 
     // The Views
     ImageView mCoverIV;
@@ -97,7 +97,7 @@ public class PlayActivity extends AppCompatActivity {
         setContentView(R.layout.activity_play);
 
         // Get the current uri from the intent
-        Uri mCurrentUri = getIntent().getData();
+        long currAudioId = getIntent().getLongExtra(getString(R.string.curr_audio_id), -1);
 
         mCoverIV = findViewById(R.id.play_cover);
         mTitleTV = findViewById(R.id.play_audio_file_title);
@@ -117,11 +117,10 @@ public class PlayActivity extends AppCompatActivity {
         mCoverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
         mTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
         mLastSleepTime = mSharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.valueOf(getString(R.string.preference_last_sleep_val)));
-        mDirectory = mSharedPreferences.getString(getString(R.string.preference_filename), null);
         mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
 
 
-        mAudioFile = DBAccessUtils.getAudioFile(this, mCurrentUri, mDirectory);
+        mAudioFile = DBAccessUtils.getAudioFileById(this, currAudioId);
         mMetadataRetriever = new MediaMetadataRetriever();
 
         setNewAudioFile();
@@ -333,7 +332,11 @@ public class PlayActivity extends AppCompatActivity {
         if (!serviceBound) {
             storeAudioFiles();
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
-            startService(playerIntent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(playerIntent);
+            } else {
+                startService(playerIntent);
+            }
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         }
     }
@@ -353,16 +356,10 @@ public class PlayActivity extends AppCompatActivity {
     private void storeAudioFiles() {
         // Store Serializable audioList in SharedPreferences
         String sortOrder = "LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
-        ArrayList<AudioFile> audioList = DBAccessUtils.getAllAudioFilesFromAlbum(this, mAudioFile.getAlbumId(), sortOrder, mDirectory);
-        int audioIndex = -1;
-        for (int i = 0; i < audioList.size(); i++) {
-            AudioFile audioFile = audioList.get(i);
-            if (audioFile.getId() == mAudioFile.getId()) {
-                audioIndex = i;
-            }
-        }
+        ArrayList<Integer> audioIdList = DBAccessUtils.getAllAudioIdsFromAlbum(this, mAudioFile.getAlbumId(), sortOrder);
+        int audioIndex = audioIdList.indexOf(mAudioFile.getId());
         StorageUtil storage = new StorageUtil(getApplicationContext());
-        storage.storeAudio(audioList);
+        storage.storeAudioIds(audioIdList);
         storage.storeAudioIndex(audioIndex);
         storage.storeAudioId(mAudioFile.getId());
     }
@@ -370,8 +367,9 @@ public class PlayActivity extends AppCompatActivity {
     private void loadAudioFile(int audioIndex) {
         // Load data from SharedPreferences
         StorageUtil storage = new StorageUtil(getApplicationContext());
-        ArrayList<AudioFile> audioList = new ArrayList<>(storage.loadAudio());
-        mAudioFile = audioList.get(audioIndex);
+        ArrayList<Integer> audioList = new ArrayList<>(storage.loadAudioIds());
+        int audioId = audioList.get(audioIndex);
+        mAudioFile = DBAccessUtils.getAudioFileById(this, audioId);
         setNewAudioFile();
         setAlbumCover();
     }

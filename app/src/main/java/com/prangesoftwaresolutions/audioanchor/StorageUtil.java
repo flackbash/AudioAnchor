@@ -22,7 +22,7 @@ class StorageUtil {
         this.context = context;
     }
 
-    void storeAudio(ArrayList<AudioFile> arrayList) {
+    void storeAudioIds(ArrayList<Integer> arrayList) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = preferences.edit();
@@ -32,12 +32,11 @@ class StorageUtil {
         editor.apply();
     }
 
-    ArrayList<AudioFile> loadAudio() {
+    ArrayList<Integer> loadAudioIds() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = preferences.getString("audioList", null);
-        Type type = new TypeToken<ArrayList<AudioFile>>() {
-        }.getType();
+        Type type = new TypeToken<ArrayList<Integer>>() {}.getType();
         return gson.fromJson(json, type);
     }
 

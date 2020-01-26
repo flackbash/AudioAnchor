@@ -93,7 +93,8 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         } else {
             thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked);
         }
-        if (isCurrentItemActive(cursor)) {
+        int audioId = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry._ID));
+        if (isCurrentItemActive(audioId)) {
             thumbnailIV.setImageResource(R.drawable.ic_playing);
         } else if (completedTime >= duration && duration != 0) {
             thumbnailIV.setImageResource(R.drawable.ic_checked);
@@ -115,18 +116,16 @@ public class AudioFileCursorAdapter extends CursorAdapter {
     /*
      * Check if the service is running for the current audio file
      */
-    private boolean isCurrentItemActive(Cursor cursor) {
+    private boolean isCurrentItemActive(int audioId) {
         boolean serviceStarted = Utils.isMediaPlayerServiceRunning(mContext);
         if (serviceStarted) {
             StorageUtil storage = new StorageUtil(mContext.getApplicationContext());
-            ArrayList<AudioFile> audioList = new ArrayList<>(storage.loadAudio());
+            ArrayList<Integer> audioIdList = new ArrayList<>(storage.loadAudioIds());
             int audioIndex = storage.loadAudioIndex();
-            if (audioIndex < audioList.size() && audioIndex != -1) {
+            if (audioIndex < audioIdList.size() && audioIndex != -1) {
                 // Index is in a valid range
-                AudioFile activeAudio = audioList.get(audioIndex);
-                int playingAudioId = activeAudio.getId();
-                int audioId = cursor.getInt(cursor.getColumnIndex(AnchorContract.AudioEntry._ID));
-                return playingAudioId == audioId;
+                int activeAudioId = audioIdList.get(audioIndex);
+                return activeAudioId == audioId;
             }
         }
         return false;

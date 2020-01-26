@@ -76,7 +76,9 @@ public class AlbumCursorAdapter extends CursorAdapter {
         // Get the path of the thumbnail of the current album and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
 
-        if (isCurrentItemActive(cursor)) {
+
+        int albumId = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
+        if (isCurrentItemActive(albumId)) {
             boolean darkTheme = mPrefs.getBoolean(mContext.getString(R.string.settings_dark_key), Boolean.getBoolean(mContext.getString(R.string.settings_dark_default)));
             if (darkTheme) {
                 thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked_dark_theme);
@@ -141,17 +143,17 @@ public class AlbumCursorAdapter extends CursorAdapter {
     /*
      * Check if the service is running for an audio file from the current album
      */
-    private boolean isCurrentItemActive(Cursor cursor) {
+    private boolean isCurrentItemActive(int albumId) {
         boolean serviceStarted = Utils.isMediaPlayerServiceRunning(mContext);
         if (serviceStarted) {
             StorageUtil storage = new StorageUtil(mContext.getApplicationContext());
-            ArrayList<AudioFile> audioList = new ArrayList<>(storage.loadAudio());
+            ArrayList<Integer> audioIdList = new ArrayList<>(storage.loadAudioIds());
             int audioIndex = storage.loadAudioIndex();
-            if (audioIndex < audioList.size() && audioIndex != -1) {
+            if (audioIndex < audioIdList.size() && audioIndex != -1) {
                 // Index is in a valid range
-                AudioFile activeAudio = audioList.get(audioIndex);
+                int activeAudioId = audioIdList.get(audioIndex);
+                AudioFile activeAudio = DBAccessUtils.getAudioFileById(mContext, activeAudioId);
                 int playingAlbumId = activeAudio.getAlbumId();
-                int albumId = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
                 return playingAlbumId == albumId;
             }
         }
