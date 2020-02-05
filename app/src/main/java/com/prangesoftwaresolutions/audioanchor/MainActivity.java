@@ -702,7 +702,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         FilenameFilter filter = (dir, filename) -> {
             File sel = new File(dir, filename);
             // Only list files that are readable and audio files
-            return sel.getName().endsWith(".mp3") || sel.getName().endsWith(".wma") || sel.getName().endsWith(".ogg") || sel.getName().endsWith(".wav") || sel.getName().endsWith(".flac") || sel.getName().endsWith(".m4a") || sel.getName().endsWith(".m4b");
+            String[] supportedFormats = {".mp3", ".wma", ".ogg", ".wav", ".flac", ".m4a", ".m4b", ".aac", ".3gp", ".gsm", ".mid", ".mkv"};
+            for (String format : supportedFormats) {
+                if (sel.getName().endsWith(format)) return true;
+            }
+            return false;
         };
 
         // Get all files in the album directory.
