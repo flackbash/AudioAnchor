@@ -24,6 +24,11 @@
             android:title="@string/settings_autorewind_label"
             android:summary="@string/settings_autorewind_default" />
 
+        <SwitchPreference
+            android:defaultValue="@string/settings_immediate_playback_default"
+            android:key="@string/settings_immediate_playback_key"
+            android:title="@string/settings_immediate_playback_label" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_display_category">

@@ -67,6 +67,9 @@
     <string name="settings_autorewind_label">Autorewind time</string>
     <string name="settings_autorewind_key" translatable="false">autorewind</string>
     <string name="settings_autorewind_default" translatable="false">0</string>
+    <string name="settings_immediate_playback_label">Start playback immediately after selecting item</string>
+    <string name="settings_immediate_playback_key" translatable="false">immediate_playback</string>
+    <string name="settings_immediate_playback_default" translatable="false">false</string>
     <string name="settings_display_category">Display</string>
     <string name="settings_playback_category">Playback</string>
     <string name="settings_miscellaneous_category">Miscellaneous</string>

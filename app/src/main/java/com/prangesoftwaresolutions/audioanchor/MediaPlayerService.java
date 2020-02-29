@@ -177,6 +177,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             initMediaSession();
             initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime());
             buildNotification(true);
+            boolean immediatePlayback = mSharedPreferences.getBoolean(getString(R.string.settings_immediate_playback_key), Boolean.getBoolean(getString(R.string.settings_immediate_playback_default)));
+            if (immediatePlayback) play();
         }
 
         // Handle Intent action from MediaSession.TransportControls
@@ -261,6 +263,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
             mMediaPlayer.prepare();
             mMediaPlayer.seekTo(position);
+
         } catch (IOException e) {
             e.printStackTrace();
             stopForeground(true);
