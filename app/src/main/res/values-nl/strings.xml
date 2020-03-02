@@ -52,7 +52,7 @@
     <string name="edit_bookmark">Bladwijzer bewerken</string>
     <string name="about">Over</string>
     <string name="about_text">%s %s</string>
-    <string name="copyright">Auteursrecht © 2018–2019 Natalie Prange</string>
+    <string name="copyright">Auteursrecht © 2018–2020 Natalie Prange</string>
     <string name="export_db">Databank exporteren</string>
     <string name="import_db">Databank importeren</string>
     <string name="synchronize">Synchroniseren</string>

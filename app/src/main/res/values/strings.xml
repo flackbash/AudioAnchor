@@ -90,7 +90,7 @@
     <string name="edit_bookmark">Edit bookmark</string>
     <string name="about">About</string>
     <string name="about_text">%s %s</string>
-    <string name="copyright">Copyright © 2018–2019 Natalie Prange</string>
+    <string name="copyright">Copyright © 2018–2020 Natalie Prange</string>
     <string name="export_db">Export database</string>
     <string name="import_db">Import database</string>
     <string name="synchronize">Synchronize</string>
