@@ -43,7 +43,7 @@ AudioAnchor asks for the following permissions:
 
 ## License
 
-    Copyright © 2018-2019 Natalie Prange
+    Copyright © 2018-2020 Natalie Prange
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
