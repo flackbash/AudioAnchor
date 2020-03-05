@@ -36,7 +36,6 @@
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
-    <string name="audio_file_uri" translatable="false">audio_file_uri</string>
 
     <!-- Layout Texts -->
     <string name="title">Titel</string>
