@@ -29,7 +29,7 @@
     <string name="settings_autoplay_default" translatable="false">false</string>
     <string name="settings_progress_percentage_label">Procentuele voortgang tonen</string>
     <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
-    <string name="settings_progress_percentage_default">false</string>
+    <string name="settings_progress_percentage_default" translatable="false">false</string>
     <string name="settings_keep_deleted_label">Voortgang van verwijderde bestanden behouden in databank</string>
     <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
     <string name="settings_keep_deleted_default" translatable="false">false</string>
@@ -42,16 +42,16 @@
     <string name="album">Album</string>
     <string name="choose_directory">Kies een map</string>
     <string name="settings">Instellingen</string>
-    <string name="time_completed">%s / %s</string>
+    <string name="time_completed" translatable="false">%s / %s</string>
     <string name="time_completed_percent">%d%% voltooid</string>
     <string name="sleep_timer">Slaaptimer</string>
-    <string name="sleep_time_left">- %s</string>
+    <string name="sleep_time_left" translatable="false">- %s</string>
     <string name="go_to">Ga naar</string>
     <string name="set_bookmark">Bladwijzer instellen</string>
     <string name="edit_bookmark">Bladwijzer bewerken</string>
     <string name="about">Over</string>
-    <string name="about_text">%s %s</string>
-    <string name="copyright">Auteursrecht © 2018–2020 Natalie Prange</string>
+    <string name="about_text" translatable="false">%s %s</string>
+    <string name="copyright" translatable="false">Auteursrecht © 2018–2020 Natalie Prange</string>
     <string name="export_db">Databank exporteren</string>
     <string name="import_db">Databank importeren</string>
     <string name="synchronize">Synchroniseren</string>

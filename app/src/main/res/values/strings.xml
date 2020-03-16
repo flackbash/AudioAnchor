@@ -40,7 +40,7 @@
     <string name="settings_autoplay_restart_default" translatable="false">true</string>
     <string name="settings_progress_percentage_label">Show progress in percent</string>
     <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
-    <string name="settings_progress_percentage_default">false</string>
+    <string name="settings_progress_percentage_default" translatable="false">false</string>
     <string name="settings_keep_deleted_label">Keep progress of deleted files in database</string>
     <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
     <string name="settings_keep_deleted_default" translatable="false">false</string>
@@ -84,16 +84,16 @@
     <string name="album">Album</string>
     <string name="choose_directory">Choose directory</string>
     <string name="settings">Settings</string>
-    <string name="time_completed">%s / %s</string>
+    <string name="time_completed" translatable="false">%s / %s</string>
     <string name="time_completed_percent">%d%% complete</string>
     <string name="sleep_timer">Sleep timer</string>
-    <string name="sleep_time_left">- %s</string>
+    <string name="sleep_time_left" translatable="false">- %s</string>
     <string name="go_to">Go to</string>
     <string name="set_bookmark">Set bookmark</string>
     <string name="edit_bookmark">Edit bookmark</string>
     <string name="about">About</string>
-    <string name="about_text">%s %s</string>
-    <string name="copyright">Copyright © 2018–2020 Natalie Prange</string>
+    <string name="about_text" translatable="false">%s %s</string>
+    <string name="copyright" translatable="false">Copyright © 2018–2020 Natalie Prange</string>
     <string name="export_db">Export database</string>
     <string name="import_db">Import database</string>
     <string name="synchronize">Synchronize</string>

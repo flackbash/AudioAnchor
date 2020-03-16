@@ -40,7 +40,7 @@
     <string name="settings_autoplay_restart_default" translatable="false">true</string>
     <string name="settings_progress_percentage_label">Показывать прогресс прослушивания в процентах</string>
     <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
-    <string name="settings_progress_percentage_default">false</string>
+    <string name="settings_progress_percentage_default" translatable="false">false</string>
     <string name="settings_keep_deleted_label">Сохранять прогресс удаленных аудиокниг в базе данных</string>
     <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
     <string name="settings_keep_deleted_default" translatable="false">false</string>
@@ -84,16 +84,16 @@
     <string name="album">Альбом</string>
     <string name="choose_directory">Выбрать папку</string>
     <string name="settings">Настройки</string>
-    <string name="time_completed">%s / %s</string>
+    <string name="time_completed" translatable="false">%s / %s</string>
     <string name="time_completed_percent">%d%% прослушано</string>
     <string name="sleep_timer">Таймер сна</string>
-    <string name="sleep_time_left">- %s</string>
+    <string name="sleep_time_left" translatable="false">- %s</string>
     <string name="go_to">Перейти</string>
     <string name="set_bookmark">Поставить закладку</string>
     <string name="edit_bookmark">Редактировать закладку</string>
     <string name="about">О программе</string>
-    <string name="about_text">%s %s</string>
-    <string name="copyright">Copyright © 2018–2020 Natalie Prange</string>
+    <string name="about_text" translatable="false">%s %s</string>
+    <string name="copyright" translatable="false">Copyright © 2018–2020 Natalie Prange</string>
     <string name="export_db">Экспорт базы данных</string>
     <string name="import_db">Импорт базы данных</string>
     <string name="synchronize">Синхронизировать</string>
