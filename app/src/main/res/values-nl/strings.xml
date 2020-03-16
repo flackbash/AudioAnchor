@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">AudioAnchor</string>
     <string name="channel_name">Mediabediening tonen</string>
     <string name="channel_description">Meldingskanaal om de mediabediening te tonen.</string>
 
@@ -20,38 +19,22 @@
     <string name="jumped_to_bookmark">Doorgespoeld naar bladwijzer \"%s\" op %s</string>
     <string name="bookmark_deleted">Bladwijzer is verwijderd</string>
 
-    <!-- SharedPreferences Strings -->
-    <string name="preference_filename" translatable="false">storage_directory</string>
-
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Automatisch afspelen</string>
-    <string name="settings_autoplay_key" translatable="false">autoplay</string>
-    <string name="settings_autoplay_default" translatable="false">false</string>
     <string name="settings_progress_percentage_label">Procentuele voortgang tonen</string>
-    <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
-    <string name="settings_progress_percentage_default" translatable="false">false</string>
     <string name="settings_keep_deleted_label">Voortgang van verwijderde bestanden behouden in databank</string>
-    <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
-    <string name="settings_keep_deleted_default" translatable="false">false</string>
-
-    <!-- Intent data Strings -->
-    <string name="album_id" translatable="false">album_id</string>
 
     <!-- Layout Texts -->
     <string name="title">Titel</string>
     <string name="album">Album</string>
     <string name="choose_directory">Kies een map</string>
     <string name="settings">Instellingen</string>
-    <string name="time_completed" translatable="false">%s / %s</string>
     <string name="time_completed_percent">%d%% voltooid</string>
     <string name="sleep_timer">Slaaptimer</string>
-    <string name="sleep_time_left" translatable="false">- %s</string>
     <string name="go_to">Ga naar</string>
     <string name="set_bookmark">Bladwijzer instellen</string>
     <string name="edit_bookmark">Bladwijzer bewerken</string>
     <string name="about">Over</string>
-    <string name="about_text" translatable="false">%s %s</string>
-    <string name="copyright" translatable="false">Auteursrecht © 2018–2020 Natalie Prange</string>
     <string name="export_db">Databank exporteren</string>
     <string name="import_db">Databank importeren</string>
     <string name="synchronize">Synchroniseren</string>

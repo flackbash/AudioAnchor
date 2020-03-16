@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">AudioAnchor</string>
     <string name="channel_name">Показать элементы управления мультимедиа</string>
     <string name="channel_description">Канал уведомлений для отображения элементы управления мультимедиа.</string>
 
@@ -24,76 +23,35 @@
     <string name="cannot_mark_as_not_started">Не удалось отметить проигрывемый эпизод как неначатый.</string>
     <string name="cannot_mark_as_completed">Не удалось отметить проигрывемый эпизод как прослушанный.</string>
 
-    <!-- SharedPreferences Strings -->
-    <string name="preference_filename" translatable="false">storage_directory</string>
-    <string name="preference_last_sleep_val" translatable="false">10</string>
-    <string name="preference_last_sleep_key" translatable="false">preference_last_sleep</string>
-    <string name="preference_playback_speed_key" translatable="false">preference_playback_speed</string>
-    <string name="preference_playback_speed_default" translatable="false">10</string>
-
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Автоматическое воспроизведение</string>
-    <string name="settings_autoplay_key" translatable="false">autoplay</string>
-    <string name="settings_autoplay_default" translatable="false">false</string>
     <string name="settings_autoplay_restart_label">Проигрывать эпизоды с начала аудиокниги при включенном автоматическом воспроизведении</string>
-    <string name="settings_autoplay_restart_key" translatable="false">autoplay_position</string>
-    <string name="settings_autoplay_restart_default" translatable="false">true</string>
     <string name="settings_progress_percentage_label">Показывать прогресс прослушивания в процентах</string>
-    <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
-    <string name="settings_progress_percentage_default" translatable="false">false</string>
     <string name="settings_keep_deleted_label">Сохранять прогресс удаленных аудиокниг в базе данных</string>
-    <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
-    <string name="settings_keep_deleted_default" translatable="false">false</string>
     <string name="settings_cover_from_metadata_label">Получить обложку из метаданных файла</string>
-    <string name="settings_cover_from_metadata_key" translatable="false">cover_from_metadata</string>
-    <string name="settings_cover_from_metadata_default" translatable="false">false</string>
     <string name="settings_sleep_timer_category">Таймер сна</string>
     <string name="settings_sleep_fadeout_label">Время затухания</string>
-    <string name="settings_sleep_fadeout_key" translatable="false">settings_sleep_fadeout</string>
-    <string name="settings_sleep_fadeout_default" translatable="false">10</string>
     <string name="settings_shake_label">Встряхните, чтобы сбросить таймер сна</string>
-    <string name="settings_shake_key" translatable="false">settings_shake</string>
-    <string name="settings_shake_default" translatable="false">false</string>
     <string name="settings_shake_sensitivity_label">Чувствительность встряхивания</string>
-    <string name="settings_shake_sensitivity_key" translatable="false">settings_shake_sensitivity</string>
-    <string name="settings_shake_sensitivity_default" translatable="false">75</string>
-    <string name="settings_shake_sensitivity_max" translatable="false">100</string>
     <string name="settings_title_from_metadata_label">Получить название эпизода из метаданных файла</string>
-    <string name="settings_title_from_metadata_key" translatable="false">settings_title_from_metadata</string>
-    <string name="settings_title_from_metadata_default" translatable="false">false</string>
     <string name="settings_dark_label">Темная тема</string>
-    <string name="settings_dark_key" translatable="false">settings_dark</string>
-    <string name="settings_dark_default" translatable="false">false</string>
     <string name="settings_autorewind_label">Время автоперемотки назад</string>
-    <string name="settings_autorewind_key" translatable="false">autorewind</string>
-    <string name="settings_autorewind_default" translatable="false">0</string>
     <string name="settings_immediate_playback_label">Начать воспроизведение сразу после выбора эпизода</string>
-    <string name="settings_immediate_playback_key" translatable="false">immediate_playback</string>
-    <string name="settings_immediate_playback_default" translatable="false">false</string>
     <string name="settings_display_category">Внешний вид</string>
     <string name="settings_playback_category">Воспроизведение</string>
     <string name="settings_miscellaneous_category">Прочее</string>
-
-    <!-- Intent data Strings -->
-    <string name="album_id" translatable="false">album_id</string>
-    <string name="album_name" translatable="false">album_name</string>
-    <string name="curr_audio_id" translatable="false">curr_audio_id</string>
 
     <!-- Layout Texts -->
     <string name="title">Название</string>
     <string name="album">Альбом</string>
     <string name="choose_directory">Выбрать папку</string>
     <string name="settings">Настройки</string>
-    <string name="time_completed" translatable="false">%s / %s</string>
     <string name="time_completed_percent">%d%% прослушано</string>
     <string name="sleep_timer">Таймер сна</string>
-    <string name="sleep_time_left" translatable="false">- %s</string>
     <string name="go_to">Перейти</string>
     <string name="set_bookmark">Поставить закладку</string>
     <string name="edit_bookmark">Редактировать закладку</string>
     <string name="about">О программе</string>
-    <string name="about_text" translatable="false">%s %s</string>
-    <string name="copyright" translatable="false">Copyright © 2018–2020 Natalie Prange</string>
     <string name="export_db">Экспорт базы данных</string>
     <string name="import_db">Импорт базы данных</string>
     <string name="synchronize">Синхронизировать</string>
@@ -108,7 +66,6 @@
     <string name="mark_all_as_not_started">Отметить все эпизоды как неначатые</string>
     <string name="mark_all_as_completed">Отметить все эпизоды как прослушанные</string>
     <string name="playback_speed">Скорость воспроизведения</string>
-    <string name="playback_speed_label" translatable="false">%.1f</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Смена папки сбросит все сохраненные статусы прослушанных аудиокниг. Продолжить?</string>
@@ -121,8 +78,5 @@
     <string name="dialog_msg_delete_album">Вы действительно хотите удалить выбранные аудиокниги и их эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
     <string name="dialog_msg_delete_audio">Вы действительно хотите удалить выбранные эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
     <string name="dialog_msg_delete_bookmark">Удалить эту закладку?</string>
-
-    <!-- Others -->
-    <string name="database_filename" translatable="false">audio_anchor.db</string>
 
 </resources>
