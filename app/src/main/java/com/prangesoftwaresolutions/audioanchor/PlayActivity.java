@@ -765,20 +765,6 @@ public class PlayActivity extends AppCompatActivity {
         builder.setView(dialogView);
 
         final TextView playbackSpeedTV = dialogView.findViewById(R.id.playback_speed_tv);
-        final ImageView resetIV = dialogView.findViewById(R.id.reset);
-        resetIV.setOnClickListener(v -> {
-            int speed = Integer.parseInt(getString(R.string.preference_playback_speed_default));
-            float speedFloat = (float) (speed / 10.0);
-            playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
-
-            // Store new playback speed in shared preferences
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putInt(getString(R.string.preference_playback_speed_key), speed);
-            editor.apply();
-
-            // Set playback speed to speed selected by the user
-            mPlayer.setPlaybackSpeed(speedFloat);
-        });
         SeekBar playbackSpeedSB = dialogView.findViewById(R.id.playback_speed_sb);
         playbackSpeedSB.setMax(25);  // min + max = 5 + 25 = 30 --> max playback speed 3.0
         int currSpeed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
@@ -811,6 +797,25 @@ public class PlayActivity extends AppCompatActivity {
                 float speedFloat = (float) (speed / 10.0);
                 mPlayer.setPlaybackSpeed(speedFloat);
             }
+        });
+
+        final ImageView resetIV = dialogView.findViewById(R.id.reset);
+        resetIV.setOnClickListener(v -> {
+            int speed = Integer.parseInt(getString(R.string.preference_playback_speed_default));
+            float speedFloat = (float) (speed / 10.0);
+            playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
+
+            // Store new playback speed in shared preferences
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putInt(getString(R.string.preference_playback_speed_key), speed);
+            editor.apply();
+
+            // Set position of seeker to default position 1.0
+            playbackSpeedSB.setProgress(getProgressFromPlaybackSpeed(speed));
+
+            // Set playback speed to speed selected by the user
+            mPlayer.setPlaybackSpeed(speedFloat);
+
         });
 
         builder.setTitle(R.string.playback_speed);
