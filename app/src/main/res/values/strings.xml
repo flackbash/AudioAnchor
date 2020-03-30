@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">AudioAnchor</string>
     <string name="channel_name">Show media controls</string>
     <string name="channel_description">Notification channel to display the media controls.</string>
 
@@ -24,76 +23,35 @@
     <string name="cannot_mark_as_not_started">Cannot mark currently playing track as not started.</string>
     <string name="cannot_mark_as_completed">Cannot mark currently playing track as completed.</string>
 
-    <!-- SharedPreferences Strings -->
-    <string name="preference_filename" translatable="false">storage_directory</string>
-    <string name="preference_last_sleep_val" translatable="false">10</string>
-    <string name="preference_last_sleep_key" translatable="false">preference_last_sleep</string>
-    <string name="preference_playback_speed_key" translatable="false">preference_playback_speed</string>
-    <string name="preference_playback_speed_default" translatable="false">10</string>
-
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Autoplay</string>
-    <string name="settings_autoplay_key" translatable="false">autoplay</string>
-    <string name="settings_autoplay_default" translatable="false">false</string>
     <string name="settings_autoplay_restart_label">Replay tracks from beginning in autoplay queue</string>
-    <string name="settings_autoplay_restart_key" translatable="false">autoplay_position</string>
-    <string name="settings_autoplay_restart_default" translatable="false">true</string>
     <string name="settings_progress_percentage_label">Show progress in percent</string>
-    <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
-    <string name="settings_progress_percentage_default">false</string>
     <string name="settings_keep_deleted_label">Keep progress of deleted files in database</string>
-    <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
-    <string name="settings_keep_deleted_default" translatable="false">false</string>
     <string name="settings_cover_from_metadata_label">Get cover image from metadata</string>
-    <string name="settings_cover_from_metadata_key" translatable="false">cover_from_metadata</string>
-    <string name="settings_cover_from_metadata_default" translatable="false">false</string>
     <string name="settings_sleep_timer_category">Sleep timer</string>
     <string name="settings_sleep_fadeout_label">Fade out time</string>
-    <string name="settings_sleep_fadeout_key" translatable="false">settings_sleep_fadeout</string>
-    <string name="settings_sleep_fadeout_default" translatable="false">10</string>
     <string name="settings_shake_label">Shake to reset sleep timer</string>
-    <string name="settings_shake_key" translatable="false">settings_shake</string>
-    <string name="settings_shake_default" translatable="false">false</string>
     <string name="settings_shake_sensitivity_label">Shake sensitivity</string>
-    <string name="settings_shake_sensitivity_key" translatable="false">settings_shake_sensitivity</string>
-    <string name="settings_shake_sensitivity_default" translatable="false">75</string>
-    <string name="settings_shake_sensitivity_max" translatable="false">100</string>
     <string name="settings_title_from_metadata_label">Get track title from metadata</string>
-    <string name="settings_title_from_metadata_key" translatable="false">settings_title_from_metadata</string>
-    <string name="settings_title_from_metadata_default" translatable="false">false</string>
     <string name="settings_dark_label">Dark theme</string>
-    <string name="settings_dark_key" translatable="false">settings_dark</string>
-    <string name="settings_dark_default" translatable="false">false</string>
     <string name="settings_autorewind_label">Autorewind time</string>
-    <string name="settings_autorewind_key" translatable="false">autorewind</string>
-    <string name="settings_autorewind_default" translatable="false">0</string>
     <string name="settings_immediate_playback_label">Start playback immediately after selecting item</string>
-    <string name="settings_immediate_playback_key" translatable="false">immediate_playback</string>
-    <string name="settings_immediate_playback_default" translatable="false">false</string>
     <string name="settings_display_category">Display</string>
     <string name="settings_playback_category">Playback</string>
     <string name="settings_miscellaneous_category">Miscellaneous</string>
-
-    <!-- Intent data Strings -->
-    <string name="album_id" translatable="false">album_id</string>
-    <string name="album_name" translatable="false">album_name</string>
-    <string name="curr_audio_id" translatable="false">curr_audio_id</string>
 
     <!-- Layout Texts -->
     <string name="title">Title</string>
     <string name="album">Album</string>
     <string name="choose_directory">Choose directory</string>
     <string name="settings">Settings</string>
-    <string name="time_completed">%s / %s</string>
     <string name="time_completed_percent">%d%% complete</string>
     <string name="sleep_timer">Sleep timer</string>
-    <string name="sleep_time_left">- %s</string>
     <string name="go_to">Go to</string>
     <string name="set_bookmark">Set bookmark</string>
     <string name="edit_bookmark">Edit bookmark</string>
     <string name="about">About</string>
-    <string name="about_text">%s %s</string>
-    <string name="copyright">Copyright © 2018–2020 Natalie Prange</string>
     <string name="export_db">Export database</string>
     <string name="import_db">Import database</string>
     <string name="synchronize">Synchronize</string>
@@ -108,7 +66,6 @@
     <string name="mark_all_as_not_started">Mark all tracks as not started</string>
     <string name="mark_all_as_completed">Mark all tracks as completed</string>
     <string name="playback_speed">Playback speed</string>
-    <string name="playback_speed_label" translatable="false">%.1f</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
@@ -121,8 +78,5 @@
     <string name="dialog_msg_delete_album">Are you sure you want to delete the selected album(s) and their contents from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
     <string name="dialog_msg_delete_audio">Are you sure you want to delete the selected track(s) from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
-
-    <!-- Others -->
-    <string name="database_filename" translatable="false">audio_anchor.db</string>
 
 </resources>
