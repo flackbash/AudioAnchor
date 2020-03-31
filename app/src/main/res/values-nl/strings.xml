@@ -14,7 +14,7 @@
     <string name="export_success">De databank is geëxporteerd naar %s</string>
     <string name="export_fail">Er is iets misgegaan; het exporteren is mislukt.</string>
     <string name="synchronize_success">De map is gesynchroniseerd.</string>
-    <string name="audio_file_error">Er is iets mis met de audiobestanden in deze map.</string>
+    <string name="audio_file_error">Er is iets mis met de audiobestand \"%s\".</string>
     <string name="empty_title_error">Voer een naam in voor de bladwijzer.</string>
     <string name="jumped_to_bookmark">Doorgespoeld naar bladwijzer \"%s\" op %s</string>
     <string name="bookmark_deleted">Bladwijzer is verwijderd</string>

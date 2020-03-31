@@ -725,17 +725,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Insert new files into the database
         boolean success = true;
+        String errorString = "";
+
         for (String audioFileName : fileList) {
             if (!audioTitles.containsKey(audioFileName)) {
                 success = insertAudioFile(audioFileName, albumDirName, albumId);
-                if (!success) break;
+                if (!success) errorString = albumDirName + "/" + audioFileName;
             } else {
                 audioTitles.remove(audioFileName);
             }
         }
-
         if (!success) {
-            Toast.makeText(getApplicationContext(), R.string.audio_file_error, Toast.LENGTH_SHORT).show();
+            errorString = getResources().getString(R.string.audio_file_error, errorString);
+            Toast.makeText(getApplicationContext(), errorString, Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -767,12 +769,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             values.put(AnchorContract.AudioEntry.COLUMN_TIME, Long.parseLong(duration));
             metaRetriever.release();
+            // Insert the row into the database table
+            getContentResolver().insert(AnchorContract.AudioEntry.CONTENT_URI, values);
         } catch (java.lang.RuntimeException e) {
             return false;
         }
 
-        // Insert the row into the database table
-        getContentResolver().insert(AnchorContract.AudioEntry.CONTENT_URI, values);
         return true;
     }
 

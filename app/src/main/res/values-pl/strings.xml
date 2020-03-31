@@ -14,7 +14,7 @@
     <string name="export_success">Wyeksportowano bazę danych do %s</string>
     <string name="export_fail">Coś poszło nie tak. Eksport nie powiódł się.</string>
     <string name="synchronize_success">Zsynchronizowano katalog.</string>
-    <string name="audio_file_error">Wystąpił problem z plikami audio w tym katalogu.</string>
+    <string name="audio_file_error">Wystąpił problem z plikami audio \"%s\".</string>
     <string name="empty_title_error">Proszę wpisać tytuł swojej zakładki.</string>
     <string name="jumped_to_bookmark">Skoczono do zakładki \"%s\" w %s</string>
     <string name="bookmark_deleted">Usunięto zakładkę.</string>

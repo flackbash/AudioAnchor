@@ -14,7 +14,7 @@
     <string name="export_success">Exported database to %s.</string>
     <string name="export_fail">Something went wrong. Export failed.</string>
     <string name="synchronize_success">Synchronized directory.</string>
-    <string name="audio_file_error">There is a problem with the audio files in this directory.</string>
+    <string name="audio_file_error">There is a problem with the audio file \"%s\".</string>
     <string name="empty_title_error">Please enter a title for your bookmark.</string>
     <string name="jumped_to_bookmark">Jumped to bookmark \"%s\" at %s.</string>
     <string name="bookmark_deleted">Bookmark deleted.</string>

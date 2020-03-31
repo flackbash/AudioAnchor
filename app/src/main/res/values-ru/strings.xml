@@ -14,7 +14,7 @@
     <string name="export_success">База данных экспортирована в %s.</string>
     <string name="export_fail">Что-то пошло не так. Экспорт не удался.</string>
     <string name="synchronize_success">Папка синхронизирована.</string>
-    <string name="audio_file_error">Возникла проблема с файлами эпизодов в этой папке.</string>
+    <string name="audio_file_error">Возникла проблема с файлом эпизодов \"%s\".</string>
     <string name="empty_title_error">Введите название закладки.</string>
     <string name="jumped_to_bookmark">Переход к закладке \"%s\" на %s.</string>
     <string name="bookmark_deleted">Закладка удалена.</string>
