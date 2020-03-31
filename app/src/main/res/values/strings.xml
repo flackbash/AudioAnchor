@@ -66,6 +66,8 @@
     <string name="mark_all_as_not_started">Mark all tracks as not started</string>
     <string name="mark_all_as_completed">Mark all tracks as completed</string>
     <string name="playback_speed">Playback speed</string>
+    <string name="about_contributors">For a list of contributors visit</string>
+    <string name="about_report_bugs">This is also the place to report bugs, make a contribution yourself or leave a star if you like the app.</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
