@@ -7,7 +7,7 @@
 </a>
 
 ## Features
-AudioAnchor offers a clean and intuitive interface for listening to audio files while keeping track of listening progress.\
+AudioAnchor offers a clean and intuitive interface for listening to audio files while keeping track of listening progress.
 
 Additional features include:
 - Set bookmarks
@@ -27,10 +27,9 @@ For example, if you have the parent directory "Audiofiles", put all the audio fi
 When you first start AudioAnchor, the app will prompt you to select the parent directory.
 Once the parent directory is selected, all your albums will show in a list.\
 Add cover images to the subdirectories to have a neat looking app as shown in the screenshots below.
+
 <pre>
-        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/01MainActivity.jpg" height="400"/>
-        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/10AlbumActivityLOTR.jpg" height="400"/>
-        <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/20PlayActivityLOTR.jpg" height="400"/>
+<img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/01MainActivity.jpg" height="400"/>    <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/10AlbumActivityLOTR.jpg" height="400"/>    <img src="https://github.com/flackbash/AudioAnchor/blob/master/metadata/android/en-US/phoneScreenshots/20PlayActivityLOTR.jpg" height="400"/>
 </pre>
 
 Browse and play your audio files just as you would in any other audio player.
