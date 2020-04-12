@@ -34,6 +34,8 @@
     <string name="settings_autorewind_default" translatable="false">0</string>
     <string name="settings_immediate_playback_key" translatable="false">immediate_playback</string>
     <string name="settings_immediate_playback_default" translatable="false">false</string>
+    <string name="settings_show_hidden_key" translatable="false">settings_show_hidden</string>
+    <string name="settings_show_hidden_default" translatable="false">false</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>

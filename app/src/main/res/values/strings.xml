@@ -37,6 +37,7 @@
     <string name="settings_dark_label">Dark theme</string>
     <string name="settings_autorewind_label">Autorewind time</string>
     <string name="settings_immediate_playback_label">Start playback immediately after selecting item</string>
+    <string name="settings_show_hidden_label">Show hidden files</string>
     <string name="settings_display_category">Display</string>
     <string name="settings_playback_category">Playback</string>
     <string name="settings_miscellaneous_category">Miscellaneous</string>

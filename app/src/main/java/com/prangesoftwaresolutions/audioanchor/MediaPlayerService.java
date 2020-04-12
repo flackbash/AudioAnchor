@@ -778,7 +778,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
         }
         mediaSession.setActive(false);
-        stopForeground(false);
+        stopForeground(true);
     }
 
     void pause() {

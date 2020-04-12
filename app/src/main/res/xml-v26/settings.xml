@@ -49,6 +49,10 @@
             android:defaultValue="@string/settings_dark_default"
             android:key="@string/settings_dark_key"
             android:title="@string/settings_dark_label" />
+        <SwitchPreference
+            android:defaultValue="@string/settings_show_hidden_default"
+            android:key="@string/settings_show_hidden_key"
+            android:title="@string/settings_show_hidden_label" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_sleep_timer_category">

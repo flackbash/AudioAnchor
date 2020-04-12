@@ -648,8 +648,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Get all subdirectories of the selected audio storage directory.
         FilenameFilter filter = (dir, filename) -> {
             File sel = new File(dir, filename);
-            // Only list files that are readable and directories
-            return sel.canRead() && sel.isDirectory();
+            // Only list files that are readable and directories and not hidden unless corresponding option is set
+            boolean showHidden = mSharedPreferences.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
+            return sel.canRead() && sel.isDirectory() && (showHidden || !sel.getName().startsWith("."));
         };
 
         String[] directoryList;
@@ -677,11 +678,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             updateAudioFileTable(dirTitle, id);
         }
 
-        // Delete missing directories from the database
+        // Delete missing or hidden directories directories from the database
         boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
-        if (!keepDeleted) {
-            for (String title : albumTitles.keySet()) {
+        boolean showHidden = mSharedPreferences.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
+        for (String title : albumTitles.keySet()) {
+            if (!keepDeleted || (!showHidden && title.startsWith("."))) {
                 int id = albumTitles.get(title);
+                // Stop MediaPlayerService if the currently playing file is from deleted directory
+                if (mPlayer != null) {
+                    int activeAlbumId = mPlayer.getCurrentAudioFile().getAlbumId();
+                    if (activeAlbumId == id) {
+                        mPlayer.stopMedia();
+                        mPlayer.stopSelf();
+                    }
+                }
                 // Delete the album in the albums table
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
                 getContentResolver().delete(uri, null, null);
@@ -701,6 +711,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Get all audio files in the album.
         FilenameFilter filter = (dir, filename) -> {
             File sel = new File(dir, filename);
+
+            // Don't show files starting with a dot (hidden files) unless the option is set
+            boolean showHidden = mSharedPreferences.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
+            if (!showHidden && sel.getName().startsWith(".")) {
+                return false;
+            }
+
             // Only list files that are readable and audio files
             String[] supportedFormats = {".mp3", ".wma", ".ogg", ".wav", ".flac", ".m4a", ".m4b", ".aac", ".3gp", ".gsm", ".mid", ".mkv"};
             for (String format : supportedFormats) {
@@ -742,11 +759,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return;
         }
 
-        // Delete missing audio files from the database
+        // Delete missing or hidden audio files from the database
         boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
-        if (!keepDeleted) {
-            for (String title : audioTitles.keySet()) {
+        boolean showHidden = mSharedPreferences.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
+        for (String title : audioTitles.keySet()) {
+            if (!keepDeleted || (!showHidden && title.startsWith("."))) {
                 Integer id = audioTitles.get(title);
+                // Stop MediaPlayerService if the currently playing file is from deleted directory
+                if (mPlayer != null) {
+                    int activeAudioId = mPlayer.getCurrentAudioFile().getId();
+                    if (activeAudioId == id) {
+                        mPlayer.stopMedia();
+                        mPlayer.stopSelf();
+                    }
+                }
                 Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
                 getContentResolver().delete(uri, null, null);
             }

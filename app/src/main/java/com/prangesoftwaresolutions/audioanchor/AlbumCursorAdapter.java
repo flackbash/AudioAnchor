@@ -3,8 +3,10 @@ package com.prangesoftwaresolutions.audioanchor;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -152,7 +154,12 @@ public class AlbumCursorAdapter extends CursorAdapter {
             if (audioIndex < audioIdList.size() && audioIndex != -1) {
                 // Index is in a valid range
                 int activeAudioId = audioIdList.get(audioIndex);
-                AudioFile activeAudio = DBAccessUtils.getAudioFileById(mContext, activeAudioId);
+                AudioFile activeAudio;
+                try {
+                    activeAudio = DBAccessUtils.getAudioFileById(mContext, activeAudioId);
+                } catch (SQLException e) {
+                    return false;
+                }
                 int playingAlbumId = activeAudio.getAlbumId();
                 return playingAlbumId == albumId;
             }
