@@ -128,18 +128,27 @@ public class PlayActivity extends AppCompatActivity {
 
         mHandler = new Handler();
         // Bind service if it is already running
-        bindService();
+        if (!serviceBound && Utils.isMediaPlayerServiceRunning(this)) {
+            bindService();
+        }
+        // Store audio file queue.
+        if (!serviceBound) {
+            storeAudioFiles();
+        }
 
         // BroadcastReceivers, all related to service events
         mPlayStatusReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.e("PlayActivity", "Received Play Status Broadcast");
                 String s = intent.getStringExtra(MediaPlayerService.SERVICE_MESSAGE_PLAY_STATUS);
+                Log.e("PlayActivity", "Received Play Status Broadcast " + s);
                 if (s != null) {
                     switch (s) {
                         case MediaPlayerService.MSG_PLAY:
                             mPlayIV.setImageResource(R.drawable.pause_button);
+                            if (!serviceBound) {
+                                bindService();
+                            }
                             break;
                         case MediaPlayerService.MSG_PAUSE:
                         case MediaPlayerService.MSG_STOP:
@@ -345,7 +354,6 @@ public class PlayActivity extends AppCompatActivity {
     private void startService() {
         // Check if service is active
         if (!serviceBound) {
-            storeAudioFiles();
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(playerIntent);
@@ -357,10 +365,8 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     private void bindService() {
-        if (!serviceBound && Utils.isMediaPlayerServiceRunning(this)) {
-            Intent playerIntent = new Intent(this, MediaPlayerService.class);
-            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-        }
+        Intent playerIntent = new Intent(this, MediaPlayerService.class);
+        bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void playAudio() {

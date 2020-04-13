@@ -67,7 +67,7 @@
         </activity>
 
         <service android:name=".MediaPlayerService" />
-        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
+        <receiver android:name="com.prangesoftwaresolutions.audioanchor.MediaButtonIntentReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>

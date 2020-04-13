@@ -28,13 +28,11 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.widget.TextView;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
@@ -56,6 +54,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public static final String ACTION_TOGGLE_PAUSE = "com.prangesoftwaresolutions.audioanchor.ACTION_TOGGLE_PAUSE";
     public static final String ACTION_BACKWARD = "com.prangesoftwaresolutions.audioanchor.ACTION_BACKWARD";
     public static final String ACTION_FORWARD = "com.prangesoftwaresolutions.audioanchor.ACTION_FORWARD";
+    public static final String ACTION_STOP = "com.prangesoftwaresolutions.audioanchor.ACTION_STOP";
 
     public static final String SERVICE_PLAY_STATUS_CHANGE = "com.prangesoftwaresolutions.audioanchor.SERVICE_PLAY_STATUS_CHANGE";
     public static final String SERVICE_MESSAGE_PLAY_STATUS = "com.prangesoftwaresolutions.audioanchor.SERVICE_MESSAGE_PLAYING";
@@ -462,7 +461,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         }
 
-        ComponentName mediaButtonReceiverComponentName = new ComponentName(getApplicationContext(), MediaButtonReceiver.class);
+        ComponentName mediaButtonReceiverComponentName = new ComponentName(getApplicationContext(), MediaButtonIntentReceiver.class);
 
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setComponent(mediaButtonReceiverComponentName);
@@ -471,92 +470,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Create a new MediaSession
         mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioAnchor", mediaButtonReceiverComponentName, mediaButtonReceiverPendingIntent);
-        // Set MediaSession -> ready to receive media commands
-        mediaSession.setActive(true);
         // Indicate that the MediaSession handles transport control commands through its MediaSessionCompat.Callback.
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS);
+        // Attach Callback to receive MediaSession updates
+        mediaSession.setCallback(new MediaSessionCallback(this, getApplicationContext()));
+        // Set MediaSession -> ready to receive media commands
+        mediaSession.setActive(true);
         // Set MediaButtonReceiver to be able to restart the inactive MediaSession using media buttons
         mediaSession.setMediaButtonReceiver(mediaButtonReceiverPendingIntent);
-
         // Set mediaSession's MetaData
         updateMetaData();
-
-        // Attach Callback to receive MediaSession updates
-        mediaSession.setCallback(new MediaSessionCompat.Callback() {
-            @Override
-            public void onPlay() {
-                super.onPlay();
-                play();
-            }
-
-            @Override
-            public void onPause() {
-                super.onPause();
-                pause();
-            }
-
-            @Override
-            public void onSkipToNext() {
-                super.onSkipToNext();
-            }
-
-            @Override
-            public void onSkipToPrevious() {
-                super.onSkipToPrevious();
-            }
-
-            @Override
-            public void onStop() {
-                super.onStop();
-                Log.e("MediaPlayerService", "MediaSession Callback: calling onStop()");
-                stopMedia();
-                removeNotification();
-                // Stop the service
-                stopForeground(true);
-                stopSelf();
-            }
-
-            @Override
-            public void onSeekTo(long position) {
-                super.onSeekTo(position);
-            }
-
-            @Override
-            public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
-                final KeyEvent event = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                if (event == null) {
-                    return false;
-                }
-
-                final int keycode = event.getKeyCode();
-                final int action = event.getAction();
-
-                if (action == KeyEvent.ACTION_DOWN) {
-                    if (event.getRepeatCount() == 0) {
-                        switch (keycode) {
-                            case KeyEvent.KEYCODE_MEDIA_STOP:
-                            case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                                pause();
-                                break;
-                            case KeyEvent.KEYCODE_HEADSETHOOK:
-                            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                            case KeyEvent.KEYCODE_MEDIA_PLAY:
-                                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
-                                else play();
-                                break;
-                            case KeyEvent.KEYCODE_MEDIA_NEXT:
-                                forward(30);
-                                break;
-                            case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-                                backward(30);
-                                break;
-                        }
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
     }
 
     private void updateMetaData() {
