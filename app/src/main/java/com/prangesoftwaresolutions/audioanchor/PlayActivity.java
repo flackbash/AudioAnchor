@@ -127,9 +127,8 @@ public class PlayActivity extends AppCompatActivity {
         setAlbumCover();
 
         mHandler = new Handler();
-
-        // Start the play service
-        startService();
+        // Bind service if it is already running
+        bindService();
 
         // BroadcastReceivers, all related to service events
         mPlayStatusReceiver = new BroadcastReceiver() {
@@ -163,26 +162,37 @@ public class PlayActivity extends AppCompatActivity {
         };
 
         mPlayIV.setOnClickListener(view -> {
-
-            if (!mPlayer.isPlaying()) {
+            if (mPlayer == null || !mPlayer.isPlaying()) {
                 playAudio();
             } else {
                 pauseAudio();
             }
-
         });
 
-        mBackIV.setOnClickListener(view -> mPlayer.backward(30));
-        mBack10IV.setOnClickListener(view -> mPlayer.backward(10));
+        mBackIV.setOnClickListener(view -> {
+            int newTime = Math.max(getAudioCompletedTime() - 30*1000, 0);
+            updateAudioCompletedTime(newTime);
+        });
+        mBack10IV.setOnClickListener(view -> {
+            int newTime = Math.max(getAudioCompletedTime() - 10*1000, 0);
+            updateAudioCompletedTime(newTime);
+        });
 
-        mForwardIV.setOnClickListener(view -> mPlayer.forward(30));
-        mForward10IV.setOnClickListener(view -> mPlayer.forward(10));
+        mForwardIV.setOnClickListener(view -> {
+            int newTime = Math.min(getAudioCompletedTime() + 30*1000, mAudioFile.getTime());
+            updateAudioCompletedTime(newTime);
+        });
+
+        mForward10IV.setOnClickListener(view -> {
+            int newTime = Math.min(getAudioCompletedTime() + 10*1000, mAudioFile.getTime());
+            updateAudioCompletedTime(newTime);
+        });
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    mPlayer.setCurrentPosition(progress * 1000);
+                    updateAudioCompletedTime(progress * 1000);
                 }
             }
 
@@ -215,8 +225,8 @@ public class PlayActivity extends AppCompatActivity {
             mAudioFile = mPlayer.getCurrentAudioFile();
             setNewAudioFile();
             setAlbumCover();
-            initializeSeekBar();
         }
+        initializeSeekBar();
     }
 
     @Override
@@ -240,6 +250,11 @@ public class PlayActivity extends AppCompatActivity {
         if (mStopServiceOnDestroy && mPlayer != null) {
             Log.e("PlayActivity", "Stopping Service");
             mPlayer.stopSelf();
+        }
+
+        // Stop runnable from continuing to run in the background
+        if (mHandler != null) {
+            mHandler.removeCallbacks(mRunnable);
         }
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mPlayStatusReceiver);
@@ -308,9 +323,6 @@ public class PlayActivity extends AppCompatActivity {
             serviceBound = true;
 
             // Perform actions that can only be performed once the service is connected
-            // Initialize the seek bar for the current audio file
-            initializeSeekBar();
-
             // Set the play ImageView
             if (mPlayer.isPlaying()) {
                 mPlayIV.setImageResource(R.drawable.pause_button);
@@ -340,6 +352,13 @@ public class PlayActivity extends AppCompatActivity {
             } else {
                 startService(playerIntent);
             }
+            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    private void bindService() {
+        if (!serviceBound && Utils.isMediaPlayerServiceRunning(this)) {
+            Intent playerIntent = new Intent(this, MediaPlayerService.class);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         }
     }
@@ -451,20 +470,22 @@ public class PlayActivity extends AppCompatActivity {
      * Initialize the SeekBar
      */
     void initializeSeekBar() {
+        // If another Runnable is already connected to the handler, remove old Runnable
+        if (mHandler != null) {
+            mHandler.removeCallbacks(mRunnable);
+        }
         mRunnable = new Runnable() {
             boolean firstRun = true;
 
             @Override
             public void run() {
-                if (mPlayer != null) {
-                    if (firstRun) {
-                        mSeekBar.setMax(mPlayer.getDuration() / 1000);
-                        firstRun = false;
-                    }
-                    int currentPosition = mPlayer.getCurrentPosition();
-                    mSeekBar.setProgress(currentPosition / 1000);
-                    mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mAudioFile.getTime()));
+                if (firstRun) {
+                    mSeekBar.setMax(mAudioFile.getTime() / 1000);
+                    firstRun = false;
                 }
+                int currentPosition = getAudioCompletedTime();
+                mSeekBar.setProgress(currentPosition / 1000);
+                mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mAudioFile.getTime()));
                 mHandler.postDelayed(mRunnable, 100);
             }
         };
@@ -527,7 +548,7 @@ public class PlayActivity extends AppCompatActivity {
         final EditText gotoMinutes = dialogView.findViewById(R.id.goto_minutes);
         final EditText gotoSeconds = dialogView.findViewById(R.id.goto_seconds);
 
-        int currPos = mPlayer.getCurrentPosition();
+        int currPos = getAudioCompletedTime();
         String[] currPosArr = Utils.formatTime(currPos, 3600000).split(":");
         gotoHours.setText(currPosArr[0]);
         gotoMinutes.setText(currPosArr[1]);
@@ -544,7 +565,7 @@ public class PlayActivity extends AppCompatActivity {
 
             try {
                 long millis = Utils.getMillisFromString(timeString);
-                mPlayer.setCurrentPosition((int) millis);
+                updateAudioCompletedTime((int) millis);
             } catch (NumberFormatException e) {
                 Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
             }
@@ -596,7 +617,7 @@ public class PlayActivity extends AppCompatActivity {
             }
         } else {
             builder.setTitle(R.string.set_bookmark);
-            currPos = mPlayer.getCurrentPosition();
+            currPos = getAudioCompletedTime();
         }
 
         // Set the edit text views to the current position
@@ -686,7 +707,7 @@ public class PlayActivity extends AppCompatActivity {
             TextView positionTV = view.findViewById(R.id.bookmark_position_tv);
             String positionString = positionTV.getText().toString();
             int millis = (int) Utils.getMillisFromString(positionString);
-            mPlayer.setCurrentPosition(millis);
+            updateAudioCompletedTime(millis);
 
             // Notify the user about the time jump via a toast
             TextView nameTV = view.findViewById(R.id.bookmark_title_tv);
@@ -795,7 +816,9 @@ public class PlayActivity extends AppCompatActivity {
 
                 // Set playback speed to speed selected by the user
                 float speedFloat = (float) (speed / 10.0);
-                mPlayer.setPlaybackSpeed(speedFloat);
+                if (mPlayer != null) {
+                    mPlayer.setPlaybackSpeed(speedFloat);
+                }
             }
         });
 
@@ -814,8 +837,9 @@ public class PlayActivity extends AppCompatActivity {
             playbackSpeedSB.setProgress(getProgressFromPlaybackSpeed(speed));
 
             // Set playback speed to speed selected by the user
-            mPlayer.setPlaybackSpeed(speedFloat);
-
+            if (mPlayer != null) {
+                mPlayer.setPlaybackSpeed(speedFloat);
+            }
         });
 
         builder.setTitle(R.string.playback_speed);
@@ -838,5 +862,28 @@ public class PlayActivity extends AppCompatActivity {
     int getProgressFromPlaybackSpeed(int speed) {
         int min = 5;
         return speed - min;
+    }
+
+    void updateAudioCompletedTime(int newTime) {
+        if (mPlayer != null) {
+            mPlayer.setCurrentPosition(newTime);
+        } else {
+            // Update the current active audio
+            mAudioFile.setCompletedTime(newTime);
+
+            // Update the completedTime column of the audiofiles table
+            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mAudioFile.getId());
+            ContentValues values = new ContentValues();
+            values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, newTime);
+            getContentResolver().update(uri, values, null, null);
+        }
+    }
+
+    int getAudioCompletedTime() {
+        if (mPlayer != null) {
+            return mPlayer.getCurrentPosition();
+        } else {
+            return mAudioFile.getCompletedTime();
+        }
     }
 }

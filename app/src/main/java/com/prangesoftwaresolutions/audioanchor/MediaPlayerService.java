@@ -1,6 +1,7 @@
 package com.prangesoftwaresolutions.audioanchor;
 
 import android.annotation.TargetApi;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -81,8 +82,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private static final int NOTIFICATION_ID = 101;
     private static final String CHANNEL_ID = "com.prangesoftwaresolutions.audioanchor.NOTIFICATION_CHANNEL";
 
-    // Notification builder
+    // Notification builder and manager
     NotificationCompat.Builder mNotificationBuilder;
+    NotificationManager mNotificationManager;
 
     // Used to pause/resume MediaPlayer
     private boolean resumeAfterCall = false;
@@ -134,6 +136,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mBroadcaster.registerReceiver(mPauseAudioReceiver, new IntentFilter(PlayActivity.BROADCAST_PAUSE_AUDIO));
         registerReceiver(mRemoveNotificationReceiver, new IntentFilter(BROADCAST_REMOVE_NOTIFICATION));
 
+        // Notification manager
+         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         // Sensor manager for the sleep timer reset shake detection
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -176,9 +181,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (mediaSession == null) {
             initMediaSession();
             initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime());
-            buildNotification(true);
-            boolean immediatePlayback = mSharedPreferences.getBoolean(getString(R.string.settings_immediate_playback_key), Boolean.getBoolean(getString(R.string.settings_immediate_playback_default)));
-            if (immediatePlayback) play();
+            play();
         }
 
         // Handle Intent action from MediaSession.TransportControls
@@ -611,7 +614,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         return notificationCover;
     }
 
-    private void buildNotification(boolean initialCall) {
+    private void buildNotification() {
         createNotificationChannel();
 
         int notificationAction = R.drawable.ic_media_pause;
@@ -682,13 +685,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .addAction(notificationAction, title, play_pauseAction)
                 .addAction(R.drawable.ic_media_forward, "forward", playbackAction(2));
 
-        if (initialCall) {
-            startForeground(NOTIFICATION_ID, mNotificationBuilder.build());
+        Notification notification = mNotificationBuilder.build();
+        if (isPlaying()) {
+            startForeground(NOTIFICATION_ID, notification);
         } else {
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (notificationManager != null) {
-                notificationManager.notify(NOTIFICATION_ID, mNotificationBuilder.build());
-            }
+            mNotificationManager.notify(NOTIFICATION_ID, notification);
         }
     }
 
@@ -763,7 +764,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             sendPlayStatusResult(MSG_PLAY);
             mediaSession.setActive(true);
             setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-            buildNotification(false);
+            buildNotification();
         }
     }
 
@@ -790,7 +791,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             updateAudioFileStatus();
             sendPlayStatusResult(MSG_PAUSE);
             setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
-            buildNotification(false);
+            buildNotification();
         }
         stopForeground(false);
     }
