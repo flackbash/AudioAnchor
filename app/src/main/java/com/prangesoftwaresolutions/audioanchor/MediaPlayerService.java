@@ -259,7 +259,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
             // Set playback speed according to preferences
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.valueOf(getString(R.string.preference_playback_speed_default)));
+                int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
                 mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed((float) (speed / 10.0)));
             }
 
@@ -676,7 +676,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     void play() {
         // Get Autoplay and Autorewind settings
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
-        int autorewindTime = Integer.valueOf(mSharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
+        int autorewindTime = Integer.parseInt(mSharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
 
         // Request a partial wake lock for the duration of the playback
         mLockManager.acquireWakeLock();
@@ -839,7 +839,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean shakeEnabledSetting = mSharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
         int shakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
         float shakeForceRequired = (100 - shakeSensitivitySetting) / 100f;
-        int fadeoutTime = Integer.valueOf(mSharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
+        int fadeoutTime = Integer.parseInt(mSharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
 
         mSleepTimer.createTimer(minutes * 60, fadeoutTime, shakeEnabledSetting, shakeForceRequired);
         mSleepTimer.startTimer(false);
