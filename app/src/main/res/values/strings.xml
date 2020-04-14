@@ -1,6 +1,10 @@
 <resources>
     <string name="channel_name">Show media controls</string>
     <string name="channel_description">Notification channel to display the media controls.</string>
+    <string name="button_pause">Pause</string>
+    <string name="button_play">Play</string>
+    <string name="button_backward">Backward</string>
+    <string name="button_forward">Forward</string>
 
     <!-- Toast messages -->
     <string name="no_albums">No albums found in the specified directory.</string>
@@ -22,6 +26,7 @@
     <string name="files_deleted">%d album(s) and %d track(s) deleted from database.</string>
     <string name="cannot_mark_as_not_started">Cannot mark currently playing track as not started.</string>
     <string name="cannot_mark_as_completed">Cannot mark currently playing track as completed.</string>
+    <string name="path">Path: %s</string>
 
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Autoplay</string>
@@ -71,6 +76,7 @@
     <string name="about_report_bugs">This is also the place to report bugs, make a contribution yourself or leave a star if you like the app.</string>
 
     <!-- Dialog strings -->
+    <string name="dialog_msg_select_dir">Select directory</string>
     <string name="dialog_msg_change_dir">Changing the directory will reset all saved statuses of played audio files. Change directory?</string>
     <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing</string>
     <string name="dialog_msg_ok">OK</string>

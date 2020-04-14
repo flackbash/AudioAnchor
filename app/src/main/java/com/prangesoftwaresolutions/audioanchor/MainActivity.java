@@ -610,7 +610,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         editor.apply();
 
         // Inform the user about the selected path
-        String text = "Path: " + directory.getAbsolutePath();
+        String text = getResources().getString(R.string.path, directory.getAbsolutePath());
         Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
     }
 
