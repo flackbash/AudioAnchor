@@ -56,7 +56,7 @@ public class FileDialog {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle(currentPath.getPath());
         if (selectDirectoryOption) {
-            builder.setPositiveButton("Select directory", (dialog1, which) -> {
+            builder.setPositiveButton(R.string.dialog_msg_select_dir, (dialog1, which) -> {
                 Log.d(TAG, currentPath.getPath());
                 fireDirectorySelectedEvent(currentPath);
             });

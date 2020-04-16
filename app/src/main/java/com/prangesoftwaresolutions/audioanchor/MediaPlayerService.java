@@ -542,7 +542,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         int notificationAction = R.drawable.ic_media_pause;
         PendingIntent play_pauseAction;
-        String title = "pause";
+        String title = getString(R.string.button_pause);
 
         // Build a new notification according to the current state of the MediaPlayer
         if (isPlaying()) {
@@ -552,7 +552,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             notificationAction = R.drawable.ic_media_play;
             // Create the play action
             play_pauseAction = playbackAction(0);
-            title = "play";
+            title = getString(R.string.button_play);
         }
 
         Bitmap notificationCover = getNotificationImage(200);
@@ -602,11 +602,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Set the visibility for the lock screen
                 .setVisibility(VISIBILITY_PUBLIC)
                 // Make notification non-removable if the track is currently playing
-                .setOngoing(title.equals("pause"))
+                .setOngoing(title.equals(getString(R.string.button_pause)))
                 // Add playback actions
-                .addAction(R.drawable.ic_media_backward, "backward", playbackAction(3))
+                .addAction(R.drawable.ic_media_backward, getString(R.string.button_backward), playbackAction(3))
                 .addAction(notificationAction, title, play_pauseAction)
-                .addAction(R.drawable.ic_media_forward, "forward", playbackAction(2));
+                .addAction(R.drawable.ic_media_forward, getString(R.string.button_forward), playbackAction(2));
 
         Notification notification = mNotificationBuilder.build();
         if (isPlaying()) {
