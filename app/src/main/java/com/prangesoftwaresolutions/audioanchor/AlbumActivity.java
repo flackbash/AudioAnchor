@@ -58,6 +58,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     // Settings variables
     SharedPreferences mPrefs;
     boolean mDarkTheme;
+    boolean mShowHiddenFiles;
 
     // Variables for multi choice mode
     ArrayList<Long> mSelectedTracks = new ArrayList<>();
@@ -72,6 +73,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     int mAlbumDuration;
     int mCurrAudioLastCompletedTime;
     int mCurrUpdatedAudioId;
+
+    // Synchronizer
+    private Synchronizer mSynchronizer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,11 +93,15 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Set up the shared preferences.
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mDarkTheme = mPrefs.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
+        mShowHiddenFiles = mPrefs.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
 
         mDirectory = mPrefs.getString(getString(R.string.preference_filename), null);
 
         // Initialize the cursor adapter
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
+
+        // Initialize synchronizer
+        mSynchronizer = new Synchronizer(this);
 
         // Set up the views
         mAlbumInfoTitleTV = findViewById(R.id.album_info_title);
@@ -247,6 +255,14 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         currentDarkTheme = mPrefs.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
         if (mDarkTheme != currentDarkTheme) {
             recreate();
+        }
+        // Synchronize if setting show-hidden-files has changed
+        boolean currentShowHiddenFiles;
+        currentShowHiddenFiles = mPrefs.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
+        if (mShowHiddenFiles != currentShowHiddenFiles) {
+            mSynchronizer.updateDBTables();
+            getLoaderManager().restartLoader(0, null, this);
+            mShowHiddenFiles = currentShowHiddenFiles;
         }
         super.onRestart();
     }
