@@ -1,6 +1,10 @@
 <resources>
     <string name="channel_name">Показать элементы управления мультимедиа</string>
     <string name="channel_description">Канал уведомлений для отображения элементы управления мультимедиа.</string>
+    <string name="button_pause">Пауза</string>
+    <string name="button_play">Воспроизвести</string>
+    <string name="button_backward">Назад</string>
+    <string name="button_forward">Вперед</string>
 
     <!-- Toast messages -->
     <string name="no_albums">Не найдено ни одной аудиокниги в указанной папке.</string>
@@ -22,6 +26,7 @@
     <string name="files_deleted">%d аудиокниг и %d эпизодов удалено из базы данных.</string>
     <string name="cannot_mark_as_not_started">Не удалось отметить проигрывемый эпизод как неначатый.</string>
     <string name="cannot_mark_as_completed">Не удалось отметить проигрывемый эпизод как прослушанный.</string>
+    <string name="path">Путь: %s</string>
 
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Автоматическое воспроизведение</string>
@@ -37,6 +42,7 @@
     <string name="settings_dark_label">Темная тема</string>
     <string name="settings_autorewind_label">Время автоперемотки назад</string>
     <string name="settings_immediate_playback_label">Начать воспроизведение сразу после выбора эпизода</string>
+    <string name="settings_show_hidden_label">Показывать скрытые файлы</string>
     <string name="settings_display_category">Внешний вид</string>
     <string name="settings_playback_category">Воспроизведение</string>
     <string name="settings_miscellaneous_category">Прочее</string>
@@ -66,8 +72,11 @@
     <string name="mark_all_as_not_started">Отметить все эпизоды как неначатые</string>
     <string name="mark_all_as_completed">Отметить все эпизоды как прослушанные</string>
     <string name="playback_speed">Скорость воспроизведения</string>
+    <string name="about_contributors">Список участников можно найти по ссылке</string>
+    <string name="about_report_bugs">Там же там можно сообщить об ошибке, внести свой вклад в развитие или поставить звезду, если приложение понравилось.</string>
 
     <!-- Dialog strings -->
+    <string name="dialog_msg_select_dir">Выбрать папку</string>
     <string name="dialog_msg_change_dir">Смена папки сбросит все сохраненные статусы прослушанных аудиокниг. Продолжить?</string>
     <string name="dialog_msg_sleep_timer">Введите количество минут, в течении которых проигрыватель должен играть</string>
     <string name="dialog_msg_ok">Ок</string>
