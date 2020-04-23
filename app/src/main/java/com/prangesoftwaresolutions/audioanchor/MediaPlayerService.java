@@ -682,7 +682,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mLockManager.acquireWakeLock();
 
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying() && (autoplay || getCurrentPosition() != getDuration())) {
-            mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition() - autorewindTime * 1000);
+            if (getCurrentPosition() != getDuration()) {
+                mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition() - autorewindTime * 1000);
+            }
             mMediaPlayer.start();
             sendPlayStatusResult(MSG_PLAY);
             mediaSession.setActive(true);
