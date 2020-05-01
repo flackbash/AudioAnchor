@@ -6,14 +6,14 @@
         <SwitchPreference
             android:defaultValue="@string/settings_autoplay_default"
             android:key="@string/settings_autoplay_key"
-            android:title="@string/settings_autoplay_label" />
+            android:title="@string/settings_autoplay_label"
+            android:singleLineTitle="false"/>
         <SwitchPreference
             android:defaultValue="@string/settings_autoplay_restart_default"
             android:key="@string/settings_autoplay_restart_key"
             android:title="@string/settings_autoplay_restart_label"
             android:singleLineTitle="false"
             android:enabled="false" />
-
         <EditTextPreference
             android:defaultValue="@string/settings_autorewind_default"
             android:inputType="number"
@@ -22,12 +22,13 @@
             android:singleLine="true"
             android:maxLength="2"
             android:title="@string/settings_autorewind_label"
-            android:summary="@string/settings_autorewind_default" />
-
+            android:summary="@string/settings_autorewind_default"
+            android:singleLineTitle="false"/>
         <SwitchPreference
             android:defaultValue="@string/settings_immediate_playback_default"
             android:key="@string/settings_immediate_playback_key"
-            android:title="@string/settings_immediate_playback_label" />
+            android:title="@string/settings_immediate_playback_label"
+            android:singleLineTitle="false"/>
 
     </PreferenceCategory>
 
@@ -36,23 +37,28 @@
         <SwitchPreference
             android:defaultValue="@string/settings_progress_percentage_default"
             android:key="@string/settings_progress_percentage_key"
-            android:title="@string/settings_progress_percentage_label" />
+            android:title="@string/settings_progress_percentage_label"
+            android:singleLineTitle="false" />
         <SwitchPreference
             android:defaultValue="@string/settings_cover_from_metadata_default"
             android:key="@string/settings_cover_from_metadata_key"
-            android:title="@string/settings_cover_from_metadata_label" />
+            android:title="@string/settings_cover_from_metadata_label"
+            android:singleLineTitle="false"/>
         <SwitchPreference
             android:defaultValue="@string/settings_title_from_metadata_default"
             android:key="@string/settings_title_from_metadata_key"
-            android:title="@string/settings_title_from_metadata_label" />
+            android:title="@string/settings_title_from_metadata_label"
+            android:singleLineTitle="false" />
         <SwitchPreference
             android:defaultValue="@string/settings_dark_default"
             android:key="@string/settings_dark_key"
-            android:title="@string/settings_dark_label" />
+            android:title="@string/settings_dark_label"
+            android:singleLineTitle="false" />
         <SwitchPreference
             android:defaultValue="@string/settings_show_hidden_default"
             android:key="@string/settings_show_hidden_key"
-            android:title="@string/settings_show_hidden_label" />
+            android:title="@string/settings_show_hidden_label"
+            android:singleLineTitle="false" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_sleep_timer_category">
@@ -65,16 +71,19 @@
             android:singleLine="true"
             android:maxLength="3"
             android:title="@string/settings_sleep_fadeout_label"
-            android:summary="@string/settings_sleep_fadeout_default" />
+            android:summary="@string/settings_sleep_fadeout_default"
+            android:singleLineTitle="false"/>
         <SwitchPreference
             android:defaultValue="@string/settings_shake_default"
             android:key="@string/settings_shake_key"
-            android:title="@string/settings_shake_label" />
+            android:title="@string/settings_shake_label"
+            android:singleLineTitle="false" />
         <SeekBarPreference
             android:defaultValue="@string/settings_shake_sensitivity_default"
             android:max="@string/settings_shake_sensitivity_max"
             android:key="@string/settings_shake_sensitivity_key"
-            android:title="@string/settings_shake_sensitivity_label" />
+            android:title="@string/settings_shake_sensitivity_label"
+            android:singleLineTitle="false" />
         <SwitchPreference
             android:defaultValue="@string/settings_continue_until_end_default"
             android:key="@string/settings_continue_until_end_key"
@@ -87,7 +96,8 @@
         <SwitchPreference
             android:defaultValue="@string/settings_keep_deleted_default"
             android:key="@string/settings_keep_deleted_key"
-            android:title="@string/settings_keep_deleted_label" />
+            android:title="@string/settings_keep_deleted_label"
+            android:singleLineTitle="false" />
     </PreferenceCategory>
 
 </PreferenceScreen>
