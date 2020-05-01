@@ -74,6 +74,10 @@
             android:max="@string/settings_shake_sensitivity_max"
             android:key="@string/settings_shake_sensitivity_key"
             android:title="@string/settings_shake_sensitivity_label" />
+        <SwitchPreference
+            android:defaultValue="@string/settings_continue_until_end_default"
+            android:key="@string/settings_continue_until_end_key"
+            android:title="@string/settings_continue_until_end_label" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_miscellaneous_category">

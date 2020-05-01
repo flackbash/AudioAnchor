@@ -114,6 +114,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // SleepTimer variables
     SleepTimer mSleepTimer;
     SensorManager mSensorManager;
+    boolean mStopAtEndOfCurrentTrack = false;
 
     @Override
     public void onCreate() {
@@ -282,7 +283,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
         boolean autoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
 
-        if (autoplay) {
+        if (autoplay && !mStopAtEndOfCurrentTrack) {
             if (mAudioIndex + 1 < mAudioIdQueue.size()) {
                 mAudioIndex++;
                 StorageUtil storage = new StorageUtil(this);
@@ -301,6 +302,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 initMediaPlayer(mActiveAudio.getPath(), startPosition);
                 play();
             }
+        }
+
+        if (mStopAtEndOfCurrentTrack) {
+          terminateSleepTimer();
         }
 
         if (!playingNext) {
@@ -827,24 +832,36 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * Start the sleep timer
      */
     void startSleepTimer(int minutes, TextView countDownTV) {
-        // Create and start timer
-        if (mSleepTimer == null) {
-            mSleepTimer = new SleepTimer(countDownTV, this, mSensorManager) {
-                @Override
-                public void finished() {
-                    pause();
-                }
-            };
-        }
+        mStopAtEndOfCurrentTrack = false;
 
         // Get sleep timer preferences
         boolean shakeEnabledSetting = mSharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
         int shakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
         float shakeForceRequired = (100 - shakeSensitivitySetting) / 100f;
         int fadeoutTime = Integer.parseInt(mSharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
+        boolean stopAtEndOfTrack = mSharedPreferences.getBoolean(getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(getString(R.string.settings_continue_until_end_default)));
 
-        mSleepTimer.createTimer(minutes * 60, fadeoutTime, shakeEnabledSetting, shakeForceRequired);
+        if (mSleepTimer == null) {
+            mSleepTimer = new SleepTimer(countDownTV, this, mSensorManager) {
+                @Override
+                public void finished() {
+                    if (stopAtEndOfTrack) {
+                        mStopAtEndOfCurrentTrack = true;
+                    } else {
+                        pause();
+                    }
+                }
+            };
+        }
+
+        // Create and start timer
+        mSleepTimer.createTimer(minutes * 60, fadeoutTime, shakeEnabledSetting, shakeForceRequired, stopAtEndOfTrack);
         mSleepTimer.startTimer(false);
+    }
+
+    private void terminateSleepTimer() {
+        mStopAtEndOfCurrentTrack = false;
+        mSleepTimer.disableTimer();
     }
 
     SleepTimer getSleepTimer() {

@@ -19,6 +19,7 @@ public class SleepTimer {
     private long mCurrentMillisLeft;
     private int mSecSleepTime;
     private int mFadeOutSec;
+    private boolean mContinueUntilEndOfTrack;
 
     // Shake stuff
     private boolean mShakeDetectionEnabled;
@@ -39,7 +40,7 @@ public class SleepTimer {
         };
     }
 
-    void createTimer(final int secSleepTime, int fadeOutSec, boolean shakeDetectionEnabled, float shakeForceRequiredPercent) {
+    void createTimer(final int secSleepTime, int fadeOutSec, boolean shakeDetectionEnabled, float shakeForceRequiredPercent, boolean continueUntilEndOfTrack) {
         // Let the user disable the timer by entering 0 or nothing
         if (secSleepTime == 0) {
             disableTimer();
@@ -51,6 +52,7 @@ public class SleepTimer {
 
         mFadeOutSec = fadeOutSec;
         mShakeDetectionEnabled = shakeDetectionEnabled;
+        mContinueUntilEndOfTrack = continueUntilEndOfTrack;
 
         if (shakeForceRequiredPercent <= 1f && shakeForceRequiredPercent >= 0f) {
             mShakeForceRequired = ((mShakeForceMax - mShakeForceMin) * shakeForceRequiredPercent) + mShakeForceMin;
@@ -82,7 +84,7 @@ public class SleepTimer {
                 mSleepCountDownTV.setText(timeString);
 
                 // Fade-out
-                if ((l / 1000) < mFadeOutSec) {
+                if (!mContinueUntilEndOfTrack && (l / 1000) < mFadeOutSec) {
                     mPlayer.decreaseVolume((int) (mFadeOutSec - (l / 1000)), mFadeOutSec);
                 }
             }
@@ -90,7 +92,9 @@ public class SleepTimer {
             @Override
             public void onFinish() {
                 finished();
-                disableTimer();
+                if (!mContinueUntilEndOfTrack) {
+                    disableTimer();
+                }
             }
         };
     }

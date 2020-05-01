@@ -26,6 +26,8 @@
     <string name="settings_shake_sensitivity_key" translatable="false">settings_shake_sensitivity</string>
     <string name="settings_shake_sensitivity_default" translatable="false">75</string>
     <string name="settings_shake_sensitivity_max" translatable="false">100</string>
+    <string name="settings_continue_until_end_key" translatable="false">settings_continue_until_end</string>
+    <string name="settings_continue_until_end_default" translatable="false">false</string>
     <string name="settings_title_from_metadata_key" translatable="false">settings_title_from_metadata</string>
     <string name="settings_title_from_metadata_default" translatable="false">false</string>
     <string name="settings_dark_key" translatable="false">settings_dark</string>
