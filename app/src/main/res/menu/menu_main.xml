@@ -7,7 +7,7 @@
         android:icon="@drawable/ic_synchronize"
         android:orderInCategory="80"
         android:title="@string/synchronize"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_choose_directory"

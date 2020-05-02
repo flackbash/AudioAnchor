@@ -17,6 +17,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -49,6 +50,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     // Layout variables
     ListView mListView;
+    SwipeRefreshLayout mSwipeRefreshLayout;
     TextView mEmptyTV;
     ImageView mAlbumInfoCoverIV;
     TextView mAlbumInfoTitleTV;
@@ -101,7 +103,14 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
 
         // Initialize synchronizer
-        mSynchronizer = new Synchronizer(this);
+        mSynchronizer = new Synchronizer(this) {
+            @Override
+            public void finish(){
+                getLoaderManager().restartLoader(0, null, AlbumActivity.this);
+                mSwipeRefreshLayout.setRefreshing(false);
+                Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
+            }
+        };
 
         // Set up the views
         mAlbumInfoTitleTV = findViewById(R.id.album_info_title);
@@ -214,6 +223,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             }
         });
 
+        // Set up SwipeRefreshLayout onRefresh action
+        mSwipeRefreshLayout = findViewById(R.id.swiperefresh);
+        mSwipeRefreshLayout.setOnRefreshListener(() -> mSynchronizer.updateDBTables());
+
         // Set up the FAB onClickListener
         mPlayPauseFAB.setOnClickListener(view -> {
             if (mPlayer == null) {
@@ -260,8 +273,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         boolean currentShowHiddenFiles;
         currentShowHiddenFiles = mPrefs.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
         if (mShowHiddenFiles != currentShowHiddenFiles) {
+            mSwipeRefreshLayout.setRefreshing(true);
             mSynchronizer.updateDBTables();
-            getLoaderManager().restartLoader(0, null, this);
             mShowHiddenFiles = currentShowHiddenFiles;
         }
         super.onRestart();

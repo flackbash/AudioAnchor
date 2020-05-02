@@ -27,6 +27,12 @@ class Synchronizer {
     }
 
     /*
+     * Is called when synchronization is finished and should be overwritten in executing activity
+     */
+    public void finish() {
+    }
+
+    /*
      * Update the album database table if the list of directories in the selected directory does not
      * match the album table entries
      */
@@ -95,6 +101,7 @@ class Synchronizer {
                 mContext.getContentResolver().delete(AnchorContract.AudioEntry.CONTENT_URI, sel, selArgs);
             }
         }
+        finish();
     }
 
     /*

@@ -27,6 +27,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     // Layout variables
     TextView mEmptyTV;
     ListView mListView;
+    SwipeRefreshLayout mSwipeRefreshLayout;
     FloatingActionButton mPlayPauseFAB;
 
     // Variables for multi choice mode
@@ -111,7 +113,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mCursorAdapter = new AlbumCursorAdapter(this, null);
 
         // Initialize synchronizer
-        mSynchronizer = new Synchronizer(this);
+        mSynchronizer = new Synchronizer(this) {
+            @Override
+            public void finish(){
+                getLoaderManager().restartLoader(0, null, MainActivity.this);
+                mSwipeRefreshLayout.setRefreshing(false);
+                Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
+            }
+        };
 
         // Use a ListView and CursorAdapter to recycle space
         mListView = findViewById(R.id.list);
@@ -213,6 +222,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 mSelectedAlbums.clear();
             }
         });
+
+        // Set up SwipeRefreshLayout onRefresh action
+        mSwipeRefreshLayout = findViewById(R.id.swiperefresh);
+        mSwipeRefreshLayout.setOnRefreshListener(() -> mSynchronizer.updateDBTables());
 
         mPlayPauseFAB = findViewById(R.id.play_pause_fab);
 
@@ -334,8 +347,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         boolean currentShowHiddenFiles;
         currentShowHiddenFiles = mSharedPreferences.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
         if (mShowHiddenFiles != currentShowHiddenFiles) {
+            mSwipeRefreshLayout.setRefreshing(true);
             mSynchronizer.updateDBTables();
-            getLoaderManager().restartLoader(0, null, this);
             mShowHiddenFiles = currentShowHiddenFiles;
         }
         super.onRestart();
@@ -382,6 +395,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         showChangeDirectorySelector();
                     } else {
                         mDirectory = new File(mPrefDirectory);
+                        mSwipeRefreshLayout.setRefreshing(true);
                         mSynchronizer.updateDBTables();
                     }
                 }
@@ -436,9 +450,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 showImportFileSelector();
                 return true;
             case R.id.menu_synchronize:
+                mSwipeRefreshLayout.setRefreshing(true);
                 mSynchronizer.updateDBTables();
-                getLoaderManager().restartLoader(0, null, this);
-                Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.menu_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
@@ -615,12 +628,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void setDirectory(File directory) {
         mDirectory = directory;
-        mSynchronizer.updateDBTables();
 
         // Store the selected path in the shared preferences to persist when the app is closed
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putString(getString(R.string.preference_filename), directory.getAbsolutePath());
         editor.apply();
+
+        mSwipeRefreshLayout.setRefreshing(true);
+        mSynchronizer.updateDBTables();
 
         // Inform the user about the selected path
         String text = getResources().getString(R.string.path, directory.getAbsolutePath());
@@ -719,6 +734,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         FileDialog fileDialog = new FileDialog(this, baseDirectory, ".db");
         fileDialog.addFileListener(file -> {
             importDatabase(file);
+            mSwipeRefreshLayout.setRefreshing(true);
             mSynchronizer.updateDBTables();
         });
         fileDialog.showDialog();
@@ -839,5 +855,4 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
-
 }
