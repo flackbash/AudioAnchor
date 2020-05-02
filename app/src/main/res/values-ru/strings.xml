@@ -38,6 +38,7 @@
     <string name="settings_sleep_fadeout_label">Время затухания</string>
     <string name="settings_shake_label">Встряхните, чтобы сбросить таймер сна</string>
     <string name="settings_shake_sensitivity_label">Чувствительность встряхивания</string>
+    <string name="settings_continue_until_end_label">Воспроизводить текущий эпизод до конца</string>
     <string name="settings_title_from_metadata_label">Получить название эпизода из метаданных файла</string>
     <string name="settings_dark_label">Темная тема</string>
     <string name="settings_autorewind_label">Время автоперемотки назад</string>
