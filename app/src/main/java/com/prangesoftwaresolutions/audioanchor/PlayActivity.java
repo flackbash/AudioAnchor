@@ -383,7 +383,7 @@ public class PlayActivity extends AppCompatActivity {
 
     private void storeAudioFiles() {
         // Store Serializable audioList in SharedPreferences
-        String sortOrder = "LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
+        String sortOrder = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
         ArrayList<Integer> audioIdList = DBAccessUtils.getAllAudioIdsFromAlbum(this, mAudioFile.getAlbumId(), sortOrder);
         int audioIndex = audioIdList.indexOf(mAudioFile.getId());
         StorageUtil storage = new StorageUtil(getApplicationContext());
