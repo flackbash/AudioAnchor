@@ -842,7 +842,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean stopAtEndOfTrack = mSharedPreferences.getBoolean(getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(getString(R.string.settings_continue_until_end_default)));
 
         if (mSleepTimer == null) {
-            mSleepTimer = new SleepTimer(countDownTV, this, mSensorManager) {
+            mSleepTimer = new SleepTimer(countDownTV, this, mSensorManager, this) {
                 @Override
                 public void finished() {
                     if (stopAtEndOfTrack) {

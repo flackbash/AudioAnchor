@@ -78,6 +78,11 @@
             android:key="@string/settings_shake_key"
             android:title="@string/settings_shake_label"
             android:singleLineTitle="false" />
+        <SwitchPreference
+            android:defaultValue="@string/settings_vibrate_shake_reset_default"
+            android:key="@string/settings_vibrate_shake_reset_key"
+            android:title="@string/settings_vibrate_shake_reset_label"
+            android:singleLineTitle="false"/>
         <SeekBarPreference
             android:defaultValue="@string/settings_shake_sensitivity_default"
             android:max="@string/settings_shake_sensitivity_max"

@@ -1,11 +1,17 @@
 package com.prangesoftwaresolutions.audioanchor;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -27,13 +33,32 @@ public class SleepTimer {
     private final ShakeDetector mShakeDetector;
     private float mShakeForceRequired = 3f;
 
-    SleepTimer(TextView sleepCountDownTV, MediaPlayerService mediaPlayer, SensorManager sensorMng) {
+    // Preferences
+    private SharedPreferences mSharedPreferences;
+
+    SleepTimer(TextView sleepCountDownTV, MediaPlayerService mediaPlayer, SensorManager sensorMng,
+               Context context) {
         mSleepCountDownTV = sleepCountDownTV;
         mPlayer = mediaPlayer;
         mSensorMng = sensorMng;
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         mShakeDetector = new ShakeDetector(mShakeForceRequired) {
             @Override
             public void shakeDetected() {
+                boolean vibrateOnShakeReset = mSharedPreferences.getBoolean(context.getString(R.string.settings_vibrate_shake_reset_key), Boolean.getBoolean(context.getString(R.string.settings_vibrate_shake_reset_default)));
+                if (vibrateOnShakeReset) {
+                    Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        if (v != null) {
+                            v.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
+                        }
+                    } else {
+                        if (v != null) {
+                            //deprecated in API 26
+                            v.vibrate(100);
+                        }
+                    }
+                }
                 restartTimer();
                 startTimer(false);
             }
@@ -178,6 +203,7 @@ class ShakeDetector implements SensorEventListener {
     private final float[] mGravity = {0, 0, 0};
     private final float[] mLinearAcc = {0, 0, 0};
     private long mLastMeasurementT = 0;
+    private long mLastShakeDetected = 0;
     private float mShakeTresh;
     final private long mStartTime;
 
@@ -198,6 +224,9 @@ class ShakeDetector implements SensorEventListener {
     public void onSensorChanged(SensorEvent sensorEvent) {
         // From https://developer.android.com/guide/topics/sensors/sensors_motion#sensors-motion-accel
         final int sampleMsec = 100;
+        // After a shake has been detected don't react to another shake for a certain time.
+        // Otherwise the "same shake" will be detected several times.
+        final int sampleMsecShakeDetected = 1000;
         final int settleTime = 2000; //let the filter settle
 
         // We only sample @ mSampleMsec
@@ -219,7 +248,9 @@ class ShakeDetector implements SensorEventListener {
         mLinearAcc[2] = sensorEvent.values[2] - mGravity[2];
 
         float totalAcc = mLinearAcc[0] + mLinearAcc[1] + mLinearAcc[2];
-        if (totalAcc > mShakeTresh && System.currentTimeMillis() - mStartTime > settleTime) {
+        if (totalAcc > mShakeTresh && System.currentTimeMillis() - mStartTime > settleTime &&
+                System.currentTimeMillis() - mLastShakeDetected > sampleMsecShakeDetected) {
+            mLastShakeDetected = System.currentTimeMillis();
             shakeDetected();
             Log.d("SHAKE", "Shake with force of: " + totalAcc);
         }
