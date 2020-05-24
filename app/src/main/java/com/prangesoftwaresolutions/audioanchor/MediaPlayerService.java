@@ -838,13 +838,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean shakeEnabledSetting = mSharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
         int shakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
         float shakeForceRequired = (100 - shakeSensitivitySetting) / 100f;
-        int fadeoutTime = Integer.parseInt(mSharedPreferences.getString(getString(R.string.settings_sleep_fadeout_key), getString(R.string.settings_sleep_fadeout_default)));
-        boolean stopAtEndOfTrack = mSharedPreferences.getBoolean(getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(getString(R.string.settings_continue_until_end_default)));
 
         if (mSleepTimer == null) {
             mSleepTimer = new SleepTimer(countDownTV, this, mSensorManager, this) {
                 @Override
                 public void finished() {
+                    boolean stopAtEndOfTrack = mSharedPreferences.getBoolean(getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(getString(R.string.settings_continue_until_end_default)));
                     if (stopAtEndOfTrack) {
                         mStopAtEndOfCurrentTrack = true;
                     } else {
@@ -855,7 +854,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
 
         // Create and start timer
-        mSleepTimer.createTimer(minutes * 60, fadeoutTime, shakeEnabledSetting, shakeForceRequired, stopAtEndOfTrack);
+        mSleepTimer.createTimer(minutes * 60, shakeEnabledSetting, shakeForceRequired);
         mSleepTimer.startTimer(false);
     }
 

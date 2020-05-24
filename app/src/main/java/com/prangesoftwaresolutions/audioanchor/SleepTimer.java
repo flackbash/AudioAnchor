@@ -24,8 +24,6 @@ public class SleepTimer {
     private TextView mSleepCountDownTV;
     private long mCurrentMillisLeft;
     private int mSecSleepTime;
-    private int mFadeOutSec;
-    private boolean mContinueUntilEndOfTrack;
 
     // Shake stuff
     private boolean mShakeDetectionEnabled;
@@ -34,6 +32,7 @@ public class SleepTimer {
     private float mShakeForceRequired = 3f;
 
     // Preferences
+    private Context mContext;
     private SharedPreferences mSharedPreferences;
 
     SleepTimer(TextView sleepCountDownTV, MediaPlayerService mediaPlayer, SensorManager sensorMng,
@@ -42,6 +41,7 @@ public class SleepTimer {
         mPlayer = mediaPlayer;
         mSensorMng = sensorMng;
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mContext = context;
         mShakeDetector = new ShakeDetector(mShakeForceRequired) {
             @Override
             public void shakeDetected() {
@@ -65,7 +65,7 @@ public class SleepTimer {
         };
     }
 
-    void createTimer(final int secSleepTime, int fadeOutSec, boolean shakeDetectionEnabled, float shakeForceRequiredPercent, boolean continueUntilEndOfTrack) {
+    void createTimer(final int secSleepTime, boolean shakeDetectionEnabled, float shakeForceRequiredPercent) {
         // Let the user disable the timer by entering 0 or nothing
         if (secSleepTime == 0) {
             disableTimer();
@@ -75,9 +75,7 @@ public class SleepTimer {
         final float mShakeForceMax = 20f;
         final float mShakeForceMin = 0.5f;
 
-        mFadeOutSec = fadeOutSec;
         mShakeDetectionEnabled = shakeDetectionEnabled;
-        mContinueUntilEndOfTrack = continueUntilEndOfTrack;
 
         if (shakeForceRequiredPercent <= 1f && shakeForceRequiredPercent >= 0f) {
             mShakeForceRequired = ((mShakeForceMax - mShakeForceMin) * shakeForceRequiredPercent) + mShakeForceMin;
@@ -109,15 +107,18 @@ public class SleepTimer {
                 mSleepCountDownTV.setText(timeString);
 
                 // Fade-out
-                if (!mContinueUntilEndOfTrack && (l / 1000) < mFadeOutSec) {
-                    mPlayer.decreaseVolume((int) (mFadeOutSec - (l / 1000)), mFadeOutSec);
+                int fadeoutTime = Integer.parseInt(mSharedPreferences.getString(mContext.getString(R.string.settings_sleep_fadeout_key), mContext.getString(R.string.settings_sleep_fadeout_default)));
+                boolean continueUntilEndOfTrack = mSharedPreferences.getBoolean(mContext.getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(mContext.getString(R.string.settings_continue_until_end_default)));
+                if (!continueUntilEndOfTrack && (l / 1000) < fadeoutTime) {
+                    mPlayer.decreaseVolume((int) (fadeoutTime - (l / 1000)), fadeoutTime);
                 }
             }
 
             @Override
             public void onFinish() {
                 finished();
-                if (!mContinueUntilEndOfTrack) {
+                boolean continueUntilEndOfTrack = mSharedPreferences.getBoolean(mContext.getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(mContext.getString(R.string.settings_continue_until_end_default)));
+                if (!continueUntilEndOfTrack) {
                     disableTimer();
                 }
             }
