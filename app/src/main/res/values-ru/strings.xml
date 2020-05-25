@@ -7,7 +7,7 @@
     <string name="button_forward">Вперед</string>
 
     <!-- Toast messages -->
-    <string name="no_albums">Не найдено ни одной аудиокниги в указанной папке.</string>
+    <string name="no_albums">Не найдено ни одной аудиокниги в указанной папке. Выберите папку, в которой находятся подпапки с аудиофайлами.</string>
     <string name="no_audio_files">Не найдено ни одного эпизода в этой аудиокниге.</string>
     <string name="play_error">Не удается воспроизвести выбранный эпизод. Возможно отсутствует файл эпизода.</string>
     <string name="permission_denied">Необходимое разрешение не было получено. Завершение работы программы.</string>
@@ -38,6 +38,7 @@
     <string name="settings_sleep_fadeout_label">Время затухания</string>
     <string name="settings_shake_label">Встряхните, чтобы сбросить таймер сна</string>
     <string name="settings_shake_sensitivity_label">Чувствительность встряхивания</string>
+    <string name="settings_vibrate_shake_reset_label">Вибрировать при сбросе таймера встряхиванием</string>
     <string name="settings_continue_until_end_label">Воспроизводить текущий эпизод до конца</string>
     <string name="settings_title_from_metadata_label">Получить название эпизода из метаданных файла</string>
     <string name="settings_dark_label">Темная тема</string>
