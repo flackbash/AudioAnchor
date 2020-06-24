@@ -301,4 +301,30 @@ class DBAccessUtils {
 
         return trackIds;
     }
+
+    /*
+     * Get Album title
+     */
+    static String getAlbumTitle(Context context, long albumId) {
+        // Get the title of the album to check if the album still exists in the file system
+        Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, albumId);
+        String[] proj = new String[]{AnchorContract.AlbumEntry.COLUMN_TITLE};
+        Cursor c = context.getContentResolver().query(uri, proj, null, null, null);
+
+        // Bail early if the cursor is null
+        if (c == null) {
+            return null;
+        } else if (c.getCount() < 1) {
+            c.close();
+            return null;
+        }
+
+        String title = null;
+        if (c.moveToNext()) {
+            title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
+        }
+        c.close();
+
+        return title;
+    }
 }

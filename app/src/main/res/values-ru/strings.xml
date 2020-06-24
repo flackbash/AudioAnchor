@@ -22,8 +22,8 @@
     <string name="empty_title_error">Введите название закладки.</string>
     <string name="jumped_to_bookmark">Переход к закладке \"%s\" на %s.</string>
     <string name="bookmark_deleted">Закладка удалена.</string>
-    <string name="tracks_deleted">%d эпизодов удалено из базы данных.</string>
-    <string name="files_deleted">%d аудиокниг и %d эпизодов удалено из базы данных.</string>
+    <string name="tracks_deleted_from_db">%d эпизодов удалено из базы данных.</string>
+    <string name="files_deleted_from_db">%d аудиокниг и %d эпизодов удалено из базы данных.</string>
     <string name="cannot_mark_as_not_started">Не удалось отметить проигрывемый эпизод как неначатый.</string>
     <string name="cannot_mark_as_completed">Не удалось отметить проигрывемый эпизод как прослушанный.</string>
     <string name="path">Путь: %s</string>
@@ -86,8 +86,8 @@
     <string name="dialog_msg_close">Закрыть</string>
     <string name="dialog_msg_delete">Удалить</string>
     <string name="dialog_msg_goto">Введите время, на которое хотите перейти</string>
-    <string name="dialog_msg_delete_album">Вы действительно хотите удалить выбранные аудиокниги и их эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
-    <string name="dialog_msg_delete_audio">Вы действительно хотите удалить выбранные эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
+    <string name="dialog_msg_delete_album_from_db">Вы действительно хотите удалить выбранные аудиокниги и их эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
+    <string name="dialog_msg_delete_audio_from_db">Вы действительно хотите удалить выбранные эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
     <string name="dialog_msg_delete_bookmark">Удалить эту закладку?</string>
 
 </resources>

@@ -152,4 +152,24 @@ class Utils {
         }
         return false;
     }
+
+    static boolean deleteTrack(Context context, String directoryPath, long trackId, boolean keepDeletedInDB) {
+        // Delete track from file system
+        AudioFile audioFile = DBAccessUtils.getAudioFileById(context, trackId);
+        File file = new File(directoryPath + File.separator + audioFile.getAlbumTitle()+ File.separator + audioFile.getTitle());
+        boolean deleted = file.delete();
+
+        if (deleted) {
+            // Delete track from the database if keep_deleted is false
+            if (!keepDeletedInDB) {
+                boolean deletedFromDB = DBAccessUtils.deleteTrackFromDB(context, trackId);
+                if (deletedFromDB) {
+                    // Delete bookmarks from database if track was deleted from database
+                    DBAccessUtils.deleteBookmarksForTrack(context, trackId);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 }

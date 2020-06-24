@@ -22,8 +22,10 @@
     <string name="empty_title_error">Please enter a title for your bookmark.</string>
     <string name="jumped_to_bookmark">Jumped to bookmark \"%s\" at %s.</string>
     <string name="bookmark_deleted">Bookmark deleted.</string>
-    <string name="tracks_deleted">%d track(s) deleted from database.</string>
-    <string name="files_deleted">%d album(s) and %d track(s) deleted from database.</string>
+    <string name="tracks_deleted">%d track(s) deleted.</string>
+    <string name="tracks_deleted_from_db">%d track(s) deleted from database.</string>
+    <string name="files_deleted">%d album(s) and %d track(s) deleted.</string>
+    <string name="files_deleted_from_db">%d album(s) and %d track(s) deleted from database.</string>
     <string name="cannot_mark_as_not_started">Cannot mark currently playing track as not started.</string>
     <string name="cannot_mark_as_completed">Cannot mark currently playing track as completed.</string>
     <string name="path">Path: %s</string>
@@ -67,6 +69,7 @@
     <string name="set_bookmark_at">Set bookmark at</string>
     <string name="no_bookmarks">There are no bookmarks for this audio file yet.</string>
     <string name="bookmarks">Bookmarks</string>
+    <string name="delete">Delete</string>
     <string name="delete_from_db">Delete from database</string>
     <string name="mark_as_not_started">Mark as not started</string>
     <string name="mark_as_completed">Mark as completed</string>
@@ -86,8 +89,10 @@
     <string name="dialog_msg_close">Close</string>
     <string name="dialog_msg_delete">Delete</string>
     <string name="dialog_msg_goto">Enter the time to which you want to jump</string>
-    <string name="dialog_msg_delete_album">Are you sure you want to delete the selected album(s) and their contents from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
-    <string name="dialog_msg_delete_audio">Are you sure you want to delete the selected track(s) from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
+    <string name="dialog_msg_delete_album">Are you sure you want to delete the selected directory(s) and their contents?</string>
+    <string name="dialog_msg_delete_album_from_db">Are you sure you want to delete the selected album(s) and their contents from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
+    <string name="dialog_msg_delete_audio">Are you sure you want to delete the selected track(s)?</string>
+    <string name="dialog_msg_delete_audio_from_db">Are you sure you want to delete the selected track(s) from the database? This operation will only be performed for files that do not exist anymore in the file system.</string>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
 
 </resources>

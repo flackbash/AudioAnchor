@@ -194,6 +194,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             @Override
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
+                    case R.id.menu_delete:
+                        deleteSelectedTracksWithConfirmation();
+                        actionMode.finish();
+                        return true;
                     case R.id.menu_delete_from_db:
                         deleteSelectedTracksFromDBWithConfirmation();
                         actionMode.finish();
@@ -556,7 +560,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_msg_delete_audio);
+        builder.setMessage(R.string.dialog_msg_delete_audio_from_db);
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the "Ok" button, so delete the tracks from the database
             int deletionCount = 0;
@@ -567,6 +571,49 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     deletionCount++;
                 }
             }
+            String deletedTracks = getResources().getString(R.string.tracks_deleted_from_db, deletionCount);
+            Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /*
+     * Show a confirmation dialog and let the user decide whether to delete the selected tracks
+     */
+    private void deleteSelectedTracksWithConfirmation() {
+        Long[] selectedTracks = new Long[mSelectedTracks.size()];
+        final Long[] selectedTracksArr = mSelectedTracks.toArray(selectedTracks);
+
+        // Create a confirmation dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_msg_delete_audio);
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            // User clicked the "Ok" button, so delete the tracks from the database
+            int deletionCount = 0;
+            for (long trackId : selectedTracksArr) {
+                // Stop MediaPlayerService if the currently playing file is from deleted directory
+                if (mPlayer != null) {
+                    int activeAudioId = mPlayer.getCurrentAudioFile().getId();
+                    if (activeAudioId == trackId) {
+                        mPlayer.stopMedia();
+                        mPlayer.stopSelf();
+                    }
+                }
+
+                boolean keepDeleted = mPrefs.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
+                boolean deleted = Utils.deleteTrack(this, mDirectory, trackId, keepDeleted);
+                if (deleted) deletionCount += 1;
+            }
+            mSynchronizer.updateDBTables();
             String deletedTracks = getResources().getString(R.string.tracks_deleted, deletionCount);
             Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
         });

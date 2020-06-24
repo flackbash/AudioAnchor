@@ -173,6 +173,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
                 ArrayList<Long> trackIds = new ArrayList<>();
                 switch (menuItem.getItemId()) {
+                    case R.id.menu_delete:
+                        // Get track ids for all selected albums
+                        for (long albumId : mSelectedAlbums) {
+                            ArrayList<Long> albumTrackIds = DBAccessUtils.getTrackIdsForAlbum(MainActivity.this, albumId);
+                            trackIds.addAll(albumTrackIds);
+                        }
+
+                        // Delete the selected albums
+                        deleteSelectedAlbumWithConfirmation(trackIds);
+                        actionMode.finish();
+                        return true;
                     case R.id.menu_delete_from_db:
                         // Get track ids for all selected albums
                         for (long albumId : mSelectedAlbums) {
@@ -825,7 +836,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_msg_delete_album);
+        builder.setMessage(R.string.dialog_msg_delete_album_from_db);
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the "Ok" button, so delete the album and / or tracks from the database
             int trackDeletionCount = 0;
@@ -841,6 +852,61 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 boolean deleted = DBAccessUtils.deleteAlbumFromDB(MainActivity.this, albumId);
                 if (deleted) albumDeletionCount++;
             }
+            String deletedFiles = getResources().getString(R.string.files_deleted_from_db, albumDeletionCount, trackDeletionCount);
+            Toast.makeText(getApplicationContext(), deletedFiles, Toast.LENGTH_LONG).show();
+        });
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /*
+     * Show a confirmation dialog and let the user decide whether to delete the selected albums
+     * and / or its tracks from the database
+     */
+    private void deleteSelectedAlbumWithConfirmation(final ArrayList<Long> selectedTracks) {
+        Long[] selectedAlbumsTmpArr = new Long[mSelectedAlbums.size()];
+        final Long[] selectedAlbumsArr = mSelectedAlbums.toArray(selectedAlbumsTmpArr);
+
+        // Create a confirmation dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_msg_delete_album);
+        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            // User clicked the "Ok" button, so delete the album and / or tracks from the database
+            int trackDeletionCount = 0;
+            for (long trackId : selectedTracks) {
+                // Stop MediaPlayerService if the currently playing file is from deleted directory
+                if (mPlayer != null) {
+                    int activeAudioId = mPlayer.getCurrentAudioFile().getId();
+                    if (activeAudioId == trackId) {
+                        mPlayer.stopMedia();
+                        mPlayer.stopSelf();
+                    }
+                }
+                boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
+                boolean deleted = Utils.deleteTrack(this, mDirectory.getAbsolutePath(), trackId, keepDeleted);
+                if (deleted) trackDeletionCount += 1;
+            }
+            int albumDeletionCount = 0;
+            for (long albumId : selectedAlbumsArr) {
+                String albumPath = DBAccessUtils.getAlbumTitle(this, albumId);
+                if (albumPath != null) {
+                    File albumDir = new File(mDirectory, albumPath);
+                    boolean deleted = deleteRecursively(albumDir);
+                    if (deleted) {
+                        albumDeletionCount++;
+                        DBAccessUtils.deleteAlbumFromDB(MainActivity.this, albumId);
+                    }
+                }
+            }
+            mSynchronizer.updateDBTables();
             String deletedFiles = getResources().getString(R.string.files_deleted, albumDeletionCount, trackDeletionCount);
             Toast.makeText(getApplicationContext(), deletedFiles, Toast.LENGTH_LONG).show();
         });
@@ -854,5 +920,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    boolean deleteRecursively(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursively(child);
+        return fileOrDirectory.delete();
     }
 }

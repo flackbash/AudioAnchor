@@ -18,8 +18,8 @@
     <string name="empty_title_error">Proszę wpisać tytuł swojej zakładki.</string>
     <string name="jumped_to_bookmark">Skoczono do zakładki \"%s\" w %s</string>
     <string name="bookmark_deleted">Usunięto zakładkę.</string>
-    <string name="tracks_deleted">Usunięto %d ścieżkę(-ki) dźwiękową(-wych) z bazy danych.</string>
-    <string name="files_deleted">Usunięto %d album(y/ów) i %d ścieżek dźwiękowych z bazy danych.</string>
+    <string name="tracks_deleted_from_db">Usunięto %d ścieżkę(-ki) dźwiękową(-wych) z bazy danych.</string>
+    <string name="files_deleted_from_db">Usunięto %d album(y/ów) i %d ścieżek dźwiękowych z bazy danych.</string>
     <string name="cannot_mark_as_not_started">Nie można oznaczyć aktualnie odtwarzanego utworu jako nierozpoczęty.</string>
     <string name="cannot_mark_as_completed">Nie można oznaczyć aktualnie odtwarzanego utworu jako ukończony.</string>
 
@@ -73,7 +73,7 @@
     <string name="dialog_msg_close">Zamknij</string>
     <string name="dialog_msg_delete">Usuń</string>
     <string name="dialog_msg_goto">Wprowadź czas, do którego chcesz skoczyć</string>
-    <string name="dialog_msg_delete_album">Czy na pewno chcesz usunąć wybrany album(y) i ich zawartość z bazy danych? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</string>
-    <string name="dialog_msg_delete_audio">Czy na pewno chcesz usunąć wybraną ścieżkę(-ki) z bazy danych? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</string>
+    <string name="dialog_msg_delete_album_from_db">Czy na pewno chcesz usunąć wybrany album(y) i ich zawartość z bazy danych? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</string>
+    <string name="dialog_msg_delete_audio_from_db">Czy na pewno chcesz usunąć wybraną ścieżkę(-ki) z bazy danych? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</string>
     <string name="dialog_msg_delete_bookmark">Usunąć tę zakładkę?</string>
 </resources>

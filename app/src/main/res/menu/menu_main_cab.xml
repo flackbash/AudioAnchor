@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_delete"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/delete"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"  />
     <item
         android:id="@+id/menu_delete_from_db"
-        android:title="@string/delete_from_db" />
+        android:title="@string/delete_from_db"
+        android:orderInCategory="101"
+        app:showAsAction="never" />
     <item
         android:id="@+id/menu_mark_as_not_started"
-        android:title="@string/mark_all_as_not_started" />
+        android:title="@string/mark_all_as_not_started"
+        android:orderInCategory="102"
+        app:showAsAction="never" />
     <item
         android:id="@+id/menu_mark_as_completed"
-        android:title="@string/mark_all_as_completed" />
+        android:title="@string/mark_all_as_completed"
+        android:orderInCategory="103"
+        app:showAsAction="never" />
 </menu>
