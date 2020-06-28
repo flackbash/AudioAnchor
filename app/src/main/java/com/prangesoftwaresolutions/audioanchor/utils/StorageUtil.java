@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,17 +12,17 @@ import java.util.ArrayList;
 /**
  * Based on a tutorial by Valdio Veliu. See https://github.com/sitepoint-editors/AudioPlayer
  */
-class StorageUtil {
+public class StorageUtil {
 
     private final String STORAGE = "com.prangesoftwaresolutions.audioanchor.STORAGE";
     private SharedPreferences preferences;
     private Context context;
 
-    StorageUtil(Context context) {
+    public StorageUtil(Context context) {
         this.context = context;
     }
 
-    void storeAudioIds(ArrayList<Integer> arrayList) {
+    public void storeAudioIds(ArrayList<Integer> arrayList) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = preferences.edit();
@@ -32,7 +32,7 @@ class StorageUtil {
         editor.apply();
     }
 
-    ArrayList<Integer> loadAudioIds() {
+    public ArrayList<Integer> loadAudioIds() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = preferences.getString("audioList", null);
@@ -40,21 +40,21 @@ class StorageUtil {
         return gson.fromJson(json, type);
     }
 
-    void storeAudioIndex(int index) {
+    public void storeAudioIndex(int index) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("audioIndex", index);
         editor.apply();
     }
 
-    void storeAudioId(int id) {
+    public void storeAudioId(int id) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("audioId", id);
         editor.apply();
     }
 
-    int loadAudioIndex() {
+    public int loadAudioIndex() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         return preferences.getInt("audioIndex", -1);
     }
@@ -64,7 +64,7 @@ class StorageUtil {
         return preferences.getInt("audioId", -1);
     }
 
-    void clearCachedAudioPlaylist() {
+    public void clearCachedAudioPlaylist() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();

@@ -23,7 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,36 +39,36 @@
             android:exported="false" />
 
         <activity
-            android:name=".AlbumActivity"
+            android:name=".activities.AlbumActivity"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.prangesoftwaresolutions.audioanchor.MainActivity" />
+                android:value="com.prangesoftwaresolutions.audioanchor.activities.MainActivity" />
         </activity>
         <activity
-            android:name=".PlayActivity"
+            android:name=".activities.PlayActivity"
             android:launchMode="singleTask"
             android:clearTaskOnLaunch="true"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.prangesoftwaresolutions.audioanchor.AlbumActivity" />
+                android:value="com.prangesoftwaresolutions.audioanchor.activities.AlbumActivity" />
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name=".activities.SettingsActivity"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.prangesoftwaresolutions.audioanchor.MainActivity" />
+                android:value="com.prangesoftwaresolutions.audioanchor.activities.MainActivity" />
         </activity>
-        <activity android:name=".AboutActivity">
+        <activity android:name=".activities.AboutActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.prangesoftwaresolutions.audioanchor.MainActivity" />
+                android:value="com.prangesoftwaresolutions.audioanchor.activities.MainActivity" />
         </activity>
 
-        <service android:name=".MediaPlayerService" />
-        <receiver android:name="com.prangesoftwaresolutions.audioanchor.MediaButtonIntentReceiver">
+        <service android:name=".services.MediaPlayerService" />
+        <receiver android:name="com.prangesoftwaresolutions.audioanchor.receivers.MediaButtonIntentReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>

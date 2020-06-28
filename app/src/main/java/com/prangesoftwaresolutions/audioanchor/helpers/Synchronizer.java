@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.helpers;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -10,18 +10,20 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.LinkedHashMap;
 
-class Synchronizer {
+public class Synchronizer {
     private Context mContext;
     private SharedPreferences mPrefManager;
     private File mDirectory;
 
-    Synchronizer(Context context) {
+    protected Synchronizer(Context context) {
         mContext = context;
         mPrefManager = PreferenceManager.getDefaultSharedPreferences(context);
     }
@@ -36,7 +38,7 @@ class Synchronizer {
      * Update the album database table if the list of directories in the selected directory does not
      * match the album table entries
      */
-     void updateDBTables() {
+     public void updateDBTables() {
         String dirString = mPrefManager.getString(mContext.getString(R.string.preference_filename), null);
         mDirectory = null;
         if (dirString != null) {

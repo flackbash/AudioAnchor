@@ -1,9 +1,9 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.models;
 
 import java.io.File;
 import java.io.Serializable;
 
-class AudioFile implements Serializable {
+public class AudioFile implements Serializable {
 
     private int mId;
     private String mTitle;
@@ -14,7 +14,7 @@ class AudioFile implements Serializable {
     private String mAlbumTitle;
     private String mCoverPath;
 
-    AudioFile(int id, String title, int albumId, int time, int completedTime, String albumTitle, String coverPath, String baseDirectory) {
+    public AudioFile(int id, String title, int albumId, int time, int completedTime, String albumTitle, String coverPath, String baseDirectory) {
         mId = id;
         mTitle = title;
         mAlbumId = albumId;
@@ -29,43 +29,39 @@ class AudioFile implements Serializable {
         mPath = baseDirectory + File.separator + mAlbumTitle + File.separator + mTitle;
     }
 
-    int getId() {
+    public int getId() {
         return mId;
     }
 
-    String getTitle() {
+    public String getTitle() {
         return mTitle;
     }
 
-    int getAlbumId() {
+    public int getAlbumId() {
         return mAlbumId;
     }
 
-    int getTime() {
+    public int getTime() {
         return mTime;
     }
 
-    int getCompletedTime() {
+    public int getCompletedTime() {
         return mCompletedTime;
     }
 
-    String getPath() {
+    public String getPath() {
         return mPath;
     }
 
-    String getAlbumTitle() {
+    public String getAlbumTitle() {
         return mAlbumTitle;
     }
 
-    String getCoverPath() {
+    public String getCoverPath() {
         return mCoverPath;
     }
 
-    void setTime(int time) {
-        mTime = time;
-    }
-
-    void setCompletedTime(int mCompletedTime) {
+    public void setCompletedTime(int mCompletedTime) {
         this.mCompletedTime = mCompletedTime;
     }
 }

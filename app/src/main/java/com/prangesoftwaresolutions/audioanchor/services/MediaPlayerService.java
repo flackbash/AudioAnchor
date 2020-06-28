@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.services;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -35,7 +35,17 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
+import com.prangesoftwaresolutions.audioanchor.helpers.LockManager;
+import com.prangesoftwaresolutions.audioanchor.receivers.MediaButtonIntentReceiver;
+import com.prangesoftwaresolutions.audioanchor.callbacks.MediaSessionCallback;
+import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.helpers.SleepTimer;
+import com.prangesoftwaresolutions.audioanchor.activities.PlayActivity;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -241,8 +251,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /*
      * Service Binder
      */
-    class LocalBinder extends Binder {
-        MediaPlayerService getService() {
+    public class LocalBinder extends Binder {
+        public MediaPlayerService getService() {
             // Return this instance of LocalService so clients can call public methods
             return MediaPlayerService.this;
         }
@@ -671,14 +681,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    boolean isPlaying() {
+    public boolean isPlaying() {
         if (mMediaPlayer != null) {
             return mMediaPlayer.isPlaying();
         }
         return false;
     }
 
-    void play() {
+    public void play() {
         // Get Autoplay and Autorewind settings
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
         int autorewindTime = Integer.parseInt(mSharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
@@ -698,7 +708,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    void stopMedia() {
+    public void stopMedia() {
         // Release the partial wake lock to save battery
         mLockManager.releaseWakeLock();
 
@@ -712,7 +722,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         stopForeground(true);
     }
 
-    void pause() {
+    public void pause() {
         // Release the partial wake lock to save battery
         mLockManager.releaseWakeLock();
 
@@ -757,7 +767,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /*
      * Get current position of the played audio file
      */
-    int getCurrentPosition() {
+    public int getCurrentPosition() {
         if (mMediaPlayer != null) {
             return mMediaPlayer.getCurrentPosition();
         }
@@ -767,14 +777,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /*
      * Set current position of the played audio file
      */
-    void setCurrentPosition(int progress) {
+    public void setCurrentPosition(int progress) {
         if (mMediaPlayer != null) {
             mMediaPlayer.seekTo(progress);
         }
         updateAudioFileStatus();
     }
 
-    void decreaseVolume(int step, int totalSteps) {
+    public void decreaseVolume(int step, int totalSteps) {
         float deltaVolume = (float) (1.0 / totalSteps);
         float currVolume = (float) (1.0 - (step * deltaVolume));
         if (mMediaPlayer != null) {
@@ -782,14 +792,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    void setVolume(float volume) {
+    public void setVolume(float volume) {
         if (mMediaPlayer != null) {
             mMediaPlayer.setVolume(volume, volume);
         }
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    void setPlaybackSpeed(float speed) {
+    public void setPlaybackSpeed(float speed) {
         if (mMediaPlayer == null) return;
 
         boolean isPlaying = mMediaPlayer.isPlaying();
@@ -831,7 +841,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /*
      * Start the sleep timer
      */
-    void startSleepTimer(int minutes, TextView countDownTV) {
+    public void startSleepTimer(int minutes, TextView countDownTV) {
         mStopAtEndOfCurrentTrack = false;
 
         // Get sleep timer preferences
@@ -863,11 +873,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mSleepTimer.disableTimer();
     }
 
-    SleepTimer getSleepTimer() {
+    public SleepTimer getSleepTimer() {
         return mSleepTimer;
     }
 
-    AudioFile getCurrentAudioFile() {
+    public AudioFile getCurrentAudioFile() {
         return mActiveAudio;
     }
 

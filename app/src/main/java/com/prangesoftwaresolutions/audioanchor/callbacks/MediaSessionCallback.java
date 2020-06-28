@@ -1,15 +1,18 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.callbacks;
 
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.media.session.MediaSessionCompat;
+
+import com.prangesoftwaresolutions.audioanchor.receivers.MediaButtonIntentReceiver;
+import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 
 public class MediaSessionCallback extends MediaSessionCompat.Callback {
 
     private MediaPlayerService mService;
     private Context mContext;
 
-    MediaSessionCallback(MediaPlayerService service, Context context) {
+    public MediaSessionCallback(MediaPlayerService service, Context context) {
         mService = service;
         mContext = context;
     }

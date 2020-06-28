@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.activities;
 
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
@@ -32,7 +32,16 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
+import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
+import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.helpers.Synchronizer;
+import com.prangesoftwaresolutions.audioanchor.adapters.AudioFileCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
+import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;

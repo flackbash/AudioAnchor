@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -15,6 +15,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
+import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
+import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 public class SleepTimer {
 
@@ -35,8 +39,8 @@ public class SleepTimer {
     private Context mContext;
     private SharedPreferences mSharedPreferences;
 
-    SleepTimer(TextView sleepCountDownTV, MediaPlayerService mediaPlayer, SensorManager sensorMng,
-               Context context) {
+    protected SleepTimer(TextView sleepCountDownTV, MediaPlayerService mediaPlayer, SensorManager sensorMng,
+                         Context context) {
         mSleepCountDownTV = sleepCountDownTV;
         mPlayer = mediaPlayer;
         mSensorMng = sensorMng;
@@ -65,7 +69,7 @@ public class SleepTimer {
         };
     }
 
-    void createTimer(final int secSleepTime, boolean shakeDetectionEnabled, float shakeForceRequiredPercent) {
+    public void createTimer(final int secSleepTime, boolean shakeDetectionEnabled, float shakeForceRequiredPercent) {
         // Let the user disable the timer by entering 0 or nothing
         if (secSleepTime == 0) {
             disableTimer();
@@ -125,7 +129,7 @@ public class SleepTimer {
         };
     }
 
-    void setNewSleepCountDownTV(TextView countDownTV) {
+    public void setNewSleepCountDownTV(TextView countDownTV) {
         boolean visible = false;
         if (mSleepCountDownTV.getVisibility() == View.VISIBLE) {
             visible = true;
@@ -149,7 +153,7 @@ public class SleepTimer {
         }
     }
 
-    void disableTimer() {
+    public void disableTimer() {
         mCurrentMillisLeft = 0;
 
         if (mSleepTimer != null) {
@@ -178,7 +182,7 @@ public class SleepTimer {
         }
     }
 
-    void startTimer(boolean onlyIfPlaying) {
+    public void startTimer(boolean onlyIfPlaying) {
         if (mCurrentMillisLeft <= 0)
             return;
 

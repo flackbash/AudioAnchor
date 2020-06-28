@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 
 /**
@@ -18,7 +20,7 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 public class BookmarkCursorAdapter extends CursorAdapter {
     private long mTotalMillis;
 
-    BookmarkCursorAdapter(Context context, Cursor c, long totalMillis) {
+    public BookmarkCursorAdapter(Context context, Cursor c, long totalMillis) {
         super(context, c, 0);
         mTotalMillis = totalMillis;
     }

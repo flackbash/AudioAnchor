@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.receivers;
 
 // Taken from https://github.com/AdrienPoupa/VinylMusicPlayer and modified
 /*
@@ -23,6 +23,9 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.view.KeyEvent;
+
+import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
+import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 /**
  * Used to control headset playback.

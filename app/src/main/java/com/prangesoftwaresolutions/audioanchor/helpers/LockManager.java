@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.helpers;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -7,18 +7,18 @@ import android.util.Log;
 
 import static android.content.Context.POWER_SERVICE;
 
-class LockManager {
+public class LockManager {
     private final String TAG = "LockManager@" + hashCode();
 
     private final PowerManager mPowerManager;
     private PowerManager.WakeLock mWakeLock;
 
-    LockManager(final Context context) {
+    public LockManager(final Context context) {
         mPowerManager = ((PowerManager) context.getApplicationContext().getSystemService(POWER_SERVICE));
     }
 
     @SuppressLint("WakelockTimeout")  // audio books are potentially very long
-    void acquireWakeLock() {
+    public void acquireWakeLock() {
         Log.d("LockManager", "calling acquireWakeLock");
         if (mWakeLock != null && mWakeLock.isHeld()) return;
 
@@ -28,7 +28,7 @@ class LockManager {
         }
     }
 
-    void releaseWakeLock() {
+    public void releaseWakeLock() {
         Log.d("LockManager", "calling releaseWakeLock()");
 
         if (mWakeLock != null && mWakeLock.isHeld()) {

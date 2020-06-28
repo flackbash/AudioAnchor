@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.utils;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -12,7 +12,7 @@ import java.io.File;
  * Utils to make handling bitmaps in a responsible manner easier
  */
 
-class BitmapUtils {
+public class BitmapUtils {
 
     private static final String LOG_TAG = Utils.class.getName();
 
@@ -20,7 +20,7 @@ class BitmapUtils {
      * Set the image of the given image view to the given image file, return false if the file does
      * not exist.
      */
-    static void setImage(ImageView iv, String file, int reqSize) {
+    public static void setImage(ImageView iv, String file, int reqSize) {
         if (file == null) {
             return;
         }
@@ -38,7 +38,7 @@ class BitmapUtils {
      * Taken from https://developer.android.com/topic/performance/graphics/load-bitmap.html
      * This helps downSample an image.
      */
-    static Bitmap decodeSampledBitmap(String file, int reqWidth, int reqHeight) {
+    public static Bitmap decodeSampledBitmap(String file, int reqWidth, int reqHeight) {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -62,7 +62,7 @@ class BitmapUtils {
      * Taken from https://developer.android.com/topic/performance/graphics/load-bitmap.html
      * This helps downSample an image.
      */
-    static Bitmap decodeSampledBitmap(Resources res, int resID, int reqWidth, int reqHeight) {
+    public static Bitmap decodeSampledBitmap(Resources res, int resID, int reqWidth, int reqHeight) {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -86,7 +86,7 @@ class BitmapUtils {
      * Taken from https://developer.android.com/topic/performance/graphics/load-bitmap.html
      * This helps downSample an image.
      */
-    static Bitmap decodeSampledBitmap(byte[] coverBytes, int reqWidth, int reqHeight) {
+    public static Bitmap decodeSampledBitmap(byte[] coverBytes, int reqWidth, int reqHeight) {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();

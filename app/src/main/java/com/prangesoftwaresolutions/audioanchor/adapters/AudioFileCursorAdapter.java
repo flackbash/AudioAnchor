@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.adapters;
 
 
 import android.content.Context;
@@ -13,7 +13,10 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
+import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,7 +32,7 @@ public class AudioFileCursorAdapter extends CursorAdapter {
     private MediaMetadataRetriever mMetadataRetriever;
     private SharedPreferences mPrefs;
 
-    AudioFileCursorAdapter(Context context, Cursor c) {
+    public AudioFileCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
         mContext = context;
         // Get the base directory from the shared preferences.

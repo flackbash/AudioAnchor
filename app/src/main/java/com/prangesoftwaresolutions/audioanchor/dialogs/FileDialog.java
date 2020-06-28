@@ -1,10 +1,12 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.dialogs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Environment;
 import android.util.Log;
+
+import com.prangesoftwaresolutions.audioanchor.R;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -41,7 +43,7 @@ public class FileDialog {
     private String fileEndsWith;
     private HashMap<String, HashSet<String>> childDirectories = new HashMap<>();
 
-    FileDialog(Activity activity, File initialPath, String fileEndsWith) {
+    public FileDialog(Activity activity, File initialPath, String fileEndsWith) {
         this.activity = activity;
         setFileEndsWith(fileEndsWith);
         if (!initialPath.exists()) initialPath = Environment.getExternalStorageDirectory();
@@ -78,7 +80,7 @@ public class FileDialog {
     }
 
 
-    void addFileListener(FileSelectedListener listener) {
+    public void addFileListener(FileSelectedListener listener) {
         fileListenerList.add(listener);
     }
 
@@ -101,7 +103,7 @@ public class FileDialog {
     /**
      * Show file dialog
      */
-    void showDialog() {
+    public void showDialog() {
         createFileDialog().show();
     }
 

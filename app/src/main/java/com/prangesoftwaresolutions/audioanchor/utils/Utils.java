@@ -1,9 +1,13 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+
+import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
+import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
+import com.prangesoftwaresolutions.audioanchor.R;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -12,13 +16,13 @@ import java.io.FilenameFilter;
  * Utility class for AudioAnchor
  */
 
-class Utils {
+public class Utils {
 
     /*
      * Set the Activity Theme according to the user preferences.
      * Call in onCreate before setContentView and super.onCreate to apply theme
      */
-    static void setActivityTheme(Context context) {
+    public static void setActivityTheme(Context context) {
         SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(context);
         boolean darkTheme = prefManager.getBoolean(context.getString(R.string.settings_dark_key), Boolean.getBoolean(context.getString(R.string.settings_dark_default)));
 
@@ -32,7 +36,7 @@ class Utils {
     /*
      * Get path of the album cover image for the specified directory.
      */
-    static String getImagePath(File dir) {
+    public static String getImagePath(File dir) {
         // Search only for files that are images
         FilenameFilter imgFilter = (dir1, filename) -> {
             File sel = new File(dir1, filename);
@@ -53,7 +57,7 @@ class Utils {
      * Bring milli seconds into a proper time format.
      * Taken from http://techin-android.blogspot.com/2012/01/millisecond-to-hhmmss-format-convertor.html
      */
-    static String formatTime(long millis, long fullTime) {
+    public static String formatTime(long millis, long fullTime) {
         String output;
         long seconds = millis / 1000;
         long minutes = seconds / 60;
@@ -88,7 +92,7 @@ class Utils {
     /*
      * Turn a time string into the number of milliseconds
      */
-    static long getMillisFromString(String time) {
+    public static long getMillisFromString(String time) {
         long millis;
         String[] timeParts = time.split(":");
         int length = timeParts.length;
@@ -123,7 +127,7 @@ class Utils {
     /*
      * Return the time string as percentage or xx:xx / xx:xx depending on the user preferences
      */
-    static String getTimeString(Context context, int completedTime, int duration) {
+    public static String getTimeString(Context context, int completedTime, int duration) {
         // Check whether to return time string as percentage
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean progressInPercent = prefs.getBoolean(context.getResources().getString(R.string.settings_progress_percentage_key), Boolean.getBoolean(context.getResources().getString(R.string.settings_progress_percentage_default)));
@@ -141,7 +145,7 @@ class Utils {
     }
 
 
-    static boolean isMediaPlayerServiceRunning(Context context) {
+    public static boolean isMediaPlayerServiceRunning(Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         if (manager != null) {
             for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -153,7 +157,7 @@ class Utils {
         return false;
     }
 
-    static boolean deleteTrack(Context context, String directoryPath, long trackId, boolean keepDeletedInDB) {
+    public static boolean deleteTrack(Context context, String directoryPath, long trackId, boolean keepDeletedInDB) {
         // Delete track from file system
         AudioFile audioFile = DBAccessUtils.getAudioFileById(context, trackId);
         File file = new File(directoryPath + File.separator + audioFile.getAlbumTitle()+ File.separator + audioFile.getTitle());

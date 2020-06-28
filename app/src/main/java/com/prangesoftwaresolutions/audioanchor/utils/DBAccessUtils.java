@@ -1,4 +1,4 @@
-package com.prangesoftwaresolutions.audioanchor;
+package com.prangesoftwaresolutions.audioanchor.utils;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -10,17 +10,19 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
+import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
 import java.util.ArrayList;
 
-class DBAccessUtils {
+public class DBAccessUtils {
 
     /*
      * Get the completion time and the duration of the album with the given id
      */
-    static int[] getAlbumTimes(Context context, long albumID) {
+    public static int[] getAlbumTimes(Context context, long albumID) {
         // Query the database for the track completion times
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
@@ -56,7 +58,7 @@ class DBAccessUtils {
     /*
      * Get the audio file for the specified uri
      */
-    static AudioFile getAudioFileById(Context context, long audioId) {
+    public static AudioFile getAudioFileById(Context context, long audioId) {
         Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, audioId);
         String[] projection = {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
@@ -98,7 +100,7 @@ class DBAccessUtils {
     /*
      * Get all audio ids for the specified album
      */
-    static ArrayList<Integer> getAllAudioIdsFromAlbum(Context context, int albumId, String sortOrder) {
+    public static ArrayList<Integer> getAllAudioIdsFromAlbum(Context context, int albumId, String sortOrder) {
         String[] projection = { AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID };
 
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
@@ -131,7 +133,7 @@ class DBAccessUtils {
     /*
      * Delete track with the specified id from the database
      */
-    static boolean deleteTrackFromDB(Context context, long trackId) {
+    public static boolean deleteTrackFromDB(Context context, long trackId) {
         Uri deleteUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
 
         // Don't allow delete action if the track still exists
@@ -148,7 +150,7 @@ class DBAccessUtils {
     /*
      * Delete album with the specified id from the database
      */
-    static boolean deleteAlbumFromDB(Context context, long albumId) {
+    public static boolean deleteAlbumFromDB(Context context, long albumId) {
         // Get the title of the album to check if the album still exists in the file system
         Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, albumId);
         String[] proj = new String[]{AnchorContract.AlbumEntry.COLUMN_TITLE};
@@ -185,7 +187,7 @@ class DBAccessUtils {
     /*
      * Delete bookmarks for the specified track from the database
      */
-    static void deleteBookmarksForTrack(Context context, long trackId) {
+    public static void deleteBookmarksForTrack(Context context, long trackId) {
         // Get all bookmarks associated with the trackId
         String[] columns = new String[]{AnchorContract.BookmarkEntry._ID, AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE};
         String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
@@ -215,7 +217,7 @@ class DBAccessUtils {
     /*
      * Mark track with the specified id as not started, i.e. set completedTime to 0 in the db
      */
-    static void markTrackAsNotStarted(Context context, long trackId) {
+    public static void markTrackAsNotStarted(Context context, long trackId) {
         // Do not mark as not started if the track is currently active in the MediaPlayerService
         StorageUtil storage = new StorageUtil(context);
         if (storage.loadAudioId() == trackId) {
@@ -234,7 +236,7 @@ class DBAccessUtils {
     /*
      * Mark track with the specified id as completed, i.e. set completedTime to totalTime in the db
      */
-    static void markTrackAsCompleted(Context context, long trackId) {
+    public static void markTrackAsCompleted(Context context, long trackId) {
         // Do not mark as completed if the track is currently active in the MediaPlayerService
         StorageUtil storage = new StorageUtil(context);
         if (storage.loadAudioId() == trackId) {
@@ -275,7 +277,7 @@ class DBAccessUtils {
     /*
      * Get all track ids for the specified album
      */
-    static ArrayList<Long> getTrackIdsForAlbum(Context context, long albumId) {
+    public static ArrayList<Long> getTrackIdsForAlbum(Context context, long albumId) {
         ArrayList<Long> trackIds = new ArrayList<>();
 
         String[] columns = new String[]{AnchorContract.AudioEntry._ID};
@@ -305,7 +307,7 @@ class DBAccessUtils {
     /*
      * Get Album title
      */
-    static String getAlbumTitle(Context context, long albumId) {
+    public static String getAlbumTitle(Context context, long albumId) {
         // Get the title of the album to check if the album still exists in the file system
         Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, albumId);
         String[] proj = new String[]{AnchorContract.AlbumEntry.COLUMN_TITLE};

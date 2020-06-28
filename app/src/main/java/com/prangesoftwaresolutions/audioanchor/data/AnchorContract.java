@@ -84,7 +84,7 @@ public class AnchorContract {
         static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_BOOKMARK_DISTINCT;
 
-        public static final String TABLE_NAME = "bookmarks";
+        static final String TABLE_NAME = "bookmarks";
 
         // The Columns
         public static final String _ID = BaseColumns._ID;
