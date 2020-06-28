@@ -29,4 +29,30 @@
         <item name="background">@color/colorPrimaryBright</item>
     </style>
 
+    <style name="EmptyListTextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerInParent">true</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:layout_margin">@dimen/standard_margin</item>
+        <item name="android:textAppearance">?android:textAppearanceMedium</item>
+    </style>
+
+    <style name="EmptyListProgressBar">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerInParent">true</item>
+    </style>
+
+    <style name="MediaControlFAB">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">bottom|end</item>
+        <item name="android:src">@drawable/ic_play_white</item>
+        <item name="android:layout_margin">@dimen/standard_margin</item>
+        <item name="android:layout_alignParentBottom">true</item>
+        <item name="android:layout_alignParentEnd">true</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
 </resources>
