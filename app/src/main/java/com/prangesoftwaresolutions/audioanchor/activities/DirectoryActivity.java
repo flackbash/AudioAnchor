@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.adapters.DirectoryCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
@@ -62,12 +63,19 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
         mCursorAdapter = new DirectoryCursorAdapter(this, null);
 
         // Set up views
+        FloatingActionsMenu addDirectoryFAM = findViewById(R.id.add_directory_fam);
         FloatingActionButton addSubDirFAB = findViewById(R.id.add_sub_dir_fab);
         FloatingActionButton addParentDirFAB = findViewById(R.id.add_parent_dir_fab);
 
         // Set up the FAB onClickListeners
-        addSubDirFAB.setOnClickListener(view -> addDirectory(false));
-        addParentDirFAB.setOnClickListener(view -> addDirectory(true));
+        addSubDirFAB.setOnClickListener(v -> {
+            addDirectory(false);
+            addDirectoryFAM.collapse();
+        });
+        addParentDirFAB.setOnClickListener(v -> {
+            addDirectory(true);
+            addDirectoryFAM.collapse();
+        });
 
         // Use a ListView and CursorAdapter to recycle space
         mListView = findViewById(R.id.list);
