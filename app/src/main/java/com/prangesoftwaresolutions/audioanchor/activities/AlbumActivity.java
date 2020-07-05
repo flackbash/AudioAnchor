@@ -32,8 +32,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.listeners.PlayStatusChangeListener;
+import com.prangesoftwaresolutions.audioanchor.listeners.SynchronizationStateListener;
 import com.prangesoftwaresolutions.audioanchor.models.Album;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
+import com.prangesoftwaresolutions.audioanchor.receivers.PlayStatusReceiver;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.helpers.Synchronizer;
@@ -47,7 +50,7 @@ import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 import java.io.File;
 import java.util.ArrayList;
 
-public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, PlayStatusChangeListener, SynchronizationStateListener {
 
     // The album uri and file
     private Album mAlbum;
@@ -84,6 +87,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     int mCurrAudioLastCompletedTime;
     long mCurrUpdatedAudioId;
 
+    // Receivers
+    PlayStatusReceiver mPlayStatusReceiver;
+
     // Synchronizer
     private Synchronizer mSynchronizer;
 
@@ -109,14 +115,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
 
         // Initialize synchronizer
-        mSynchronizer = new Synchronizer(this) {
-            @Override
-            public void finish(){
-                getLoaderManager().restartLoader(0, null, AlbumActivity.this);
-                mSwipeRefreshLayout.setRefreshing(false);
-                Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
-            }
-        };
+        mSynchronizer = new Synchronizer(this);
+        mSynchronizer.setListener(this);
 
         // Set up the views
         mAlbumInfoTitleTV = findViewById(R.id.album_info_title);
@@ -256,6 +256,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Bind to MediaPlayerService if it has been started by the PlayActivity
         bindToServiceIfRunning();
+
+        // Set up play status receiver
+        mPlayStatusReceiver = new PlayStatusReceiver(mPlayPauseFAB);
+        mPlayStatusReceiver.setListener(this);
 
         // Register BroadcastReceivers
         LocalBroadcastManager.getInstance(this).registerReceiver(mPlayStatusReceiver, new IntentFilter(MediaPlayerService.SERVICE_PLAY_STATUS_CHANGE));
@@ -413,6 +417,19 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         }
     };
 
+    @Override
+    public void onPlayMsgReceived() {
+        mDoNotBindService = false;
+    }
+
+    @Override
+    public void onSynchronizationFinished() {
+        getLoaderManager().restartLoader(0, null, AlbumActivity.this);
+        mSwipeRefreshLayout.setRefreshing(false);
+        Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
+
+    }
+
     /*
      * Bind to MediaPlayerService if it has been started by the PlayActivity
      */
@@ -439,34 +456,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             }
             mPlayPauseFAB.setVisibility(View.GONE);
             mDoNotBindService = true;
-        }
-    };
-
-    /*
-     * Receive broadcasts about the current play status of the MediaPlayerService
-     */
-    private BroadcastReceiver mPlayStatusReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.e("AlbumActivity", "Received PlayStatus Broadcast");
-            String s = intent.getStringExtra(MediaPlayerService.SERVICE_MESSAGE_PLAY_STATUS);
-            if (s != null) {
-                switch (s) {
-                    case MediaPlayerService.MSG_PLAY:
-                        mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
-                        mPlayPauseFAB.setVisibility(View.VISIBLE);
-                        mDoNotBindService = false;
-                        break;
-                    case MediaPlayerService.MSG_PAUSE:
-                        mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
-                        mPlayPauseFAB.setVisibility(View.VISIBLE);
-                        break;
-                    case MediaPlayerService.MSG_STOP:
-                        mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
-                        mPlayPauseFAB.setVisibility(View.GONE);
-                        break;
-                }
-            }
         }
     };
 

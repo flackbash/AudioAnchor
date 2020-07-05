@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.listeners.SynchronizationStateListener;
 import com.prangesoftwaresolutions.audioanchor.models.Album;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.models.Directory;
@@ -21,16 +22,15 @@ import java.util.LinkedHashMap;
 public class Synchronizer {
     private Context mContext;
     private SharedPreferences mPrefManager;
+    private SynchronizationStateListener mListener = null;
 
-    protected Synchronizer(Context context) {
+    public Synchronizer(Context context) {
         mContext = context;
         mPrefManager = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
-    /*
-     * Is called when synchronization is finished and should be overwritten in executing activity
-     */
-    public void finish() {
+    public void setListener(SynchronizationStateListener listener) {
+        mListener = listener;
     }
 
     /*
@@ -121,7 +121,9 @@ public class Synchronizer {
                 mContext.getContentResolver().delete(uri, null, null);
             }
         }
-        finish();
+        if (mListener != null) {
+            mListener.onSynchronizationFinished();
+        }
     }
 
 

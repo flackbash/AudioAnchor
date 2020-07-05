@@ -26,13 +26,14 @@ import com.prangesoftwaresolutions.audioanchor.adapters.DirectoryCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.dialogs.FileDialog;
 import com.prangesoftwaresolutions.audioanchor.helpers.Synchronizer;
+import com.prangesoftwaresolutions.audioanchor.listeners.SynchronizationStateListener;
 import com.prangesoftwaresolutions.audioanchor.models.Directory;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
 
-public class DirectoryActivity extends AppCompatActivity  implements LoaderManager.LoaderCallbacks<Cursor> {
+public class DirectoryActivity extends AppCompatActivity  implements LoaderManager.LoaderCallbacks<Cursor>, SynchronizationStateListener {
 
     // CursorLoader variables
     private static final int AUDIO_LOADER = 0;
@@ -128,13 +129,8 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
         });
 
         // Initialize synchronizer
-        mSynchronizer = new Synchronizer(this) {
-            @Override
-            public void finish(){
-                getLoaderManager().restartLoader(0, null, DirectoryActivity.this);
-                Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
-            }
-        };
+        mSynchronizer = new Synchronizer(this);
+        mSynchronizer.setListener(this);
     }
 
     private void addDirectory(boolean isParentDirectory) {
@@ -173,6 +169,12 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
     public void onLoaderReset(Loader<Cursor> loader) {
         // This is called when the last Cursor provided to onLoadFinished() is about to be closed.
         mCursorAdapter.swapCursor(null);
+    }
+
+    @Override
+    public void onSynchronizationFinished() {
+        getLoaderManager().restartLoader(0, null, DirectoryActivity.this);
+        Toast.makeText(getApplicationContext(), R.string.synchronize_success, Toast.LENGTH_SHORT).show();
     }
 
     private void deleteSelectedDirectoriesFromDBWithConfirmation(ArrayList<Long> selectedDirectories) {
