@@ -18,7 +18,6 @@ import java.io.File;
 
 public class DirectoryCursorAdapter extends CursorAdapter {
 
-
     public DirectoryCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
     }
@@ -40,9 +39,11 @@ public class DirectoryCursorAdapter extends CursorAdapter {
         subtitleTV.setText(dir.getAbsolutePath());
 
         Directory.Type type = Directory.Type.valueOf(cursor.getInt(cursor.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_TYPE)));
+        ImageView icon = view.findViewById(R.id.directory_icon);
         if (type == Directory.Type.SUB_DIR) {
-            ImageView icon = view.findViewById(R.id.directory_icon);
             icon.setImageResource(R.drawable.ic_directory_grey);
+        } else {
+            icon.setImageResource(R.drawable.ic_parent_directory_grey);
         }
 
         // Show the deletable image if the file does not exist anymore
