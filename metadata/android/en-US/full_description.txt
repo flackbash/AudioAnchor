@@ -1,11 +1,19 @@
-AudioAnchor is an audio player that tracks the listening progress of your
-audio books and podcasts.
+AudioAnchor offers a clean and intuitive interface for listening to audio files while keeping track of your listening progress.
 
-AudioAnchor offers a clean and intuitive interface for listening to audio 
-files while keeping track of the listening progress. Additional features
-include:
-
+<b>Additional features include:</b>
 • set bookmarks
 • adjust playback speed
 • export and import your listening progress as sql database
 • sleep timer
+• lock screen media controls
+
+<b>Usage</b>
+Start off by adding directories to your library. When adding a new directory you have two options:
+• You can add a directory that contains audio files
+• You can add a directory that contains subdirectories which contain audio files
+
+For example, you might have a directory <i>Podcast History Hour</i> that contains audio files. Add this directory to your library using the option <i>Add directory that contains audio files</i>.
+Additionally, you might have a directory <i>AudioBooks</i> that contains subdirectories such as <i>The Hobbit</i> or <i>Harry Potter II</i> each of which contains one or several audio files. You can add this directory to your library using the option <i>Add directory with subdirectories that contain audio files</i>.
+This prevents you from having to add your audio books one by one.
+
+Add cover images to the subdirectories to have a neat looking app as shown in the screenshots.

@@ -22,10 +22,16 @@ Alternatively, you can download the latest apk from [F-Droid](https://f-droid.or
 The latest release runs on devices with Android API level 19 (Android 4.4 KitKat) and higher.
 
 ## Usage
-Create a parent directory and put your audio files into direct subdirectories (in the following referred to as "albums") of that parent directory.
-For example, if you have the parent directory "Audiofiles", put all the audio files belonging to your "Hardcore History"-podcast into the album "Hardcore History".
-When you first start AudioAnchor, the app will prompt you to select the parent directory.
-Once the parent directory is selected, all your albums will show in a list.\
+Start off by adding directories to your library. When adding a new directory you have two options:
+* You can add a directory that contains audio files
+* You can add a directory that contains subdirectories which contain audio files
+
+For example, you might have a directory `Podcast History Hour` that contains audio files.
+Add this directory to your library using the option *Add directory that contains audio files*.
+Additionally, you might have a directory `AudioBooks` that contains subdirectories such as `The Hobbit` or `Harry Potter II` each of which contains one or several audio files.
+You can add this directory to your library using the option *Add directory with subdirectories that contain audio files*.\
+This prevents you from having to add your audio books one by one.
+
 Add cover images to the subdirectories to have a neat looking app as shown in the screenshots below.
 
 <pre>
