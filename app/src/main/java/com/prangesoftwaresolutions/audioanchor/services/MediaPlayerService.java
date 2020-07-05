@@ -35,6 +35,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.prangesoftwaresolutions.audioanchor.models.Album;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.helpers.LockManager;
 import com.prangesoftwaresolutions.audioanchor.receivers.MediaButtonIntentReceiver;
@@ -44,7 +45,6 @@ import com.prangesoftwaresolutions.audioanchor.helpers.SleepTimer;
 import com.prangesoftwaresolutions.audioanchor.activities.PlayActivity;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
-import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 
 import java.io.IOException;
@@ -109,7 +109,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     LocalBroadcastManager mBroadcaster;
 
     // List of available Audio files
-    private ArrayList<Integer> mAudioIdQueue;
+    private ArrayList<Long> mAudioIdQueue;
     private int mAudioIndex = -1;
     private AudioFile mActiveAudio;
 
@@ -171,8 +171,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
                 if (mAudioIndex < mAudioIdQueue.size() && mAudioIndex != -1) {
                     // Index is in a valid range
-                    int activeAudioId = mAudioIdQueue.get(mAudioIndex);
-                    mActiveAudio = DBAccessUtils.getAudioFileById(this, activeAudioId);
+                    long activeAudioId = mAudioIdQueue.get(mAudioIndex);
+                    mActiveAudio = AudioFile.getAudioFileById(this, activeAudioId);
                 } else {
                     stopForeground(true);
                     stopSelf();
@@ -298,9 +298,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 mAudioIndex++;
                 StorageUtil storage = new StorageUtil(this);
                 storage.storeAudioIndex(mAudioIndex);
-                int activeAudioId = mAudioIdQueue.get(mAudioIndex);
-                mActiveAudio = DBAccessUtils.getAudioFileById(this, activeAudioId);
-                storage.storeAudioId(mActiveAudio.getId());
+                long activeAudioId = mAudioIdQueue.get(mAudioIndex);
+                mActiveAudio = AudioFile.getAudioFileById(this, activeAudioId);
+                if (mActiveAudio != null) {
+                    storage.storeAudioId(mActiveAudio.getID());
+                }
                 sendNewAudioFile(mAudioIndex);
                 playingNext = true;
                 int startPosition;
@@ -584,7 +586,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Set up intent to start PlayActivity when the notification is clicked
         Intent startActivityIntent = new Intent(this, PlayActivity.class);
-        startActivityIntent.putExtra(getString(R.string.curr_audio_id), (long)mActiveAudio.getId());
+        startActivityIntent.putExtra(getString(R.string.curr_audio_id), mActiveAudio.getID());
         PendingIntent launchIntent = PendingIntent.getActivity(this, 0,
                 startActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -705,6 +707,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             mediaSession.setActive(true);
             setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
             buildNotification();
+
+            updateLastPlayedAudio();
         }
     }
 
@@ -832,10 +836,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mActiveAudio.setCompletedTime(getCurrentPosition());
 
         // Update the completedTime column of the audiofiles table
-        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mActiveAudio.getId());
+        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mActiveAudio.getID());
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, getCurrentPosition());
         getContentResolver().update(uri, values, null, null);
+    }
+
+    /*
+     * Update the last played column of the album table
+     */
+    void updateLastPlayedAudio() {
+        Album album = mActiveAudio.getAlbum();
+        album.setLastPlayedID(mActiveAudio.getID());
+        album.updateInDB(this);
     }
 
     /*

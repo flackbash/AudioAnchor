@@ -14,6 +14,7 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.prangesoftwaresolutions.audioanchor.models.Album;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
@@ -55,8 +56,6 @@ public class AlbumCursorAdapter extends CursorAdapter {
                 return bitmap.getByteCount() / 1024;
             }
         };
-
-
     }
 
     @Override
@@ -66,7 +65,6 @@ public class AlbumCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        String directory = mPrefs.getString(mContext.getString(R.string.preference_filename), null);
         // Get the title of the current album and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_storage_item_title);
         titleTV.setSelected(true);
@@ -83,8 +81,8 @@ public class AlbumCursorAdapter extends CursorAdapter {
         // Get the path of the thumbnail of the current album and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
 
-
         int albumId = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
+        Album album = Album.getAlbumByID(mContext, albumId);
         if (isCurrentItemActive(albumId)) {
             boolean darkTheme = mPrefs.getBoolean(mContext.getString(R.string.settings_dark_key), Boolean.getBoolean(mContext.getString(R.string.settings_dark_default)));
             if (darkTheme) {
@@ -95,10 +93,10 @@ public class AlbumCursorAdapter extends CursorAdapter {
             thumbnailIV.setImageResource(R.drawable.ic_playing);
         } else {
             thumbnailIV.setBackground(null);
-            String path = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+            assert album != null;
+            String path = album.getCoverPath();
             int reqSize = mContext.getResources().getDimensionPixelSize(R.dimen.album_item_height);
             if (path != null) {
-                path = directory + File.separator + path;
                 if (new File(path).exists()) {
                     Bitmap storedImage = getBitmapFromMemCache(path);
                     if (storedImage != null) {
@@ -118,7 +116,8 @@ public class AlbumCursorAdapter extends CursorAdapter {
 
         // Show the deletable image if the file does not exist anymore
         ImageView deletableIV = view.findViewById(R.id.album_item_deletable_img);
-        if (directory != null && !(new File(directory, title)).exists()) {
+        assert album != null;
+        if (!(new File(album.getPath())).exists()) {
             deletableIV.setVisibility(View.VISIBLE);
         } else {
             deletableIV.setVisibility(View.GONE);
@@ -154,18 +153,21 @@ public class AlbumCursorAdapter extends CursorAdapter {
         boolean serviceStarted = Utils.isMediaPlayerServiceRunning(mContext);
         if (serviceStarted) {
             StorageUtil storage = new StorageUtil(mContext.getApplicationContext());
-            ArrayList<Integer> audioIdList = new ArrayList<>(storage.loadAudioIds());
+            ArrayList<Long> audioIdList = new ArrayList<>(storage.loadAudioIds());
             int audioIndex = storage.loadAudioIndex();
             if (audioIndex < audioIdList.size() && audioIndex != -1) {
                 // Index is in a valid range
-                int activeAudioId = audioIdList.get(audioIndex);
+                long activeAudioId = audioIdList.get(audioIndex);
                 AudioFile activeAudio;
                 try {
-                    activeAudio = DBAccessUtils.getAudioFileById(mContext, activeAudioId);
+                    activeAudio = AudioFile.getAudioFileById(mContext, activeAudioId);
                 } catch (SQLException e) {
                     return false;
                 }
-                int playingAlbumId = activeAudio.getAlbumId();
+                long playingAlbumId = 0;
+                if (activeAudio != null) {
+                    playingAlbumId = activeAudio.getAlbumId();
+                }
                 return playingAlbumId == albumId;
             }
         }

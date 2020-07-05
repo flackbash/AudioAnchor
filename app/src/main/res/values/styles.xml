@@ -55,4 +55,7 @@
         <item name="android:visibility">gone</item>
     </style>
 
+    <style name="fab_label_style">
+    </style>
+
 </resources>

@@ -45,6 +45,7 @@ public class Utils {
         };
 
         String[] fileList = dir.list(imgFilter);
+        if (fileList == null) return null;
         if (fileList.length > 0) {
             // No way of knowing which image is the correct one, so simply choose one.
             return new File(dir + File.separator + fileList[0]).getAbsolutePath();
@@ -157,23 +158,32 @@ public class Utils {
         return false;
     }
 
-    public static boolean deleteTrack(Context context, String directoryPath, long trackId, boolean keepDeletedInDB) {
+    public static boolean deleteTrack(Context context, AudioFile audioFile, boolean keepDeletedInDB) {
         // Delete track from file system
-        AudioFile audioFile = DBAccessUtils.getAudioFileById(context, trackId);
-        File file = new File(directoryPath + File.separator + audioFile.getAlbumTitle()+ File.separator + audioFile.getTitle());
+        if (audioFile == null) {
+            return false;
+        }
+
+        File file = new File(audioFile.getPath());
         boolean deleted = file.delete();
 
         if (deleted) {
             // Delete track from the database if keep_deleted is false
             if (!keepDeletedInDB) {
-                boolean deletedFromDB = DBAccessUtils.deleteTrackFromDB(context, trackId);
-                if (deletedFromDB) {
-                    // Delete bookmarks from database if track was deleted from database
-                    DBAccessUtils.deleteBookmarksForTrack(context, trackId);
-                }
+                DBAccessUtils.deleteTrackFromDB(context, audioFile.getID());
             }
             return true;
         }
         return false;
+    }
+
+    /*
+     * Recursively delete a file from the file system
+     */
+    public static boolean deleteRecursively(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursively(child);
+        return fileOrDirectory.delete();
     }
 }

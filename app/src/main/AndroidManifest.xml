@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
 
@@ -22,6 +22,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity
+            android:name=".activities.DirectoryActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.prangesoftwaresolutions.audioanchor.activities.MainActivity" />
+        </activity>
         <activity
             android:name=".activities.MainActivity"
             android:screenOrientation="portrait">
@@ -47,8 +54,8 @@
         </activity>
         <activity
             android:name=".activities.PlayActivity"
-            android:launchMode="singleTask"
             android:clearTaskOnLaunch="true"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -68,7 +75,8 @@
         </activity>
 
         <service android:name=".services.MediaPlayerService" />
-        <receiver android:name="com.prangesoftwaresolutions.audioanchor.receivers.MediaButtonIntentReceiver">
+
+        <receiver android:name=".receivers.MediaButtonIntentReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>

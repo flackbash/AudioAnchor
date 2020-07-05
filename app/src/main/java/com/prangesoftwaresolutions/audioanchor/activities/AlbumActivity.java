@@ -32,6 +32,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.models.Album;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 import com.prangesoftwaresolutions.audioanchor.R;
@@ -49,9 +50,7 @@ import java.util.ArrayList;
 public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     // The album uri and file
-    private long mAlbumId;
-    private String mAlbumName;
-    private String mDirectory;
+    private Album mAlbum;
 
     // Database variables
     private static final int ALBUM_LOADER = 0;
@@ -83,7 +82,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     int mAlbumLastCompletedTime;
     int mAlbumDuration;
     int mCurrAudioLastCompletedTime;
-    int mCurrUpdatedAudioId;
+    long mCurrUpdatedAudioId;
 
     // Synchronizer
     private Synchronizer mSynchronizer;
@@ -95,8 +94,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         setContentView(R.layout.activity_album);
 
         // Get the uri of the recipe sent via the intent
-        mAlbumId = getIntent().getLongExtra(getString(R.string.album_id), -1);
-        mAlbumName = getIntent().getStringExtra(getString(R.string.album_name));
+        long albumId = getIntent().getLongExtra(getString(R.string.album_id), -1);
+        mAlbum = Album.getAlbumByID(this, albumId);
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
         getLoaderManager().initLoader(ALBUM_LOADER, null, this);
@@ -105,8 +104,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mDarkTheme = mPrefs.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
         mShowHiddenFiles = mPrefs.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
-
-        mDirectory = mPrefs.getString(getString(R.string.preference_filename), null);
 
         // Initialize the cursor adapter
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
@@ -138,8 +135,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Implement onItemClickListener for the list view
         mListView.setOnItemClickListener((adapterView, view, i, rowId) -> {
             // Check if the audio file exists
-            AudioFile audio = DBAccessUtils.getAudioFileById(AlbumActivity.this, rowId);
-            if (!(new File(audio.getPath())).exists()) {
+            AudioFile audio = AudioFile.getAudioFileById(AlbumActivity.this, rowId);
+
+            if (audio == null || !(new File(audio.getPath())).exists()) {
                 Toast.makeText(getApplicationContext(), R.string.play_error, Toast.LENGTH_LONG).show();
                 return;
             }
@@ -147,7 +145,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             // If the MediaPlayerService is bound, check if it is playing the file that was
             // clicked. If not, stop the current service and let the PlayActivity start a new
             // one
-            if (mServiceBound && mPlayer.getCurrentAudioFile().getId() != audio.getId()) {
+            if (mServiceBound && mPlayer.getCurrentAudioFile().getID() != audio.getID()) {
                 Log.e("AlbumActivity", "Unbinding Service ");
                 unbindService(serviceConnection);
                 mServiceBound = false;
@@ -314,18 +312,13 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         String[] projection = {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME,
-                AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_TITLE,
-                AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_COVER_PATH
         };
 
         String sel = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(mAlbumId)};
+        String[] selArgs = {Long.toString(mAlbum.getID())};
         String sortOrder = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
 
-        return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, projection, sel, selArgs, sortOrder);
+        return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
     }
 
     @Override
@@ -337,28 +330,23 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Set the text of the empty view
         mEmptyTV.setText(R.string.no_audio_files);
 
-        if (cursor != null && cursor.getCount() > 0) {
-            if (cursor.moveToFirst()) {
-                // Set album cover
-                String coverPath = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-                coverPath = mDirectory + File.separator + coverPath;
-                int reqSize = getResources().getDimensionPixelSize(R.dimen.album_info_height);
-                BitmapUtils.setImage(mAlbumInfoCoverIV, coverPath, reqSize);
+        // Set album cover
+        int reqSize = getResources().getDimensionPixelSize(R.dimen.album_info_height);
+        BitmapUtils.setImage(mAlbumInfoCoverIV, mAlbum.getCoverPath(), reqSize);
 
-                // Set the album info time
-                int[] times = DBAccessUtils.getAlbumTimes(this, mAlbumId);
-                Log.e("AlbumActivity", "Update AlbumLastCompletedTime");
-                if (mPlayer != null) {
-                    mCurrAudioLastCompletedTime = mPlayer.getCurrentAudioFile().getCompletedTime();
-                    mCurrUpdatedAudioId = mPlayer.getCurrentAudioFile().getId();
-                }
-                mAlbumLastCompletedTime = times[0];
-                mAlbumDuration = times[1];
-                String timeStr = Utils.getTimeString(this, times[0], times[1]);
-                mAlbumInfoTimeTV.setText(timeStr);
-            }
+        // Set the album info time
+        int[] times = DBAccessUtils.getAlbumTimes(this, mAlbum.getID());
+        Log.e("AlbumActivity", "Update AlbumLastCompletedTime");
+        if (mPlayer != null) {
+            mCurrAudioLastCompletedTime = mPlayer.getCurrentAudioFile().getCompletedTime();
+            mCurrUpdatedAudioId = mPlayer.getCurrentAudioFile().getID();
         }
-        mAlbumInfoTitleTV.setText(mAlbumName);
+        mAlbumLastCompletedTime = times[0];
+        mAlbumDuration = times[1];
+        String timeStr = Utils.getTimeString(this, times[0], times[1]);
+        mAlbumInfoTimeTV.setText(timeStr);
+
+        mAlbumInfoTitleTV.setText(mAlbum.getTitle());
 
         // Swap the new cursor in. The framework will take care of closing the old cursor
         mCursorAdapter.swapCursor(cursor);
@@ -414,7 +402,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             }
 
             Log.e("AlbumActivity", "Update currAudioLastCompletedTime");
-            if (mPlayer.getCurrentAudioFile().getAlbumId() == mAlbumId) {
+            if (mPlayer.getCurrentAudioFile().getAlbumId() == mAlbum.getID()) {
                 setCompletedTimeUpdater();
             }
         }
@@ -504,7 +492,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 // Get the ListView item for the current audio file
                 View v = mListView.getChildAt(index - mListView.getFirstVisiblePosition());
 
-                if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getId() == mCurrUpdatedAudioId) {
+                if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getID() == mCurrUpdatedAudioId) {
                     // Set the progress string for the currently playing ListView item
                     int completedTime = mPlayer.getCurrentPosition();
                     if (v != null) {
@@ -531,7 +519,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     private void scrollToNotCompletedAudio() {
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(mAlbumId)};
+        String[] selArgs = {Long.toString(mAlbum.getID())};
 
         Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
                 columns, sel, selArgs, null, null);
@@ -560,6 +548,41 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     }
 
     /*
+     * Scroll to the last non-completed track in the list view
+     */
+    private void scrollToLastPlayed() {
+        String[] columns = new String[]{AnchorContract.AudioEntry._ID};
+        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+        String[] selArgs = {Long.toString(mAlbum.getID())};
+
+        Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                columns, sel, selArgs, null, null);
+
+        // Bail early if the cursor is null
+        if (c == null) {
+            return;
+        } else if (c.getCount() < 1) {
+            c.close();
+            return;
+        }
+
+        // Loop through the database rows and check for non-completed tracks
+        int count = 0;
+        int scrollTo = 0;
+        while (c.moveToNext()) {
+            long id = c.getLong(c.getColumnIndex(AnchorContract.AudioEntry._ID));
+            if (id == mAlbum.getLastPlayedID()) {
+                scrollTo = count;
+                break;
+            }
+            count += 1;
+        }
+        c.close();
+
+        mListView.setSelection(Math.max(scrollTo - 1, 0));
+    }
+
+    /*
      * Show a confirmation dialog and let the user decide whether to delete the selected
      * tracks from the database
      */
@@ -570,19 +593,20 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_delete_audio_from_db);
+
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the "Ok" button, so delete the tracks from the database
             int deletionCount = 0;
             for (long trackId : selectedTracksArr) {
                 boolean deleted = DBAccessUtils.deleteTrackFromDB(AlbumActivity.this, trackId);
                 if (deleted) {
-                    DBAccessUtils.deleteBookmarksForTrack(AlbumActivity.this, trackId);
                     deletionCount++;
                 }
             }
             String deletedTracks = getResources().getString(R.string.tracks_deleted_from_db, deletionCount);
             Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
         });
+
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
             // User clicked the "Cancel" button, so dismiss the dialog
             if (dialog != null) {
@@ -605,27 +629,31 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_delete_audio);
+
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
-            // User clicked the "Ok" button, so delete the tracks from the database
+            // User clicked the "Ok" button, so delete selected audio files
             int deletionCount = 0;
-            for (long trackId : selectedTracksArr) {
+            for (long audioFileID : selectedTracksArr) {
                 // Stop MediaPlayerService if the currently playing file is from deleted directory
                 if (mPlayer != null) {
-                    int activeAudioId = mPlayer.getCurrentAudioFile().getId();
-                    if (activeAudioId == trackId) {
+                    long activeAudioId = mPlayer.getCurrentAudioFile().getID();
+                    if (activeAudioId == audioFileID) {
                         mPlayer.stopMedia();
                         mPlayer.stopSelf();
                     }
                 }
 
+                // Delete audio file
                 boolean keepDeleted = mPrefs.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
-                boolean deleted = Utils.deleteTrack(this, mDirectory, trackId, keepDeleted);
+                AudioFile audioFile =  AudioFile.getAudioFileById(AlbumActivity.this, audioFileID);
+                boolean deleted = Utils.deleteTrack(this, audioFile, keepDeleted);
                 if (deleted) deletionCount += 1;
             }
             mSynchronizer.updateDBTables();
             String deletedTracks = getResources().getString(R.string.tracks_deleted, deletionCount);
             Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
         });
+
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
             // User clicked the "Cancel" button, so dismiss the dialog
             if (dialog != null) {

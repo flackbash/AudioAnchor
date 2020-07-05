@@ -22,7 +22,7 @@ public class StorageUtil {
         this.context = context;
     }
 
-    public void storeAudioIds(ArrayList<Integer> arrayList) {
+    public void storeAudioIds(ArrayList<Long> arrayList) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = preferences.edit();
@@ -32,11 +32,11 @@ public class StorageUtil {
         editor.apply();
     }
 
-    public ArrayList<Integer> loadAudioIds() {
+    public ArrayList<Long> loadAudioIds() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = preferences.getString("audioList", null);
-        Type type = new TypeToken<ArrayList<Integer>>() {}.getType();
+        Type type = new TypeToken<ArrayList<Long>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
@@ -47,10 +47,10 @@ public class StorageUtil {
         editor.apply();
     }
 
-    public void storeAudioId(int id) {
+    public void storeAudioId(long id) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt("audioId", id);
+        editor.putLong("audioId", id);
         editor.apply();
     }
 
@@ -59,9 +59,9 @@ public class StorageUtil {
         return preferences.getInt("audioIndex", -1);
     }
 
-    int loadAudioId() {
+    long loadAudioId() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
-        return preferences.getInt("audioId", -1);
+        return preferences.getLong("audioId", -1);
     }
 
     public void clearCachedAudioPlaylist() {

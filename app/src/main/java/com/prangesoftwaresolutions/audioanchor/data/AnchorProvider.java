@@ -12,6 +12,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.io.File;
+import java.util.ArrayList;
+
 /**
  * Content Provider for audio_anchor app
  */
@@ -39,6 +42,9 @@ public class AnchorProvider extends ContentProvider {
     private static final int AUDIO_ALBUM = 400;
     private static final int AUDIO_ALBUM_ID = 401;
 
+    private static final int DIRECTORY = 500;
+    private static final int DIRECTORY_ID = 501;
+    private static final int DIRECTORY_DISTINCT = 510;
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -58,6 +64,10 @@ public class AnchorProvider extends ContentProvider {
         // URIs for the joined audio and album table
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_AUDIO_ALBUM, AUDIO_ALBUM);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_AUDIO_ALBUM + "/#", AUDIO_ALBUM_ID);
+        // URIs for the directory table
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_DIRECTORY, DIRECTORY);
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_DIRECTORY + "/#", DIRECTORY_ID);
+        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_DIRECTORY_DISTINCT, DIRECTORY_DISTINCT);
     }
 
     /**
@@ -116,6 +126,11 @@ public class AnchorProvider extends ContentProvider {
                         " WHERE " + selection + " ORDER BY " + sortOrder;
                 cursor = database.rawQuery(query, selectionArgs);
                 break;
+            case DIRECTORY:
+                // Query the directories table with the given parameters
+                cursor = database.query(AnchorContract.DirectoryEntry.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
             case AUDIO_DISTINCT:
                 qb = new SQLiteQueryBuilder();
                 qb.setDistinct(true);
@@ -132,6 +147,12 @@ public class AnchorProvider extends ContentProvider {
                 qb = new SQLiteQueryBuilder();
                 qb.setDistinct(true);
                 qb.setTables(AnchorContract.BookmarkEntry.TABLE_NAME);
+                cursor = qb.query(database, projection, selection, selectionArgs, null, null, sortOrder);
+                break;
+            case DIRECTORY_DISTINCT:
+                qb = new SQLiteQueryBuilder();
+                qb.setDistinct(true);
+                qb.setTables(AnchorContract.DirectoryEntry.TABLE_NAME);
                 cursor = qb.query(database, projection, selection, selectionArgs, null, null, sortOrder);
                 break;
             case AUDIO_ID:
@@ -182,6 +203,15 @@ public class AnchorProvider extends ContentProvider {
 
                 cursor = database.rawQuery(query, selectionArgs);
                 break;
+            case DIRECTORY_ID:
+                // Query a single row given by the ID in the URI
+                selection = AnchorContract.DirectoryEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+
+                // Perform query on the recipe table for the given recipe id.
+                cursor = database.query(AnchorContract.DirectoryEntry.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
@@ -205,6 +235,8 @@ public class AnchorProvider extends ContentProvider {
             case BOOKMARK:
             case AUDIO_ALBUM:
                 return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
+            case DIRECTORY:
+                return AnchorContract.DirectoryEntry.CONTENT_LIST_TYPE;
             case AUDIO_ID:
                 return AnchorContract.AudioEntry.CONTENT_ITEM_TYPE;
             case ALBUM_ID:
@@ -212,6 +244,8 @@ public class AnchorProvider extends ContentProvider {
             case BOOKMARK_ID:
             case AUDIO_ALBUM_ID:
                 return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
+            case DIRECTORY_ID:
+                return AnchorContract.DirectoryEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
         }
@@ -231,6 +265,8 @@ public class AnchorProvider extends ContentProvider {
                 return insertAlbum(uri, contentValues);
             case BOOKMARK:
                 return insertBookmark(uri, contentValues);
+            case DIRECTORY:
+                return insertDirectory(uri, contentValues);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
@@ -318,6 +354,32 @@ public class AnchorProvider extends ContentProvider {
     }
 
     /**
+     * Insert new directory with the given ContentValues into the database.
+     */
+    private Uri insertDirectory(Uri uri, ContentValues values) {
+        // Sanity check values
+        if (!sanityCheckDirectory(values)) {
+            throw new IllegalArgumentException("Sanity check failed: corrupted content values");
+        }
+
+        // Get writable database
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        long id = db.insert(AnchorContract.DirectoryEntry.TABLE_NAME, null, values);
+
+        if (id == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + uri);
+            return null;
+        }
+
+        // Notify all listeners that the data at the given URI has changed
+        getContext().getContentResolver().notifyChange(uri, null);
+
+        // Return the new URI with the appended ID
+        return ContentUris.withAppendedId(uri, id);
+    }
+
+    /**
      * Delete the data at the given selection and selection arguments.
      */
     @Override
@@ -326,40 +388,104 @@ public class AnchorProvider extends ContentProvider {
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
         final int match = sUriMatcher.match(uri);
+        ArrayList<Long> ids;
         switch (match) {
-            case AUDIO:
+            case DIRECTORY:
+                // Delete corresponding albums
+                ids = getAffectedIds(AnchorContract.DirectoryEntry.CONTENT_URI, selection, selectionArgs);
+                for (long id : ids) {
+                    String subSelection = AnchorContract.AlbumEntry.COLUMN_DIRECTORY + "=?";
+                    String[] subSelectionArgs = new String[]{String.valueOf(id)};
+                    delete(AnchorContract.AlbumEntry.CONTENT_URI, subSelection, subSelectionArgs);
+                }
+
                 // Delete all rows that match the selection and selection args
                 getContext().getContentResolver().notifyChange(uri, null);
-                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
-                return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
+                return database.delete(AnchorContract.DirectoryEntry.TABLE_NAME, selection, selectionArgs);
             case ALBUM:
+                // Delete corresponding audio files
+                ids = getAffectedIds(AnchorContract.AlbumEntry.CONTENT_URI, selection, selectionArgs);
+                for (long id : ids) {
+                    String subSelection = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+                    String[] subSelectionArgs = new String[]{String.valueOf(id)};
+                    delete(AnchorContract.AudioEntry.CONTENT_URI, subSelection, subSelectionArgs);
+                }
+
                 // Delete all rows that match the selection and selection args
                 getContext().getContentResolver().notifyChange(uri, null);
                 getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
+            case AUDIO:
+                // Delete corresponding bookmarks for each deleted audio file
+                ids = getAffectedIds(AnchorContract.AudioEntry.CONTENT_URI, selection, selectionArgs);
+                for (long id : ids) {
+                    String subSelection = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
+                    String[] subSelectionArgs = new String[]{String.valueOf(id)};
+                    delete(AnchorContract.BookmarkEntry.CONTENT_URI, subSelection, subSelectionArgs);
+                }
+
+                // Delete all rows that match the selection and selection args
+                getContext().getContentResolver().notifyChange(uri, null);
+                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
+                return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
             case BOOKMARK:
                 // Delete all rows that match the selection and selection args
                 getContext().getContentResolver().notifyChange(uri, null);
                 return database.delete(AnchorContract.BookmarkEntry.TABLE_NAME, selection, selectionArgs);
-            case AUDIO_ID:
+            case DIRECTORY_ID:
                 // Delete a single row given by the ID in the URI
-                selection = AnchorContract.AudioEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                getContext().getContentResolver().notifyChange(uri, null);
+                long directoryId = ContentUris.parseId(uri);
+                selection = AnchorContract.DirectoryEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(directoryId)};
+
+                // Delete corresponding albums
+                String selectionAlbum = AnchorContract.AlbumEntry.COLUMN_DIRECTORY + "=?";
+                delete(AnchorContract.AlbumEntry.CONTENT_URI, selectionAlbum, selectionArgs);
+
+                // Send notification about change
                 getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
-                return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
+                getContext().getContentResolver().notifyChange(uri, null);
+
+                getContext().getContentResolver().notifyChange(uri, null);
+                return database.delete(AnchorContract.DirectoryEntry.TABLE_NAME, selection, selectionArgs);
             case ALBUM_ID:
                 // Delete a single row given by the ID in the URI
+                long albumId = ContentUris.parseId(uri);
                 selection = AnchorContract.AlbumEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                selectionArgs = new String[]{String.valueOf(albumId)};
+
+                // Delete corresponding audio files
+                String selectionAudioFile = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+                delete(AnchorContract.AudioEntry.CONTENT_URI, selectionAudioFile, selectionArgs);
+
+                // Send notification about change
                 getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 getContext().getContentResolver().notifyChange(uri, null);
+
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
+            case AUDIO_ID:
+                // Delete a single row given by the ID in the URI
+                long audioId = ContentUris.parseId(uri);
+                selection = AnchorContract.AudioEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(audioId)};
+
+                // Delete corresponding bookmarks
+                String selectionBookmark = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
+                delete(AnchorContract.BookmarkEntry.CONTENT_URI, selectionBookmark, selectionArgs);
+
+                // Send notification about change
+                getContext().getContentResolver().notifyChange(uri, null);
+                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
+
+                return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
             case BOOKMARK_ID:
                 // Delete a single row given by the ID in the URI
                 selection = AnchorContract.BookmarkEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+
+                // Send notification about change
                 getContext().getContentResolver().notifyChange(uri, null);
+
                 return database.delete(AnchorContract.BookmarkEntry.TABLE_NAME, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
@@ -371,26 +497,22 @@ public class AnchorProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case AUDIO:
-                // Delete all rows that match the selection and selection args
+                // Update all rows that match the selection and selection args
                 return updateAudioFile(uri, values, selection, selectionArgs);
             case ALBUM:
-                // Delete all rows that match the selection and selection args
                 return updateAlbum(uri, values, selection, selectionArgs);
             case BOOKMARK:
-                // Delete all rows that match the selection and selection args
                 return updateBookmark(uri, values, selection, selectionArgs);
             case AUDIO_ID:
-                // Delete a single row given by the ID in the URI
+                // Update a single row given by the ID in the URI
                 selection = AnchorContract.AudioEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateAudioFile(uri, values, selection, selectionArgs);
             case ALBUM_ID:
-                // Delete a single row given by the ID in the URI
                 selection = AnchorContract.AlbumEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateAlbum(uri, values, selection, selectionArgs);
             case BOOKMARK_ID:
-                // Delete a single row given by the ID in the URI
                 selection = AnchorContract.BookmarkEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateBookmark(uri, values, selection, selectionArgs);
@@ -560,5 +682,60 @@ public class AnchorProvider extends ContentProvider {
             return val != null;
         }
         return true;
+    }
+
+    /**
+     * Checks ContentValues for validity.
+     */
+    private boolean sanityCheckDirectory(ContentValues values) {
+        // Check whether the title will be updated and that the new title is not null
+        if (values.containsKey(AnchorContract.DirectoryEntry.COLUMN_PATH)) {
+            String val = values.getAsString(AnchorContract.DirectoryEntry.COLUMN_PATH);
+            if (val == null) {
+                return false;
+            }
+            File file = new File(val);
+            return file.exists() && file.isDirectory();
+        }
+        return true;
+    }
+
+    /*
+     * Return ids of elements in given table that are affected by the given query.
+     */
+    private ArrayList<Long> getAffectedIds(Uri uri, String selection, String[] selectionArgs) {
+        ArrayList<Long> ids = new ArrayList<>();
+
+        // Determine which table is queried
+        String column;
+        if (uri == AnchorContract.DirectoryEntry.CONTENT_URI) {
+            column = AnchorContract.DirectoryEntry._ID;
+        } else if (uri == AnchorContract.AlbumEntry.CONTENT_URI) {
+            column = AnchorContract.AlbumEntry._ID;
+        } else if (uri == AnchorContract.AudioEntry.CONTENT_URI) {
+            column = AnchorContract.AudioEntry._ID;
+        } else if (uri == AnchorContract.BookmarkEntry.CONTENT_URI) {
+            column = AnchorContract.BookmarkEntry._ID;
+        } else {
+            return ids;
+        }
+
+        // Query the database
+        Cursor c = query(uri, new String[]{column}, selection, selectionArgs, null);
+
+        if (c == null) {
+            return ids;
+        } else if (c.getCount() < 1) {
+            c.close();
+            return ids;
+        }
+
+        while (c.moveToNext()) {
+            long id = c.getLong(c.getColumnIndex(column));
+            ids.add(id);
+        }
+        c.close();
+
+        return ids;
     }
 }

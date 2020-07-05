@@ -43,7 +43,6 @@ import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.adapters.BookmarkCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
-import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
@@ -128,7 +127,7 @@ public class PlayActivity extends AppCompatActivity {
         mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
 
 
-        mAudioFile = DBAccessUtils.getAudioFileById(this, currAudioId);
+        mAudioFile = AudioFile.getAudioFileById(this, currAudioId);
         mMetadataRetriever = new MediaMetadataRetriever();
 
         setNewAudioFile();
@@ -392,20 +391,26 @@ public class PlayActivity extends AppCompatActivity {
     private void storeAudioFiles() {
         // Store Serializable audioList in SharedPreferences
         String sortOrder = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
-        ArrayList<Integer> audioIdList = DBAccessUtils.getAllAudioIdsFromAlbum(this, mAudioFile.getAlbumId(), sortOrder);
-        int audioIndex = audioIdList.indexOf(mAudioFile.getId());
+
+        ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesInAlbum(this, mAudioFile.getAlbumId(), sortOrder);
+        ArrayList<Long> audioIdList = new ArrayList<>();
+        for (AudioFile audioFile : audioList) {
+            audioIdList.add(audioFile.getID());
+        }
+
+        int audioIndex = audioIdList.indexOf(mAudioFile.getID());
         StorageUtil storage = new StorageUtil(getApplicationContext());
         storage.storeAudioIds(audioIdList);
         storage.storeAudioIndex(audioIndex);
-        storage.storeAudioId(mAudioFile.getId());
+        storage.storeAudioId(mAudioFile.getID());
     }
 
     private void loadAudioFile(int audioIndex) {
         // Load data from SharedPreferences
         StorageUtil storage = new StorageUtil(getApplicationContext());
-        ArrayList<Integer> audioList = new ArrayList<>(storage.loadAudioIds());
-        int audioId = audioList.get(audioIndex);
-        mAudioFile = DBAccessUtils.getAudioFileById(this, audioId);
+        ArrayList<Long> audioList = new ArrayList<>(storage.loadAudioIds());
+        long audioId = audioList.get(audioIndex);
+        mAudioFile = AudioFile.getAudioFileById(this, audioId);
         setNewAudioFile();
         setAlbumCover();
     }
@@ -518,7 +523,7 @@ public class PlayActivity extends AppCompatActivity {
         builder.setView(dialogView);
         builder.setTitle(R.string.sleep_timer);
         builder.setMessage(R.string.dialog_msg_sleep_timer);
-        // User clicked the OK button so set the sleep timer
+
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             String minutesString = setTime.getText().toString();
             int minutes;
@@ -538,8 +543,8 @@ public class PlayActivity extends AppCompatActivity {
             editor.putInt(getString(R.string.preference_last_sleep_key), mLastSleepTime);
             editor.apply();
         });
+
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
-            // User clicked the "Cancel" button, so dismiss the dialog
             if (dialog != null) {
                 dialog.dismiss();
             }
@@ -570,7 +575,7 @@ public class PlayActivity extends AppCompatActivity {
 
         builder.setTitle(R.string.go_to);
         builder.setMessage(R.string.dialog_msg_goto);
-        // User clicked the OK button so set the sleep timer
+
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             String hours = gotoHours.getText().toString();
             String minutes = gotoMinutes.getText().toString();
@@ -585,7 +590,6 @@ public class PlayActivity extends AppCompatActivity {
             }
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
-            // User clicked the "Cancel" button, so dismiss the dialog
             if (dialog != null) {
                 dialog.dismiss();
             }
@@ -640,8 +644,8 @@ public class PlayActivity extends AppCompatActivity {
         gotoMinutes.setText(currPosArr[1]);
         gotoSeconds.setText(currPosArr[2]);
 
-        // User clicked the OK button so save the bookmark
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
+            // User clicked the OK button so save the bookmark
             String title = bookmarkTitleET.getText().toString();
 
             String hours = gotoHours.getText().toString();
@@ -654,7 +658,7 @@ public class PlayActivity extends AppCompatActivity {
             } else {
                 try {
                     long millis = Utils.getMillisFromString(timeString);
-                    int audioFileId = mAudioFile.getId();
+                    long audioFileId = mAudioFile.getID();
                     ContentValues values = new ContentValues();
                     values.put(AnchorContract.BookmarkEntry.COLUMN_TITLE, title);
                     values.put(AnchorContract.BookmarkEntry.COLUMN_POSITION, millis);
@@ -677,12 +681,14 @@ public class PlayActivity extends AppCompatActivity {
                 }
             }
         });
+
         if (uri != null) {
             builder.setNeutralButton(R.string.dialog_msg_delete, (dialog, id) -> {
                 // User clicked the "Delete" button, so delete the bookmark
                 deleteBookmarkWithConfirmation(uri);
             });
         }
+
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
             // User clicked the "Cancel" button, so dismiss the dialog
             if (dialog != null) {
@@ -738,6 +744,7 @@ public class PlayActivity extends AppCompatActivity {
 
         builder.setTitle(R.string.bookmarks);
         // User clicked the OK button so set the sleep timer
+
         builder.setPositiveButton(R.string.dialog_msg_close, (dialog, id) -> {
             if (dialog != null) {
                 dialog.dismiss();
@@ -759,7 +766,7 @@ public class PlayActivity extends AppCompatActivity {
                 AnchorContract.BookmarkEntry.COLUMN_POSITION};
 
         String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
-        String[] selArgs = {Long.toString(mAudioFile.getId())};
+        String[] selArgs = {Long.toString(mAudioFile.getID())};
         String sortOrder = AnchorContract.BookmarkEntry.COLUMN_POSITION + " ASC";
         return getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
     }
@@ -770,6 +777,7 @@ public class PlayActivity extends AppCompatActivity {
     void deleteBookmarkWithConfirmation(final Uri uri) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dialog_msg_delete_bookmark);
+
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the "Ok" button, so delete the bookmark.
             getContentResolver().delete(uri, null, null);
@@ -779,6 +787,7 @@ public class PlayActivity extends AppCompatActivity {
             mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
             mBookmarkListView.setAdapter(mBookmarkAdapter);
         });
+
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
             // User clicked the "Cancel" button, so dismiss the dialog
             if (dialog != null) {
@@ -886,7 +895,7 @@ public class PlayActivity extends AppCompatActivity {
             mAudioFile.setCompletedTime(newTime);
 
             // Update the completedTime column of the audiofiles table
-            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mAudioFile.getId());
+            Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mAudioFile.getID());
             ContentValues values = new ContentValues();
             values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, newTime);
             getContentResolver().update(uri, values, null, null);

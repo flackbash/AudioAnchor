@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:drawSelectorOnTop="true"
+    android:gravity="center_vertical"
+    android:background="?android:attr/activatedBackgroundIndicator">
+
+    <ImageView
+        android:id="@+id/directory_icon"
+        android:layout_width="@dimen/audio_file_item_height"
+        android:layout_height="@dimen/audio_file_item_height"
+        android:src="@drawable/ic_parent_directory_grey"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/directory_title_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/medium_font_size"
+            android:paddingStart="@dimen/small_margin"
+            android:paddingEnd="@dimen/small_margin"
+            android:paddingTop="@dimen/small_margin"
+            android:text="@string/title" />
+
+        <TextView
+            android:id="@+id/directory_subtitle_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/small_font_size"
+            android:paddingStart="@dimen/small_margin"
+            android:paddingEnd="@dimen/small_margin"
+            android:layout_below="@id/directory_title_tv" />
+
+        <ImageView
+            android:id="@+id/directory_item_deletable_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/ic_deletable"
+            android:tint="?colorDeletableIcon"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+
+</LinearLayout>
+

@@ -11,10 +11,10 @@
 
     <item
         android:id="@+id/menu_choose_directory"
-        android:icon="@drawable/ic_directory"
+        android:icon="@drawable/ic_add_directory"
         android:orderInCategory="90"
         android:title="@string/choose_directory"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/menu_export"

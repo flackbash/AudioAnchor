@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
@@ -15,7 +14,6 @@ import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
-import java.util.ArrayList;
 
 public class DBAccessUtils {
 
@@ -56,89 +54,14 @@ public class DBAccessUtils {
 
 
     /*
-     * Get the audio file for the specified uri
-     */
-    public static AudioFile getAudioFileById(Context context, long audioId) {
-        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, audioId);
-        String[] projection = {
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME,
-                AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_TITLE,
-                AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
-        Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
-
-        if (c == null) {
-            throw new SQLException();
-        } else if (c.getCount() < 1) {
-            c.close();
-            throw new SQLException();
-        }
-
-        AudioFile audioFile;
-        SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(context);
-        String baseDirectory = prefManager.getString(context.getString(R.string.preference_filename), null);
-        if (c.moveToFirst()) {
-            int id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-            String title = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
-            int albumId = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_ALBUM));
-            int completedTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-            int time = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-            String albumTitle = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_TITLE));
-            String albumCoverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.TABLE_NAME + AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-            audioFile = new AudioFile(id, title, albumId, time, completedTime, albumTitle, albumCoverPath, baseDirectory);
-        } else {
-            c.close();
-            throw new SQLException();
-        }
-        c.close();
-        return audioFile;
-    }
-
-    /*
-     * Get all audio ids for the specified album
-     */
-    public static ArrayList<Integer> getAllAudioIdsFromAlbum(Context context, int albumId, String sortOrder) {
-        String[] projection = { AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID };
-
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = { Long.toString(albumId) };
-        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, projection, sel, selArgs, sortOrder);
-
-        if (c == null) {
-            throw new SQLException();
-        } else if (c.getCount() < 1) {
-            c.close();
-            throw new SQLException();
-        }
-
-        ArrayList<Integer> audioIds = new ArrayList<>();
-        if (c.moveToFirst()) {
-            do {
-                int id = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-                audioIds.add(id);
-            } while (c.moveToNext());
-
-        } else {
-            c.close();
-            throw new SQLException();
-        }
-        c.close();
-        return audioIds;
-    }
-
-
-    /*
      * Delete track with the specified id from the database
      */
     public static boolean deleteTrackFromDB(Context context, long trackId) {
         Uri deleteUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
 
         // Don't allow delete action if the track still exists
-        AudioFile audio = getAudioFileById(context, trackId);
-        if (!(new File(audio.getPath())).exists()) {
+        AudioFile audio = AudioFile.getAudioFileById(context, trackId);
+        if (audio != null && !(new File(audio.getPath())).exists()) {
             // Delete track from database
             context.getContentResolver().delete(deleteUri, null, null);
             return true;
@@ -181,36 +104,6 @@ public class DBAccessUtils {
             return true;
         }
         return false;
-    }
-
-
-    /*
-     * Delete bookmarks for the specified track from the database
-     */
-    public static void deleteBookmarksForTrack(Context context, long trackId) {
-        // Get all bookmarks associated with the trackId
-        String[] columns = new String[]{AnchorContract.BookmarkEntry._ID, AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE};
-        String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
-        String[] selArgs = {Long.toString(trackId)};
-
-        Cursor c = context.getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI,
-                columns, sel, selArgs, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return;
-        }
-
-        while (c.moveToNext()) {
-            // Delete bookmarks associated with the track from the database
-            int bookmarkId = c.getInt(c.getColumnIndex(AnchorContract.BookmarkEntry._ID));
-            Uri deleteUri = ContentUris.withAppendedId(AnchorContract.BookmarkEntry.CONTENT_URI, bookmarkId);
-            context.getContentResolver().delete(deleteUri, null, null);
-        }
-        c.close();
     }
 
 
@@ -271,62 +164,5 @@ public class DBAccessUtils {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, totalTime);
         context.getContentResolver().update(uri, values, null, null);
-    }
-
-
-    /*
-     * Get all track ids for the specified album
-     */
-    public static ArrayList<Long> getTrackIdsForAlbum(Context context, long albumId) {
-        ArrayList<Long> trackIds = new ArrayList<>();
-
-        String[] columns = new String[]{AnchorContract.AudioEntry._ID};
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(albumId)};
-
-        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
-                columns, sel, selArgs, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return trackIds;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return trackIds;
-        }
-
-        while (c.moveToNext()) {
-            long trackId = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-            trackIds.add(trackId);
-        }
-        c.close();
-
-        return trackIds;
-    }
-
-    /*
-     * Get Album title
-     */
-    public static String getAlbumTitle(Context context, long albumId) {
-        // Get the title of the album to check if the album still exists in the file system
-        Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, albumId);
-        String[] proj = new String[]{AnchorContract.AlbumEntry.COLUMN_TITLE};
-        Cursor c = context.getContentResolver().query(uri, proj, null, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return null;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return null;
-        }
-
-        String title = null;
-        if (c.moveToNext()) {
-            title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
-        }
-        c.close();
-
-        return title;
     }
 }
