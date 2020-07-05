@@ -8,7 +8,7 @@
 
     <!-- Toast messages -->
     <string name="no_albums">It\'s a bit empty here. Start by adding a directory to your library.</string>
-    <string name="no_directories">It\'s a bit empty here. Start by adding a directory to your library.</string>
+    <string name="no_directories">No directories added yet.</string>
     <string name="no_audio_files">No audio files found in this album.</string>
     <string name="play_error">The selected audio file is not playable. Maybe the file does not exist anymore.</string>
     <string name="permission_denied">Necessary permission was not granted. Quit AudioAnchor.</string>
