@@ -34,6 +34,12 @@
 
     <PreferenceCategory android:title="@string/settings_display_category">
 
+        <ListPreference
+            android:defaultValue="@string/settings_sort_order_by_directory_value"
+            android:key="@string/settings_sort_order_key"
+            android:title="@string/settings_sort_order_label"
+            android:entries="@array/sort_order_label_array"
+            android:entryValues="@array/sort_order_value_array"/>
         <SwitchPreference
             android:defaultValue="@string/settings_progress_percentage_default"
             android:key="@string/settings_progress_percentage_key"

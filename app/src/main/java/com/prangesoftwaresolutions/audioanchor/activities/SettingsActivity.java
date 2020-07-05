@@ -3,6 +3,7 @@ package com.prangesoftwaresolutions.audioanchor.activities;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
@@ -107,6 +108,8 @@ public class SettingsActivity extends AppCompatActivity {
             if (p instanceof EditTextPreference) {
                 EditTextPreference editTextPref = (EditTextPreference) p;
                 p.setSummary(editTextPref.getText());
+            } else if (p instanceof ListPreference) {
+                p.setSummary(((ListPreference)p).getEntry());
             }
         }
 

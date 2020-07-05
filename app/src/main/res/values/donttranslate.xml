@@ -40,6 +40,10 @@
     <string name="settings_show_hidden_default" translatable="false">false</string>
     <string name="settings_vibrate_shake_reset_key" translatable="false">vibrate_on_shake_reset</string>
     <string name="settings_vibrate_shake_reset_default" translatable="false">true</string>
+    <string name="settings_sort_order_by_title_value" translatable="false">sort_by_title</string>
+    <string name="settings_sort_order_by_directory_value" translatable="false">sort_by_directory</string>
+    <string name="settings_sort_order_key" translatable="false">settings_sort_order_album</string>
+    <string name="settings_sort_order_default" translatable="false">@string/settings_sort_order_by_directory_value</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>

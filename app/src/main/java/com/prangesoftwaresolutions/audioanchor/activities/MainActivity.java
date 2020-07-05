@@ -266,7 +266,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        String sortOrder = "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
+        String sortOrderPref = mSharedPreferences.getString(getString(R.string.settings_sort_order_key), getString(R.string.settings_sort_order_default));
+        String sortOrder = "";
+        if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_directory_value))) {
+            sortOrder += AnchorContract.AlbumEntry.COLUMN_DIRECTORY + " ASC, ";
+        }
+        sortOrder += "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
         return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, Album.getColumns(), null, null, sortOrder);
     }
 

@@ -55,6 +55,9 @@
     <string name="settings_display_category">Display</string>
     <string name="settings_playback_category">Playback</string>
     <string name="settings_miscellaneous_category">Miscellaneous</string>
+    <string name="settings_sort_order_by_title_label">By title</string>
+    <string name="settings_sort_order_by_directory_label">By directory</string>
+    <string name="settings_sort_order_label">Album sort order</string>
 
     <!-- Layout Texts -->
     <string name="title">Title</string>
