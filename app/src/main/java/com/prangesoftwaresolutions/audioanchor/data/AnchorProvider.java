@@ -39,9 +39,6 @@ public class AnchorProvider extends ContentProvider {
     private static final int BOOKMARK_ID = 301;
     private static final int BOOKMARK_DISTINCT = 310;
 
-    private static final int AUDIO_ALBUM = 400;
-    private static final int AUDIO_ALBUM_ID = 401;
-
     private static final int DIRECTORY = 500;
     private static final int DIRECTORY_ID = 501;
     private static final int DIRECTORY_DISTINCT = 510;
@@ -61,9 +58,6 @@ public class AnchorProvider extends ContentProvider {
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK, BOOKMARK);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK + "/#", BOOKMARK_ID);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_BOOKMARK_DISTINCT, BOOKMARK_DISTINCT);
-        // URIs for the joined audio and album table
-        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_AUDIO_ALBUM, AUDIO_ALBUM);
-        sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_AUDIO_ALBUM + "/#", AUDIO_ALBUM_ID);
         // URIs for the directory table
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_DIRECTORY, DIRECTORY);
         sUriMatcher.addURI(AnchorContract.CONTENT_AUTHORITY, AnchorContract.PATH_DIRECTORY + "/#", DIRECTORY_ID);
@@ -109,22 +103,6 @@ public class AnchorProvider extends ContentProvider {
                 // Query the bookmarks table with the given parameters
                 cursor = database.query(AnchorContract.BookmarkEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
-                break;
-            case AUDIO_ALBUM:
-                StringBuilder projBuilder = new StringBuilder();
-                if (projection != null) {
-                    for (int i = 0; i < projection.length; i++) {
-                        if (i > 0) projBuilder.append(", ");
-                        projBuilder.append(projection[i]).append(" AS ").append(projection[i].replace(AnchorContract.AudioEntry.TABLE_NAME, "").replace(".", ""));
-                    }
-                }
-                String projectionString = projBuilder.toString();
-
-                String query = "SELECT " + projectionString + " FROM " + AnchorContract.AudioEntry.TABLE_NAME +
-                        " INNER JOIN " + AnchorContract.AlbumEntry.TABLE_NAME +
-                        " ON " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=" + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID +
-                        " WHERE " + selection + " ORDER BY " + sortOrder;
-                cursor = database.rawQuery(query, selectionArgs);
                 break;
             case DIRECTORY:
                 // Query the directories table with the given parameters
@@ -182,27 +160,6 @@ public class AnchorProvider extends ContentProvider {
                 cursor = database.query(AnchorContract.BookmarkEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
-            case AUDIO_ALBUM_ID:
-                // Query a single row of the joined Audio and Album table given by the Audio ID in the URI
-                selection = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-
-                projBuilder = new StringBuilder();
-                if (projection != null) {
-                    for (int i = 0; i < projection.length; i++) {
-                        if (i > 0) projBuilder.append(", ");
-                        projBuilder.append(projection[i]).append(" AS ").append(projection[i].replace(AnchorContract.AudioEntry.TABLE_NAME + ".", "").replace(".", ""));
-                    }
-                }
-                projectionString = projBuilder.toString();
-
-                query = "SELECT " + projectionString + " FROM " + AnchorContract.AudioEntry.TABLE_NAME +
-                        " INNER JOIN " + AnchorContract.AlbumEntry.TABLE_NAME +
-                        " ON " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=" + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID +
-                        " WHERE " + selection + " ORDER BY " + sortOrder;
-
-                cursor = database.rawQuery(query, selectionArgs);
-                break;
             case DIRECTORY_ID:
                 // Query a single row given by the ID in the URI
                 selection = AnchorContract.DirectoryEntry._ID + "=?";
@@ -233,7 +190,6 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM:
                 return AnchorContract.AlbumEntry.CONTENT_LIST_TYPE;
             case BOOKMARK:
-            case AUDIO_ALBUM:
                 return AnchorContract.BookmarkEntry.CONTENT_LIST_TYPE;
             case DIRECTORY:
                 return AnchorContract.DirectoryEntry.CONTENT_LIST_TYPE;
@@ -242,7 +198,6 @@ public class AnchorProvider extends ContentProvider {
             case ALBUM_ID:
                 return AnchorContract.AlbumEntry.CONTENT_ITEM_TYPE;
             case BOOKMARK_ID:
-            case AUDIO_ALBUM_ID:
                 return AnchorContract.BookmarkEntry.CONTENT_ITEM_TYPE;
             case DIRECTORY_ID:
                 return AnchorContract.DirectoryEntry.CONTENT_ITEM_TYPE;
@@ -277,7 +232,7 @@ public class AnchorProvider extends ContentProvider {
      */
     private Uri insertAudioFile(Uri uri, ContentValues values) {
         // Sanity check values
-        if (!sanityCheckAudioFile(values)) {
+        if (!isValidAudioFileEntry(values)) {
             throw new IllegalArgumentException("Sanity check failed: corrupted content values");
         }
 
@@ -306,7 +261,7 @@ public class AnchorProvider extends ContentProvider {
      */
     private Uri insertAlbum(Uri uri, ContentValues values) {
         // Sanity check values
-        if (!sanityCheckAlbum(values)) {
+        if (!isValidAlbumEntry(values)) {
             throw new IllegalArgumentException("Sanity check failed: corrupted content values");
         }
 
@@ -332,7 +287,7 @@ public class AnchorProvider extends ContentProvider {
      */
     private Uri insertBookmark(Uri uri, ContentValues values) {
         // Sanity check values
-        if (!sanityCheckBookmark(values)) {
+        if (!isValidBokomarkEntry(values)) {
             throw new IllegalArgumentException("Sanity check failed: corrupted content values");
         }
 
@@ -358,7 +313,7 @@ public class AnchorProvider extends ContentProvider {
      */
     private Uri insertDirectory(Uri uri, ContentValues values) {
         // Sanity check values
-        if (!sanityCheckDirectory(values)) {
+        if (!isValidDirectoryEntry(values)) {
             throw new IllegalArgumentException("Sanity check failed: corrupted content values");
         }
 
@@ -413,7 +368,6 @@ public class AnchorProvider extends ContentProvider {
 
                 // Delete all rows that match the selection and selection args
                 getContext().getContentResolver().notifyChange(uri, null);
-                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
             case AUDIO:
                 // Delete corresponding bookmarks for each deleted audio file
@@ -426,7 +380,6 @@ public class AnchorProvider extends ContentProvider {
 
                 // Delete all rows that match the selection and selection args
                 getContext().getContentResolver().notifyChange(uri, null);
-                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
             case BOOKMARK:
                 // Delete all rows that match the selection and selection args
@@ -443,7 +396,6 @@ public class AnchorProvider extends ContentProvider {
                 delete(AnchorContract.AlbumEntry.CONTENT_URI, selectionAlbum, selectionArgs);
 
                 // Send notification about change
-                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 getContext().getContentResolver().notifyChange(uri, null);
 
                 getContext().getContentResolver().notifyChange(uri, null);
@@ -459,7 +411,6 @@ public class AnchorProvider extends ContentProvider {
                 delete(AnchorContract.AudioEntry.CONTENT_URI, selectionAudioFile, selectionArgs);
 
                 // Send notification about change
-                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
                 getContext().getContentResolver().notifyChange(uri, null);
 
                 return database.delete(AnchorContract.AlbumEntry.TABLE_NAME, selection, selectionArgs);
@@ -475,7 +426,6 @@ public class AnchorProvider extends ContentProvider {
 
                 // Send notification about change
                 getContext().getContentResolver().notifyChange(uri, null);
-                getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
 
                 return database.delete(AnchorContract.AudioEntry.TABLE_NAME, selection, selectionArgs);
             case BOOKMARK_ID:
@@ -531,7 +481,7 @@ public class AnchorProvider extends ContentProvider {
         }
 
         // Sanity check values
-        if (!sanityCheckAudioFile(values)) {
+        if (!isValidAudioFileEntry(values)) {
             throw new IllegalArgumentException("Sanity check failed: corrupted content values");
         }
 
@@ -545,7 +495,6 @@ public class AnchorProvider extends ContentProvider {
         // given URI has changed
         if (rowsUpdated != 0) {
             getContext().getContentResolver().notifyChange(uri, null);
-            getContext().getContentResolver().notifyChange(AnchorContract.AudioEntry.CONTENT_URI_AUDIO_ALBUM, null);
             if (uri != AnchorContract.AlbumEntry.CONTENT_URI)
                 getContext().getContentResolver().notifyChange(AnchorContract.AlbumEntry.CONTENT_URI, null);
         }
@@ -563,7 +512,7 @@ public class AnchorProvider extends ContentProvider {
         }
 
         // Sanity check values
-        if (!sanityCheckAlbum(values)) {
+        if (!isValidAlbumEntry(values)) {
             throw new IllegalArgumentException("Sanity check failed: corrupted content values");
         }
 
@@ -592,7 +541,7 @@ public class AnchorProvider extends ContentProvider {
         }
 
         // Sanity check values
-        if (!sanityCheckBookmark(values)) {
+        if (!isValidBokomarkEntry(values)) {
             throw new IllegalArgumentException("Sanity check failed: corrupted content values");
         }
 
@@ -614,7 +563,7 @@ public class AnchorProvider extends ContentProvider {
     /**
      * Checks ContentValues for validity.
      */
-    private boolean sanityCheckAudioFile(ContentValues values) {
+    private boolean isValidAudioFileEntry(ContentValues values) {
         // Check whether the title will be updated and that the new title is not null
         if (values.containsKey(AnchorContract.AudioEntry.COLUMN_TITLE)) {
             String val = values.getAsString(AnchorContract.AudioEntry.COLUMN_TITLE);
@@ -648,7 +597,7 @@ public class AnchorProvider extends ContentProvider {
     /**
      * Checks ContentValues for validity.
      */
-    private boolean sanityCheckAlbum(ContentValues values) {
+    private boolean isValidAlbumEntry(ContentValues values) {
         // Check whether the title will be updated and that the new title is not null
         if (values.containsKey(AnchorContract.AlbumEntry.COLUMN_TITLE)) {
             String val = values.getAsString(AnchorContract.AlbumEntry.COLUMN_TITLE);
@@ -661,7 +610,7 @@ public class AnchorProvider extends ContentProvider {
     /**
      * Checks ContentValues for validity.
      */
-    private boolean sanityCheckBookmark(ContentValues values) {
+    private boolean isValidBokomarkEntry(ContentValues values) {
         // Check whether the title will be updated and that the new title is not null
         if (values.containsKey(AnchorContract.BookmarkEntry.COLUMN_TITLE)) {
             String val = values.getAsString(AnchorContract.BookmarkEntry.COLUMN_TITLE);
@@ -687,7 +636,7 @@ public class AnchorProvider extends ContentProvider {
     /**
      * Checks ContentValues for validity.
      */
-    private boolean sanityCheckDirectory(ContentValues values) {
+    private boolean isValidDirectoryEntry(ContentValues values) {
         // Check whether the title will be updated and that the new title is not null
         if (values.containsKey(AnchorContract.DirectoryEntry.COLUMN_PATH)) {
             String val = values.getAsString(AnchorContract.DirectoryEntry.COLUMN_PATH);
