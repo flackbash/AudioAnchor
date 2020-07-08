@@ -220,7 +220,7 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
         ArrayList<Directory> directories = Directory.getDirectories(this);
         for (int i=0; i<directories.size();i++) {
             File dir = new File(directories.get(i).getPath());
-            if (dir.getAbsolutePath().equals(newDir.getAbsolutePath())) {
+            if (dir.getAbsolutePath().equals(newDir.getAbsolutePath()) && directory.getType() == directories.get(i).getType()) {
                 String directoryExists = getResources().getString(R.string.directory_exists, dir.getAbsolutePath());
                 Toast.makeText(getApplicationContext(), directoryExists, Toast.LENGTH_LONG).show();
                 return false;
