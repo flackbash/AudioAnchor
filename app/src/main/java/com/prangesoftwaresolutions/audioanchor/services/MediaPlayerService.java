@@ -100,6 +100,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     // AudioFocus
     private AudioManager audioManager;
+    private boolean mIsPausedByTransientFocusLoss = false;
 
     // Lock Manager
     LockManager mLockManager;
@@ -340,10 +341,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Invoked when the audio focus of the system is updated.
         switch (focusState) {
             case AudioManager.AUDIOFOCUS_GAIN:
-                // Resume playback
                 Log.e("MediaPlayerService", "Audiofocus Gain");
                 if (mMediaPlayer == null) {
                     initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime());
+                }
+
+                if (mIsPausedByTransientFocusLoss) {
+                    // Resume playback if audiofocus was lost only temporarily
+                    play();
+                    mIsPausedByTransientFocusLoss = false;
                 }
                 setVolume(1.0f);
                 break;
@@ -358,7 +364,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // is likely to resume
                 Log.e("MediaPlayerService", "Audiofocus loss transient");
 
-                if (mMediaPlayer.isPlaying()) mMediaPlayer.pause();
+                if (mMediaPlayer.isPlaying()) {
+                    pause();
+                    mIsPausedByTransientFocusLoss = true;
+                }
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 // Lost focus for a short time, but it's ok to keep playing
