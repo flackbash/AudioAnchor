@@ -12,6 +12,7 @@
     <color name="colorBackgroundMediumNoTransDarkTheme">#999a9e</color>
     <color name="colorBackgroundLightDarkTheme">#BB6D6E71</color>
     <color name="colorBackgroundStrongDarkTheme">#BB000000</color>
+    <color name="colorOverlay">#88000000</color>
 
     <color name="colorBackgroundMediumNoTrans">#5b5c5e</color>
     <color name="colorGreyBlue">#536872</color>

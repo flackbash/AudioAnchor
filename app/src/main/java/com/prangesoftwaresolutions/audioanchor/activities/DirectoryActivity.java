@@ -62,10 +62,30 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
         // Initialize the cursor adapter
         mCursorAdapter = new DirectoryCursorAdapter(this, null);
 
-        // Set up views
+        // Set up FloatingActionsMenu
         FloatingActionsMenu addDirectoryFAM = findViewById(R.id.add_directory_fam);
         FloatingActionButton addSubDirFAB = findViewById(R.id.add_sub_dir_fab);
         FloatingActionButton addParentDirFAB = findViewById(R.id.add_parent_dir_fab);
+
+        // Set up overlay
+        View overlay = findViewById(R.id.overlay);
+        overlay.setOnClickListener(v -> addDirectoryFAM.collapse());
+
+        // Set up FAM update listener
+        addDirectoryFAM.setOnFloatingActionsMenuUpdateListener( new FloatingActionsMenu.OnFloatingActionsMenuUpdateListener()
+        {
+            @Override
+            public void onMenuExpanded()
+            {
+                overlay.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onMenuCollapsed()
+            {
+                overlay.setVisibility(View.INVISIBLE);
+            }
+        });
 
         // Set up the FAB onClickListeners
         addSubDirFAB.setOnClickListener(v -> {

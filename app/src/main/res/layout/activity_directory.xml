@@ -21,6 +21,12 @@
         android:id="@+id/progressBar"
         style="@style/EmptyListProgressBar" />
 
+    <View
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        android:background="@color/colorOverlay" />
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/add_directory_fam"
@@ -52,8 +58,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:fab_size="mini"
-            app:fab_addButtonColorNormal="@color/colorAccent"
-            app:fab_addButtonColorPressed="@color/colorAccent"
             app:fab_colorNormal="@color/colorAccent"
             app:fab_colorPressed="@color/colorAccent"
             app:fab_icon="@drawable/ic_parent_directory_white"

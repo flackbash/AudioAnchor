@@ -56,6 +56,9 @@
     </style>
 
     <style name="fab_label_style">
+        <item name="android:background">@color/colorBackgroundMediumNoTrans</item>
+        <item name="android:textColor">@color/colorBackgroundLightNoTrans</item>
+        <item name="android:padding">@dimen/small_margin</item>
     </style>
 
 </resources>
