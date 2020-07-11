@@ -27,7 +27,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
     private static AnchorDbHelper mInstance = null;
     private Context mContext;
 
-    private AnchorDbHelper(Context context) {
+    public AnchorDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         mContext = context;
     }

@@ -39,10 +39,10 @@ public class Migrator {
             String newDBPath = db.getPath();
             db.close();
 
-            File newDB = new File(newDBPath);
+            File newDBFile = new File(newDBPath);
             File newDBShm = new File(newDBPath + "-shm");
             File newDBWal = new File(newDBPath + "-wal");
-            File[] newFiles = {newDB, newDBShm, newDBWal};
+            File[] newFiles = {newDBFile, newDBShm, newDBWal};
 
             int fileExists = 0;
             for (int i = 0; i < importFiles.length; i++) {
@@ -88,6 +88,12 @@ public class Migrator {
                 Toast.makeText(mContext.getApplicationContext(), R.string.import_success, Toast.LENGTH_LONG).show();
             }
 
+            // Make sure onUpgrade() is called in case a database of version 1 or 2 was imported
+            // onUpgrade() is called when getReadableDatabase() or getWriteableDatabase() is called
+            // We need a new instance of AnchorDbHelper here, not completely sure why, something
+            // about the version number probably
+            AnchorDbHelper dbHelper = new AnchorDbHelper(mContext);
+            dbHelper.getWritableDatabase();
         } catch (Exception e) {
             Toast.makeText(mContext.getApplicationContext(), R.string.import_fail, Toast.LENGTH_LONG).show();
             Log.e(LOG_TAG, e.getMessage());
