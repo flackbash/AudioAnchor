@@ -23,7 +23,6 @@
     <string name="jumped_to_bookmark">Переход к закладке \"%s\" на %s.</string>
     <string name="bookmark_deleted">Закладка удалена.</string>
     <string name="tracks_deleted_from_db">%d эпизодов удалено из базы данных.</string>
-    <string name="files_deleted_from_db">%d аудиокниг и %d эпизодов удалено из базы данных.</string>
     <string name="cannot_mark_as_not_started">Не удалось отметить проигрывемый эпизод как неначатый.</string>
     <string name="cannot_mark_as_completed">Не удалось отметить проигрывемый эпизод как прослушанный.</string>
     <string name="path">Путь: %s</string>
@@ -79,7 +78,6 @@
 
     <!-- Dialog strings -->
     <string name="dialog_msg_select_dir">Выбрать папку</string>
-    <string name="dialog_msg_change_dir">Смена папки сбросит все сохраненные статусы прослушанных аудиокниг. Продолжить?</string>
     <string name="dialog_msg_sleep_timer">Введите количество минут, в течении которых проигрыватель должен играть</string>
     <string name="dialog_msg_ok">Ок</string>
     <string name="dialog_msg_cancel">Отмена</string>

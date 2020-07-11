@@ -19,7 +19,6 @@
     <string name="jumped_to_bookmark">Skoczono do zakładki \"%s\" w %s</string>
     <string name="bookmark_deleted">Usunięto zakładkę.</string>
     <string name="tracks_deleted_from_db">Usunięto %d ścieżkę(-ki) dźwiękową(-wych) z bazy danych.</string>
-    <string name="files_deleted_from_db">Usunięto %d album(y/ów) i %d ścieżek dźwiękowych z bazy danych.</string>
     <string name="cannot_mark_as_not_started">Nie można oznaczyć aktualnie odtwarzanego utworu jako nierozpoczęty.</string>
     <string name="cannot_mark_as_completed">Nie można oznaczyć aktualnie odtwarzanego utworu jako ukończony.</string>
 
@@ -66,7 +65,6 @@
     <string name="playback_speed">Prędkość odtwarzania</string>
 
     <!-- Dialog strings -->
-    <string name="dialog_msg_change_dir">Zmiana katalogu spowoduje zresetowanie wszystkich zapisanych stanów odtwarzanych plików audio. Czy chcesz zmienić katalog?</string>
     <string name="dialog_msg_sleep_timer">Wprowadź liczbę minut, przez które odtwarzacz powinien dalej odtwarzać</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Anuluj</string>

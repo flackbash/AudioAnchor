@@ -44,7 +44,6 @@
     <string name="bookmarks">Bladwijzers</string>
 
     <!-- Dialog strings -->
-    <string name="dialog_msg_change_dir">Door de map te wijzigen worden alle opgeslagen statussen van afgespeelde audiobestanden gewist. Weet je het zeker?</string>
     <string name="dialog_msg_sleep_timer">Voer het aantal minuten in dat de speler moet bljven afspelen:</string>
     <string name="dialog_msg_ok">Oké</string>
     <string name="dialog_msg_cancel">Annuleren</string>
