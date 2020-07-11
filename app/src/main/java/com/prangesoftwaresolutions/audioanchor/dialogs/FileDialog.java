@@ -62,12 +62,12 @@ public class FileDialog {
                 Log.d(TAG, currentPath.getPath());
                 fireDirectorySelectedEvent(currentPath);
             });
-            builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog1, which) -> {
-                if (dialog1 != null) {
-                    dialog1.dismiss();
-                }
-            });
         }
+        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog1, which) -> {
+            if (dialog1 != null) {
+                dialog1.dismiss();
+            }
+        });
 
         builder.setItems(fileList, (dialog12, which) -> {
             String fileChosen = fileList[which];
