@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_delete_from_db"
-        android:title="@string/delete_from_db"
+        android:title="@string/remove_from_library"
         android:orderInCategory="101"
         app:showAsAction="never" />
 </menu>
