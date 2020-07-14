@@ -91,7 +91,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
 
             // Insert current mDirectory from preferences into directory table
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-            String currentDirPath = prefs.getString(mContext.getString(R.string.preference_filename), null);
+            String currentDirPath = prefs.getString(mContext.getString(R.string.preference_filename), "");
             Directory currentDirectory = new Directory(currentDirPath, Directory.Type.PARENT_DIR);
             ContentValues values = currentDirectory.getContentValues();
             // Use direct call to db. Calling Directory.insertIntoDB() yields
