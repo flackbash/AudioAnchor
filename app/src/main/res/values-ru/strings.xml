@@ -7,9 +7,10 @@
     <string name="button_forward">Вперед</string>
 
     <!-- Toast messages -->
-    <string name="no_albums">Не найдено ни одной аудиокниги в указанной папке. Выберите папку, в которой находятся подпапки с аудиофайлами.</string>
-    <string name="no_audio_files">Не найдено ни одного эпизода в этой аудиокниге.</string>
-    <string name="play_error">Не удается воспроизвести выбранный эпизод. Возможно отсутствует файл эпизода.</string>
+    <string name="no_albums">Пусто. Добавьте папку в вашу библиотеку.</string>
+    <string name="no_directories">Папки еще не добавлены.</string>
+    <string name="no_audio_files">В этом альбоме нет аудиофайлов.</string>
+    <string name="play_error">Не удается воспроизвести выбранный аудиофайл. Возможно, файл больше не существует.</string>
     <string name="permission_denied">Необходимое разрешение не было получено. Завершение работы программы.</string>
     <string name="write_permission_denied">Необходимое разрешение не было получено. Экспорт не может быть выполнен.</string>
     <string name="time_format_error">Введите корректное значение времение в формате чч:мм:сс.</string>
@@ -17,21 +18,28 @@
     <string name="import_fail">Что-то пошло не так. Импорт не удался.</string>
     <string name="export_success">База данных экспортирована в %s.</string>
     <string name="export_fail">Что-то пошло не так. Экспорт не удался.</string>
-    <string name="synchronize_success">Папка синхронизирована.</string>
-    <string name="audio_file_error">Возникла проблема с файлом эпизодов \"%s\".</string>
+    <string name="synchronize_success">Библиотека синхронизирована.</string>
+    <string name="audio_file_error">Возникла проблема с аудиофайлом \"%s\".</string>
     <string name="empty_title_error">Введите название закладки.</string>
     <string name="jumped_to_bookmark">Переход к закладке \"%s\" на %s.</string>
     <string name="bookmark_deleted">Закладка удалена.</string>
-    <string name="tracks_deleted_from_db">%d эпизодов удалено из базы данных.</string>
+    <string name="tracks_deleted">%d эпизодов удалено из базы данных.</string>
+    <string name="tracks_deleted_from_db">Удалено %d эпизодов из библиотеки.</string>
+    <string name="files_deleted">Удалено %d альбомов и %d эпизодов.</string>
+    <string name="albums_deleted_from_db">Удалено %d альбомов из библиотеки.</string>
+    <string name="directories_deleted_from_db">Удалено %d папок из библиотеки</string>
     <string name="cannot_mark_as_not_started">Не удалось отметить проигрывемый эпизод как неначатый.</string>
     <string name="cannot_mark_as_completed">Не удалось отметить проигрывемый эпизод как прослушанный.</string>
     <string name="path">Путь: %s</string>
+    <string name="directory_exists">Выбранная папка уже существует в вашей библиотеке: %s.</string>
+    <string name="parent_directory_exists">Нельзя добавлять подпапки уже существующих каталогов вашей библиотеки:\n%s\n%s.</string>
+    <string name="sub_directory_exists">Нельзя добавлять родительльские каталоги уже существующих папок вашей библиотеки:\n%s\n%s.</string>
 
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Автоматическое воспроизведение</string>
     <string name="settings_autoplay_restart_label">Проигрывать эпизоды с начала аудиокниги при включенном автоматическом воспроизведении</string>
     <string name="settings_progress_percentage_label">Показывать прогресс прослушивания в процентах</string>
-    <string name="settings_keep_deleted_label">Сохранять прогресс удаленных аудиокниг в базе данных</string>
+    <string name="settings_keep_deleted_label">Сохранять прогресс удаленных файлов в базе данных</string>
     <string name="settings_cover_from_metadata_label">Получить обложку из метаданных файла</string>
     <string name="settings_sleep_timer_category">Таймер сна</string>
     <string name="settings_sleep_fadeout_label">Время затухания</string>
@@ -47,6 +55,9 @@
     <string name="settings_display_category">Внешний вид</string>
     <string name="settings_playback_category">Воспроизведение</string>
     <string name="settings_miscellaneous_category">Прочее</string>
+    <string name="settings_sort_order_by_title_label">По названию</string>
+    <string name="settings_sort_order_by_directory_label">По папке</string>
+    <string name="settings_sort_order_label">Порядок сортировки альбомов</string>
 
     <!-- Layout Texts -->
     <string name="title">Название</string>
@@ -66,7 +77,9 @@
     <string name="set_bookmark_at">Поставить закладку на</string>
     <string name="no_bookmarks">Пока еще нет закладок в этой аудиокниге.</string>
     <string name="bookmarks">Закладки</string>
+    <string name="delete">Удалить</string>
     <string name="delete_from_db">Удалить из базы данных</string>
+    <string name="remove_from_library">Удалить из библиотеки</string>
     <string name="mark_as_not_started">Отметить как неначатый</string>
     <string name="mark_as_completed">Отметить как прослушанный</string>
     <string name="items_selected">%d выбрано</string>
@@ -75,6 +88,9 @@
     <string name="playback_speed">Скорость воспроизведения</string>
     <string name="about_contributors">Список участников можно найти по ссылке</string>
     <string name="about_report_bugs">Там же там можно сообщить об ошибке, внести свой вклад в развитие или поставить звезду, если приложение понравилось.</string>
+    <string name="add_sub_dir">Добавить папку\nс аудиофайлами</string>
+    <string name="add_parent_dir">Добаавить папку\nс подпапками \nаудиофайлов</string>
+    <string name="add_directory">Вы можете выбрать одну папку с аудиофайлами или родительский каталог, содержащий несколько папок с аудиофайлами.</string>
 
     <!-- Dialog strings -->
     <string name="dialog_msg_select_dir">Выбрать папку</string>
@@ -84,8 +100,10 @@
     <string name="dialog_msg_close">Закрыть</string>
     <string name="dialog_msg_delete">Удалить</string>
     <string name="dialog_msg_goto">Введите время, на которое хотите перейти</string>
-    <string name="dialog_msg_delete_album_from_db">Вы действительно хотите удалить выбранные аудиокниги и их эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
-    <string name="dialog_msg_delete_audio_from_db">Вы действительно хотите удалить выбранные эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
+    <string name="dialog_msg_delete_album">Вы уверены, что хотите удалить выбранные папки и их содержимое?</string>
+    <string name="dialog_msg_delete_album_from_db">Вы уверены, хотите удалить выбранные аудиокниги и их эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
+    <string name="dialog_msg_delete_audio">Вы уверены, что хотите удалить выбранные эпизоды?</string>
+    <string name="dialog_msg_delete_audio_from_db">Вы уверены, что хотите удалить выбранные эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
     <string name="dialog_msg_delete_bookmark">Удалить эту закладку?</string>
-
+    <string name="dialog_msg_delete_directory_from_db">Вы уверены, что хотите удалить выбранную папку из вашей библиотеки? Это также удалит альбомы, аудиофайлы и закладки из вашей библиотеки.</string>
 </resources>
