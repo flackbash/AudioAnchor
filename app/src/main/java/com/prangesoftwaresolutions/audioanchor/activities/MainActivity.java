@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Permission request
     private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0;
-    private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+    static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
     // MediaPlayerService variables
     private MediaPlayerService mPlayer;
@@ -182,8 +182,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 // Perform action
                 switch (menuItem.getItemId()) {
                     case R.id.menu_delete:
-                        // Delete the selected albums
-                        deleteSelectedAlbumWithConfirmation(albumAudioFiles);
+                        // Check if app has the necessary permissions
+                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                        } else {
+                            // Delete the selected albums
+                            deleteSelectedAlbumWithConfirmation(albumAudioFiles);
+                        }
                         actionMode.finish();
                         return true;
                     case R.id.menu_delete_from_db:
@@ -385,7 +390,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     // Permission was not granted
                     Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
-                    finish();
                 } else {
                     showExportDirectorySelector();
                 }

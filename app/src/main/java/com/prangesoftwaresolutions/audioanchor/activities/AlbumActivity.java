@@ -1,5 +1,6 @@
 package com.prangesoftwaresolutions.audioanchor.activities;
 
+import android.Manifest;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -10,12 +11,16 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -202,7 +207,12 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.menu_delete:
-                        deleteSelectedTracksWithConfirmation();
+                        // Check if app has the necessary permissions
+                        if (ContextCompat.checkSelfPermission(AlbumActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(AlbumActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                        } else {
+                            deleteSelectedTracksWithConfirmation();
+                        }
                         actionMode.finish();
                         return true;
                     case R.id.menu_delete_from_db:
@@ -382,6 +392,22 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         }
 
         return (super.onOptionsItemSelected(item));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    // Permission was not granted
+                    Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
+                } else {
+                    deleteSelectedTracksWithConfirmation();
+                }
+                break;
+            }
+        }
     }
 
     /*
