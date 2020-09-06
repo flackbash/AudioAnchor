@@ -54,8 +54,7 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         TextView titleTV = view.findViewById(R.id.audio_file_item_title);
         String title = "";
         boolean titleFromMetadata = mPrefs.getBoolean(mContext.getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(mContext.getString(R.string.settings_title_from_metadata_default)));
-        if (titleFromMetadata) {
-            assert audioFile != null;
+        if (titleFromMetadata && audioFile != null && new File(audioFile.getPath()).exists()) {
             mMetadataRetriever.setDataSource(audioFile.getPath());
             title = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         }
