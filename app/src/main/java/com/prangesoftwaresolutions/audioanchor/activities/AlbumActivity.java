@@ -80,6 +80,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     // Variables for multi choice mode
     ArrayList<Long> mSelectedTracks = new ArrayList<>();
+    ArrayList<Long> mTmpSelectedTracks;
 
     // MediaPlayerService variables
     private MediaPlayerService mPlayer;
@@ -209,7 +210,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     case R.id.menu_delete:
                         // Check if app has the necessary permissions
                         if (ContextCompat.checkSelfPermission(AlbumActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            ActivityCompat.requestPermissions(AlbumActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                            // This is necessary because requesting permission destroys action mode
+                            // such that selected tracks are cleared
+                            mTmpSelectedTracks = new ArrayList<>(mSelectedTracks);
+                            ActivityCompat.requestPermissions(AlbumActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE);
                         } else {
                             deleteSelectedTracksWithConfirmation();
                         }
@@ -397,12 +401,13 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
+            case MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     // Permission was not granted
                     Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
                 } else {
+                    mSelectedTracks = mTmpSelectedTracks;
                     deleteSelectedTracksWithConfirmation();
                 }
                 break;
@@ -667,6 +672,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             mSynchronizer.updateDBTables();
             String deletedTracks = getResources().getString(R.string.tracks_deleted, deletionCount);
             Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
+            mSelectedTracks.clear();
         });
 
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {

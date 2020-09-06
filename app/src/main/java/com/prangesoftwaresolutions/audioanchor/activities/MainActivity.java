@@ -76,10 +76,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Variables for multi choice mode
     ArrayList<Long> mSelectedAlbums = new ArrayList<>();
+    ArrayList<Long> mTmpSelectedAlbums;
+    ArrayList<AudioFile> mTmpAlbumAudioFiles;
 
     // Permission request
     private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0;
-    static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+    static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE = 1;
+    static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_EXPORT = 2;
 
     // MediaPlayerService variables
     private MediaPlayerService mPlayer;
@@ -184,7 +187,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     case R.id.menu_delete:
                         // Check if app has the necessary permissions
                         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                            mTmpAlbumAudioFiles = new ArrayList<>(albumAudioFiles);
+                            mTmpSelectedAlbums = new ArrayList<>(mSelectedAlbums);
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE);
                         } else {
                             // Delete the selected albums
                             deleteSelectedAlbumWithConfirmation(albumAudioFiles);
@@ -385,13 +390,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 }
                 break;
             }
-            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
+            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_EXPORT: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     // Permission was not granted
                     Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
                 } else {
                     showExportDirectorySelector();
+                }
+                break;
+            }
+            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    // Permission was not granted
+                    Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
+                } else {
+                    mSelectedAlbums = mTmpSelectedAlbums;
+                    deleteSelectedAlbumWithConfirmation(mTmpAlbumAudioFiles);
                 }
                 break;
             }
@@ -419,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.menu_export:
                 // Check if app has the necessary permissions
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_EXPORT);
                 } else {
                     showExportDirectorySelector();
                 }
@@ -684,6 +700,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             mSynchronizer.updateDBTables();
             String deletedFiles = getResources().getString(R.string.files_deleted, albumDeletionCount, trackDeletionCount);
             Toast.makeText(getApplicationContext(), deletedFiles, Toast.LENGTH_LONG).show();
+            mSelectedAlbums.clear();
         });
 
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
