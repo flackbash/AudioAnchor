@@ -266,8 +266,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             }
         });
 
-        scrollToNotCompletedAudio();
-
         // Bind to MediaPlayerService if it has been started by the PlayActivity
         bindToServiceIfRunning();
 
@@ -368,6 +366,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Swap the new cursor in. The framework will take care of closing the old cursor
         mCursorAdapter.swapCursor(cursor);
+        scrollToLastPlayed(cursor);
     }
 
     @Override
@@ -536,24 +535,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     /*
      * Scroll to the last non-completed track in the list view
      */
-    private void scrollToNotCompletedAudio() {
-        String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(mAlbum.getID())};
-
-        Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
-                columns, sel, selArgs, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return;
-        }
-
+    private void scrollToNotCompletedAudio(Cursor c) {
         // Loop through the database rows and check for non-completed tracks
         int scrollTo = 0;
+        c.moveToFirst();
         while (c.moveToNext()) {
             int duration = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
             int completed = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
@@ -562,33 +547,17 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             }
             scrollTo += 1;
         }
-        c.close();
-
         mListView.setSelection(Math.max(scrollTo - 1, 0));
     }
 
     /*
-     * Scroll to the last non-completed track in the list view
+     * Scroll to the last played track in the list view
      */
-    private void scrollToLastPlayed() {
-        String[] columns = new String[]{AnchorContract.AudioEntry._ID};
-        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
-        String[] selArgs = {Long.toString(mAlbum.getID())};
-
-        Cursor c = getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
-                columns, sel, selArgs, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return;
-        }
-
-        // Loop through the database rows and check for non-completed tracks
+    private void scrollToLastPlayed(Cursor c) {
+        // Loop through the cursor rows and check for the id that matches the last played track
         int count = 0;
         int scrollTo = 0;
+        c.moveToFirst();
         while (c.moveToNext()) {
             long id = c.getLong(c.getColumnIndex(AnchorContract.AudioEntry._ID));
             if (id == mAlbum.getLastPlayedID()) {
@@ -597,9 +566,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             }
             count += 1;
         }
-        c.close();
-
-        mListView.setSelection(Math.max(scrollTo - 1, 0));
+        mListView.setSelection(Math.max(scrollTo, 0));
     }
 
     /*
