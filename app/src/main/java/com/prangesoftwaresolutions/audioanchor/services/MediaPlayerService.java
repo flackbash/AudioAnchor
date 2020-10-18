@@ -34,6 +34,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.models.Album;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
@@ -272,7 +273,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             // Set playback speed according to preferences
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
-                mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed((float) (speed / 10.0)));
+                setPlaybackSpeedIfInLegalRange((float) (speed / 10.0));
             }
 
             mMediaPlayer.prepare();
@@ -819,7 +820,17 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (!isPlaying) {
             initMediaPlayer(mActiveAudio.getPath(), mMediaPlayer.getCurrentPosition());
         } else {
+            setPlaybackSpeedIfInLegalRange(speed);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    void setPlaybackSpeedIfInLegalRange(float speed) {
+        try {
             mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed(speed));
+        } catch (IllegalArgumentException e) {
+            String illegalSpeed = getResources().getString(R.string.illegal_speed, speed);
+            Toast.makeText(getApplicationContext(), illegalSpeed, Toast.LENGTH_LONG).show();
         }
     }
 

@@ -34,6 +34,8 @@
     <string name="directory_exists">The selected directory already exists in your library: %s.</string>
     <string name="parent_directory_exists">You can\'t add subdirectories of directories that already exist in your library:\n%s\n%s.</string>
     <string name="sub_directory_exists">You can\'t add parent directories of directories that already exist in your library:\n%s\n%s.</string>
+    <string name="illegal_speed">The current file can\'t be played at speed %.1fx. Please select a different value.</string>
+
 
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Autoplay</string>
