@@ -554,13 +554,15 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
      * Scroll to the last played track in the list view
      */
     private void scrollToLastPlayed(Cursor c) {
+        // Retrieve current last played ID
+        long lastPlayedID = Album.getAlbumByID(this, mAlbum.getID()).getLastPlayedID();
         // Loop through the cursor rows and check for the id that matches the last played track
         int count = 0;
         int scrollTo = 0;
         c.moveToFirst();
         while (c.moveToNext()) {
             long id = c.getLong(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-            if (id == mAlbum.getLastPlayedID()) {
+            if (id == lastPlayedID) {
                 scrollTo = count;
                 break;
             }
