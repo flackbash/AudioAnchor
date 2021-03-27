@@ -36,6 +36,8 @@
     <string name="settings_autorewind_default" translatable="false">0</string>
     <string name="settings_immediate_playback_key" translatable="false">immediate_playback</string>
     <string name="settings_immediate_playback_default" translatable="false">false</string>
+    <string name="settings_duck_audio_key" translatable="false">duck_audio</string>
+    <string name="settings_duck_audio_default" translatable="false">true</string>
     <string name="settings_show_hidden_key" translatable="false">settings_show_hidden</string>
     <string name="settings_show_hidden_default" translatable="false">false</string>
     <string name="settings_vibrate_shake_reset_key" translatable="false">vibrate_on_shake_reset</string>

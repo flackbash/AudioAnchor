@@ -30,6 +30,11 @@
             android:title="@string/settings_immediate_playback_label"
             android:singleLineTitle="false"/>
 
+        <SwitchPreference
+            android:defaultValue="@string/settings_duck_audio_default"
+            android:key="@string/settings_duck_audio_key"
+            android:title="@string/settings_duck_audio_label"
+            android:singleLineTitle="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_display_category">

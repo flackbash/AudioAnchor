@@ -366,15 +366,21 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 Log.e("MediaPlayerService", "Audiofocus loss transient");
 
                 if (mMediaPlayer.isPlaying()) {
-                    pause();
-                    mIsPausedByTransientFocusLoss = true;
+                    pauseDueToAudioInterruption();
                 }
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
                 Log.e("MediaPlayerService", "Audiofocus loss can duck");
-                if (mMediaPlayer.isPlaying()) setVolume(0.1f);
+                if (mMediaPlayer.isPlaying()) {
+                    boolean duckAudio = mSharedPreferences.getBoolean(getString(R.string.settings_duck_audio_key), Boolean.getBoolean(getString(R.string.settings_duck_audio_default)));
+                    if (duckAudio) {
+                        setVolume(0.1f);
+                    } else {
+                        pauseDueToAudioInterruption();
+                    }
+                }
                 break;
         }
     }
@@ -392,6 +398,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     private void removeAudioFocus() {
         audioManager.abandonAudioFocus(this);
+    }
+
+    private void pauseDueToAudioInterruption() {
+        pause();
+        mIsPausedByTransientFocusLoss = true;
     }
 
     /*
