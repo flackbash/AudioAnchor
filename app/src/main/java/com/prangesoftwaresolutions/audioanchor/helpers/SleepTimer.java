@@ -112,6 +112,9 @@ public class SleepTimer {
 
                 // Fade-out
                 int fadeoutTime = Integer.parseInt(mSharedPreferences.getString(mContext.getString(R.string.settings_sleep_fadeout_key), mContext.getString(R.string.settings_sleep_fadeout_default)));
+                // fadeout time may not be greater than the total sleep timer duration.
+                // Otherwise the fadeout time would be abruptly decreased once the sleep timer is started.
+                fadeoutTime = Math.min(fadeoutTime, secSleepTime);
                 boolean continueUntilEndOfTrack = mSharedPreferences.getBoolean(mContext.getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(mContext.getString(R.string.settings_continue_until_end_default)));
                 if (!continueUntilEndOfTrack && (l / 1000) < fadeoutTime) {
                     mPlayer.decreaseVolume((int) (fadeoutTime - (l / 1000)), fadeoutTime);
