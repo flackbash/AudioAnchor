@@ -38,6 +38,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
+import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.adapters.BookmarkCursorAdapter;
@@ -616,30 +617,21 @@ public class PlayActivity extends AppCompatActivity {
         final EditText gotoMinutes = dialogView.findViewById(R.id.goto_minutes);
         final EditText gotoSeconds = dialogView.findViewById(R.id.goto_seconds);
 
-        int currPos;
-        if (uri != null) {
+        long bookmarkID = -1;
+        if (uri != null) bookmarkID = ContentUris.parseId(uri);
+        final Bookmark bookmark;
+        if (bookmarkID >= 0) {
             builder.setTitle(R.string.edit_bookmark);
-            // Get the position of the bookmark
-            String[] projection = {
-                    AnchorContract.BookmarkEntry.COLUMN_TITLE,
-                    AnchorContract.BookmarkEntry.COLUMN_POSITION};
-            Cursor c = getContentResolver().query(uri, projection, null, null, null);
-            if (c != null) {
-                c.moveToFirst();
-                currPos = c.getInt(c.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_POSITION));
-                String title = c.getString(c.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_TITLE));
-                bookmarkTitleET.setText(title);
-                c.close();
-            } else {
-                currPos = 0;
-            }
+            // Get the bookmark
+            bookmark = Bookmark.getBookmarkByID(this, bookmarkID);
+            bookmarkTitleET.setText(bookmark.getTitle());
         } else {
             builder.setTitle(R.string.set_bookmark);
-            currPos = getAudioCompletedTime();
+            bookmark = new Bookmark("", getAudioCompletedTime(), mAudioFile.getID());
         }
 
-        // Set the edit text views to the current position
-        String[] currPosArr = Utils.formatTime(currPos, 3600000).split(":");
+        // Set the edit text views to the current or bookmark position
+        String[] currPosArr = Utils.formatTime(bookmark.getPosition(), 3600000).split(":");
         gotoHours.setText(currPosArr[0]);
         gotoMinutes.setText(currPosArr[1]);
         gotoSeconds.setText(currPosArr[2]);
@@ -658,23 +650,19 @@ public class PlayActivity extends AppCompatActivity {
             } else {
                 try {
                     long millis = Utils.getMillisFromString(timeString);
-                    long audioFileId = mAudioFile.getID();
-                    ContentValues values = new ContentValues();
-                    values.put(AnchorContract.BookmarkEntry.COLUMN_TITLE, title);
-                    values.put(AnchorContract.BookmarkEntry.COLUMN_POSITION, millis);
-                    values.put(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE, audioFileId);
-                    if (uri != null) {
+                    bookmark.setPosition(millis);
+                    bookmark.setTitle(title);
+                    if (bookmark.getID() == -1) {
+                        // Insert the bookmark into the bookmarks table
+                        bookmark.insertIntoDB(this);
+                    } else {
                         // Update the bookmark in the bookmarks table
-                        String sel = AnchorContract.BookmarkEntry._ID + "=?";
-                        String[] selArgs = {Long.toString(ContentUris.parseId(uri))};
-                        getContentResolver().update(uri, values, sel, selArgs);
+                        bookmark.updateInDB(this);
 
                         // Reload the ListView
-                        Cursor c = getBookmarks();
+                        Cursor c = Bookmark.getBookmarksCursor(this, mAudioFile.getID());
                         mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
                         mBookmarkListView.setAdapter(mBookmarkAdapter);
-                    } else {
-                        getContentResolver().insert(AnchorContract.BookmarkEntry.CONTENT_URI, values);
                     }
                 } catch (NumberFormatException e) {
                     Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
@@ -713,7 +701,7 @@ public class PlayActivity extends AppCompatActivity {
         mBookmarkListView = dialogView.findViewById(R.id.list_bookmarks);
 
         // Get the cursor adapter and set it to the list view
-        Cursor c = getBookmarks();
+        Cursor c = Bookmark.getBookmarksCursor(this, mAudioFile.getID());
         mBookmarkAdapter = new BookmarkCursorAdapter(this, c, mAudioFile.getTime());
         mBookmarkListView.setAdapter(mBookmarkAdapter);
 
@@ -756,21 +744,6 @@ public class PlayActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    /*
-     * Get a cursor with all bookmarks for the current audio file
-     */
-    Cursor getBookmarks() {
-        String[] projection = {
-                AnchorContract.BookmarkEntry._ID,
-                AnchorContract.BookmarkEntry.COLUMN_TITLE,
-                AnchorContract.BookmarkEntry.COLUMN_POSITION};
-
-        String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
-        String[] selArgs = {Long.toString(mAudioFile.getID())};
-        String sortOrder = AnchorContract.BookmarkEntry.COLUMN_POSITION + " ASC";
-        return getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
-    }
-
     /**
      * Show the delete bookmark confirmation dialog and let the user decide whether to delete the bookmark
      */
@@ -783,7 +756,7 @@ public class PlayActivity extends AppCompatActivity {
             getContentResolver().delete(uri, null, null);
 
             // Reload the ListView
-            Cursor c = getBookmarks();
+            Cursor c = Bookmark.getBookmarksCursor(this, mAudioFile.getID());
             mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
             mBookmarkListView.setAdapter(mBookmarkAdapter);
         });
