@@ -109,6 +109,12 @@
             android:key="@string/settings_keep_deleted_key"
             android:title="@string/settings_keep_deleted_label"
             android:singleLineTitle="false" />
+
+        <SwitchPreference
+            android:defaultValue="@string/settings_add_last_play_position_bookmark_default"
+            android:key="@string/settings_add_last_play_position_bookmark_key"
+            android:title="@string/settings_add_last_play_position_bookmark_label"
+            android:singleLineTitle="false" />
     </PreferenceCategory>
 
 </PreferenceScreen>

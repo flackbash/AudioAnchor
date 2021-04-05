@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -67,11 +68,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             // This is needed for cases where autoplay was checked while a previous version of
             // AudioAnchor was installed
-            if (autoplayPref.isChecked()) {
-                autoplayPositionPref.setEnabled(true);
-            } else {
-                autoplayPositionPref.setEnabled(false);
-            }
+            autoplayPositionPref.setEnabled(autoplayPref.isChecked());
 
             initSummary(getPreferenceScreen());
         }
@@ -85,10 +82,12 @@ public class SettingsActivity extends AppCompatActivity {
             if (s.equals(getString(R.string.settings_autoplay_key))) {
                 boolean isChecked = ((SwitchPreference) pref).isChecked();
                 final SwitchPreference autoplayPositionPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_restart_key));
-                if (isChecked) {
-                    autoplayPositionPref.setEnabled(true);
-                } else {
-                    autoplayPositionPref.setEnabled(false);
+                autoplayPositionPref.setEnabled(isChecked);
+            } else if (s.equals(getString(R.string.settings_add_last_play_position_bookmark_key))) {
+                boolean isChecked = ((SwitchPreference) pref).isChecked();
+                if (!isChecked) {
+                    Bookmark.deleteBookmarksWithTitle(getActivity(), getString(R.string.bookmark_last_play_position));
+                    Bookmark.deleteBookmarksWithTitle(getActivity(), getString(R.string.bookmark_second_to_last_play_position));
                 }
             }
         }

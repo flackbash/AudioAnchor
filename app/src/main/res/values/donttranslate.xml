@@ -44,6 +44,8 @@
     <string name="settings_sort_order_by_directory_value" translatable="false">sort_by_directory</string>
     <string name="settings_sort_order_key" translatable="false">settings_sort_order_album</string>
     <string name="settings_sort_order_default" translatable="false">@string/settings_sort_order_by_directory_value</string>
+    <string name="settings_add_last_play_position_bookmark_key" translatable="false">settings_last_play_position_bookmark</string>
+    <string name="settings_add_last_play_position_bookmark_default" translatable="false">false</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>

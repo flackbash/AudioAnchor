@@ -60,6 +60,7 @@
     <string name="settings_sort_order_by_title_label">By title</string>
     <string name="settings_sort_order_by_directory_label">By directory</string>
     <string name="settings_sort_order_label">Album sort order</string>
+    <string name="settings_add_last_play_position_bookmark_label">Add and update last and second to last play position bookmarks whenever play is pressed</string>
 
     <!-- Layout Texts -->
     <string name="title">Title</string>
@@ -108,4 +109,8 @@
     <string name="dialog_msg_delete_audio_from_db">Are you sure you want to remove the selected track(s) from the library? This operation will only be performed for files that do not exist anymore in the file system.</string>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
     <string name="dialog_msg_delete_directory_from_db">Are you sure you want to remove the selected directory from your library? This will also delete its albums, audio files and bookmarks from your library.</string>
+
+    <string name="bookmark_second_to_last_play_position">&lt;second to last play position&gt;</string>
+    <string name="bookmark_last_play_position">&lt;last play position&gt;</string>
+
 </resources>

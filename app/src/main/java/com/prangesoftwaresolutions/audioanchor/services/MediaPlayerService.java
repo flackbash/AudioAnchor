@@ -39,6 +39,7 @@ import android.widget.Toast;
 import com.prangesoftwaresolutions.audioanchor.models.Album;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.helpers.LockManager;
+import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
 import com.prangesoftwaresolutions.audioanchor.receivers.MediaButtonIntentReceiver;
 import com.prangesoftwaresolutions.audioanchor.callbacks.MediaSessionCallback;
 import com.prangesoftwaresolutions.audioanchor.R;
@@ -719,6 +720,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             buildNotification();
 
             updateLastPlayedAudio();
+            boolean addLastPlayPositionBookmarks = mSharedPreferences.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_key), Boolean.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_default)));
+            if (addLastPlayPositionBookmarks) updateLastPlayPositionBookmarks();
         }
     }
 
@@ -869,6 +872,39 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         Album album = mActiveAudio.getAlbum();
         album.setLastPlayedID(mActiveAudio.getID());
         album.updateInDB(this);
+    }
+
+    /*
+     * Add or update the last and second-to-last play position bookmarks
+     */
+    void updateLastPlayPositionBookmarks() {
+        // Get last play position bookmark
+        String lastTitle = getString(R.string.bookmark_last_play_position);
+        Bookmark lastBookmark = Bookmark.getBookmarkForAudioFileByTitle(this, lastTitle, mActiveAudio.getID());
+        long secondToLastPlayPosition = -1;
+        // Insert or update bookmark
+        if (lastBookmark == null) {
+            lastBookmark = new Bookmark(lastTitle, getCurrentPosition(), mActiveAudio.getID());
+            lastBookmark.insertIntoDB(this);
+        } else {
+            secondToLastPlayPosition = lastBookmark.getPosition();
+            lastBookmark.setPosition(getCurrentPosition());
+            lastBookmark.updateInDB(this);
+        }
+
+        // Get second to last play position bookmark
+        if (secondToLastPlayPosition >= 0) {
+            String secondToLastTitle = getString(R.string.bookmark_second_to_last_play_position);
+            Bookmark secondToLastBookmark = Bookmark.getBookmarkForAudioFileByTitle(this, secondToLastTitle, mActiveAudio.getID());
+            // Insert or update bookmark
+            if (secondToLastBookmark == null) {
+                secondToLastBookmark = new Bookmark(secondToLastTitle, secondToLastPlayPosition, mActiveAudio.getID());
+                secondToLastBookmark.insertIntoDB(this);
+            } else {
+                secondToLastBookmark.setPosition(secondToLastPlayPosition);
+                secondToLastBookmark.updateInDB(this);
+            }
+        }
     }
 
     /*
