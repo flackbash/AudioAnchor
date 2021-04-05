@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -150,7 +151,7 @@ public class FileDialog {
         List<FileSelectorItem> fileList = new ArrayList<>();
         if (path.exists()) {
             if (path.getParentFile() != null) {
-                fileList.add(new FileSelectorItem(PARENT_DIR, R.drawable.ic_back_grey));
+                fileList.add(new FileSelectorItem(PARENT_DIR, FileSelectorItem.Type.BACK));
             }
             FilenameFilter filter = (dir, filename) -> {
                 File sel = new File(dir, filename);
@@ -166,18 +167,19 @@ public class FileDialog {
             if (childDirectories.containsKey(currPathName)) {
                 for (String childDir : childDirectories.get(currPathName)) {
                     if ((fileListTmp == null || !Arrays.asList(fileListTmp).contains(childDir)) && new File(currPathName, childDir).exists()) {
-                        fileList.add(new FileSelectorItem(childDir, R.drawable.ic_directory_grey));
+                        fileList.add(new FileSelectorItem(childDir, FileSelectorItem.Type.DIRECTORY));
                         Log.i("FileDialog.java", "Directory " + currPathName + " is not readable. Manually adding directory " + childDir);
                     }
                 }
             }
             if (fileListTmp != null) {
                 for (String file: fileListTmp) {
-                    int icon = (new File(currPathName, file).isDirectory()) ? R.drawable.ic_directory_grey : R.drawable.ic_file_grey;
-                    fileList.add(new FileSelectorItem(file, icon));
+                    FileSelectorItem.Type type = (new File(currPathName, file).isDirectory()) ? FileSelectorItem.Type.DIRECTORY : FileSelectorItem.Type.FILE;
+                    fileList.add(new FileSelectorItem(file, type));
                 }
             }
         }
+        Collections.sort(fileList);
         this.fileList = fileList.toArray(new FileSelectorItem[]{});
     }
 
