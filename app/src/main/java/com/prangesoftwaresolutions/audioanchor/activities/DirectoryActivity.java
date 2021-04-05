@@ -163,8 +163,7 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
 
     private void addDirectory(boolean isParentDirectory) {
         File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-        FileDialog fileDialog = new FileDialog(this, baseDirectory, null);
-        fileDialog.setSelectDirectoryOption(true);
+        FileDialog fileDialog = new FileDialog(this, baseDirectory, true, null, this);
         fileDialog.addDirectoryListener(directory -> {
             Directory.Type directoryType = isParentDirectory ? Directory.Type.PARENT_DIR : Directory.Type.SUB_DIR;
             Directory newDirectory = new Directory(directory.getAbsolutePath(), directoryType);

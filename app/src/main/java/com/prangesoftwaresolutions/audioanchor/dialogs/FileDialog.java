@@ -3,16 +3,23 @@ package com.prangesoftwaresolutions.audioanchor.dialogs;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListAdapter;
 
 import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.models.FileSelectorItem;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +32,9 @@ import java.util.List;
 public class FileDialog {
     private static final String PARENT_DIR = "..";
     private final String TAG = getClass().getName();
-    private String[] fileList;
+    private FileSelectorItem[] fileList;
     private File currentPath;
+    private final Context mContext;
 
     public interface FileSelectedListener {
         void fileSelected(File file);
@@ -36,28 +44,43 @@ public class FileDialog {
         void directorySelected(File directory);
     }
 
-    private ListenerList<FileSelectedListener> fileListenerList = new ListenerList<>();
-    private ListenerList<DirectorySelectedListener> dirListenerList = new ListenerList<>();
+    private final ListenerList<FileSelectedListener> fileListenerList = new ListenerList<>();
+    private final ListenerList<DirectorySelectedListener> dirListenerList = new ListenerList<>();
     private final Activity activity;
-    private boolean selectDirectoryOption;
+    private final boolean mSelectDirectory;
     private String fileEndsWith;
-    private HashMap<String, HashSet<String>> childDirectories = new HashMap<>();
+    private final HashMap<String, HashSet<String>> childDirectories = new HashMap<>();
 
-    public FileDialog(Activity activity, File initialPath, String fileEndsWith) {
+    public FileDialog(Activity activity, File initialPath, boolean selectDirectory, String fileEndsWith, Context context) {
         this.activity = activity;
         setFileEndsWith(fileEndsWith);
+        mSelectDirectory = selectDirectory;
         if (!initialPath.exists()) initialPath = Environment.getExternalStorageDirectory();
         loadFileList(initialPath);
+        mContext = context;
     }
 
     /**
      * @return file dialog
      */
     private Dialog createFileDialog() {
-        Dialog dialog;
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+
+        // Create the adapter
+        ListAdapter adapter = new ArrayAdapter<FileSelectorItem>(mContext, R.layout.file_selector_item, R.id.file_name, fileList) {
+            public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                // Use super class to create the View
+                View v = super.getView(position, convertView, parent);
+                ImageView iconIV = v.findViewById(R.id.file_type_icon);
+
+                // Set icon to iconIV
+                iconIV.setImageResource(fileList[position].getIconId());
+                return v;
+            }
+        };
+
         builder.setTitle(currentPath.getPath());
-        if (selectDirectoryOption) {
+        if (mSelectDirectory) {
             builder.setPositiveButton(R.string.dialog_msg_select_dir, (dialog1, which) -> {
                 Log.d(TAG, currentPath.getPath());
                 fireDirectorySelectedEvent(currentPath);
@@ -69,21 +92,27 @@ public class FileDialog {
             }
         });
 
-        builder.setItems(fileList, (dialog12, which) -> {
-            String fileChosen = fileList[which];
-            File chosenFile = getChosenFile(fileChosen);
+        builder.setAdapter(adapter, null);
+        AlertDialog dialog = builder.show();
+
+        dialog.getListView().setOnItemClickListener((parent, view, position, id) -> {
+            FileSelectorItem fileChosen = fileList[position];
+            File chosenFile = getChosenFile(fileChosen.toString());
             if (chosenFile.isDirectory()) {
                 loadFileList(chosenFile);
-                dialog12.cancel();
-                dialog12.dismiss();
+                dialog.cancel();
+                dialog.dismiss();
                 showDialog();
-            } else fireFileSelectedEvent(chosenFile);
+            } else if (!mSelectDirectory) {
+                // When clicking on a file only fire an event if the file selector is meant to
+                // select a file and not a directory. Otherwise clicks on files are ignored.
+                fireFileSelectedEvent(chosenFile);
+                dialog.dismiss();
+            }
         });
 
-        dialog = builder.show();
         return dialog;
     }
-
 
     public void addFileListener(FileSelectedListener listener) {
         fileListenerList.add(listener);
@@ -91,10 +120,6 @@ public class FileDialog {
 
     public void removeFileListener(FileSelectedListener listener) {
         fileListenerList.remove(listener);
-    }
-
-    public void setSelectDirectoryOption(boolean selectDirectoryOption) {
-        this.selectDirectoryOption = selectDirectoryOption;
     }
 
     public void addDirectoryListener(DirectorySelectedListener listener) {
@@ -122,13 +147,14 @@ public class FileDialog {
 
     private void loadFileList(File path) {
         this.currentPath = path;
-        List<String> fileList = new ArrayList<>();
+        List<FileSelectorItem> fileList = new ArrayList<>();
         if (path.exists()) {
-            if (path.getParentFile() != null) fileList.add(PARENT_DIR);
+            if (path.getParentFile() != null) {
+                fileList.add(new FileSelectorItem(PARENT_DIR, R.drawable.ic_back_grey));
+            }
             FilenameFilter filter = (dir, filename) -> {
                 File sel = new File(dir, filename);
                 if (!sel.canRead()) return false;
-                if (selectDirectoryOption) return sel.isDirectory();
                 else {
                     boolean endsWith = fileEndsWith == null || filename.toLowerCase().endsWith(fileEndsWith);
                     return endsWith || sel.isDirectory();
@@ -140,16 +166,19 @@ public class FileDialog {
             if (childDirectories.containsKey(currPathName)) {
                 for (String childDir : childDirectories.get(currPathName)) {
                     if ((fileListTmp == null || !Arrays.asList(fileListTmp).contains(childDir)) && new File(currPathName, childDir).exists()) {
-                        fileList.add(childDir);
+                        fileList.add(new FileSelectorItem(childDir, R.drawable.ic_directory_grey));
                         Log.i("FileDialog.java", "Directory " + currPathName + " is not readable. Manually adding directory " + childDir);
                     }
                 }
             }
             if (fileListTmp != null) {
-                Collections.addAll(fileList, fileListTmp);
+                for (String file: fileListTmp) {
+                    int icon = (new File(currPathName, file).isDirectory()) ? R.drawable.ic_directory_grey : R.drawable.ic_file_grey;
+                    fileList.add(new FileSelectorItem(file, icon));
+                }
             }
         }
-        this.fileList = fileList.toArray(new String[]{});
+        this.fileList = fileList.toArray(new FileSelectorItem[]{});
     }
 
     private File getChosenFile(String fileChosen) {
@@ -172,7 +201,7 @@ public class FileDialog {
 }
 
 class ListenerList<L> {
-    private List<L> listenerList = new ArrayList<>();
+    private final List<L> listenerList = new ArrayList<>();
 
     public interface FireHandler<L> {
         void fireEvent(L listener);

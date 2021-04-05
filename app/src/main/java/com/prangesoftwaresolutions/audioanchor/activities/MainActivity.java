@@ -597,8 +597,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void showExportDirectorySelector() {
         // Let the user select a directory in which to save the database
         File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-        FileDialog fileDialog = new FileDialog(this, baseDirectory, null);
-        fileDialog.setSelectDirectoryOption(true);
+        FileDialog fileDialog = new FileDialog(this, baseDirectory, true, null, this);
         fileDialog.addDirectoryListener(file -> mMigrator.exportDatabase(file));
         fileDialog.showDialog();
     }
@@ -608,7 +607,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     private void showImportFileSelector() {
         File baseDirectory = Environment.getExternalStorageDirectory();
-        FileDialog fileDialog = new FileDialog(this, baseDirectory, ".db");
+        FileDialog fileDialog = new FileDialog(this, baseDirectory, false, ".db", this);
         fileDialog.addFileListener(file -> {
             mMigrator.importDatabase(file);
             mSwipeRefreshLayout.setRefreshing(true);
