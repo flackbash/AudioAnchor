@@ -103,9 +103,17 @@ public class Album {
      */
     public String updateAlbumCover() {
         if (mCoverPath == null || !(new File(mDirectory.getPath() + File.separator + mCoverPath).exists())) {
-            // Search for a cover in the album directory
-            File albumDir = new File(mDirectory.getPath() + File.separator + mTitle);
+            // Get the album directory. Depending on the directory type, this is either
+            // <directory>/<album title> or just <directory>.
+            File albumDir;
+            if (mDirectory.getType() == Directory.Type.PARENT_DIR) {
+                albumDir = new File(mDirectory.getPath() + File.separator + mTitle);
+            } else {
+                albumDir = new File(mDirectory.getPath());
+            }
+            // Search for images in the album directory
             mCoverPath = Utils.getImagePath(albumDir);
+            // Get the cover path relative to the album directory
             if (mCoverPath != null) {
                 mCoverPath = mCoverPath.replace(mDirectory.getPath(), "");
             }
