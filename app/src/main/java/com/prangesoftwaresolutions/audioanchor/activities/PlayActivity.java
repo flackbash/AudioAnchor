@@ -1,5 +1,6 @@
 package com.prangesoftwaresolutions.audioanchor.activities;
 
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentUris;
@@ -30,6 +31,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -513,11 +515,16 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     void showSleepTimerDialog() {
-        // Setup editText
+        // Setup Views
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_sleep_timer, null);
         final EditText setTime = dialogView.findViewById(R.id.sleep_timer_set_time);
         setTime.setText(String.valueOf(mLastSleepTime));
         setTime.setSelection(setTime.getText().length());
+        final Button quickButton0 = dialogView.findViewById(R.id.quick_button_0);
+        final Button quickButton1 = dialogView.findViewById(R.id.quick_button_1);
+        final Button quickButton2 = dialogView.findViewById(R.id.quick_button_2);
+        final Button quickButton3 = dialogView.findViewById(R.id.quick_button_3);
+        final Button quickButton4 = dialogView.findViewById(R.id.quick_button_4);
 
         // Setup alertDialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -553,7 +560,25 @@ public class PlayActivity extends AppCompatActivity {
 
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
+
+        // Set quick button click listeners
+        setQuickButtonClickListener(quickButton0, alertDialog);
+        setQuickButtonClickListener(quickButton1, alertDialog);
+        setQuickButtonClickListener(quickButton2, alertDialog);
+        setQuickButtonClickListener(quickButton3, alertDialog);
+        setQuickButtonClickListener(quickButton4, alertDialog);
+
         alertDialog.show();
+    }
+
+    void setQuickButtonClickListener(Button button, Dialog dialog) {
+        button.setOnClickListener(v -> {
+            int minutes = Integer.parseInt(button.getText().toString());
+            if (mPlayer != null) {
+                mPlayer.startSleepTimer(minutes, mSleepCountDownTV);
+            }
+            dialog.dismiss();
+        });
     }
 
     /*

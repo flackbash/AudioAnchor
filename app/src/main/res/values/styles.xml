@@ -61,4 +61,15 @@
         <item name="android:padding">@dimen/small_margin</item>
     </style>
 
+    <!-- Sleep timer quick button style -->
+    <style name="sleep_timer_quick_button">
+        <item name="android:layout_width">@dimen/sleep_timer_quick_button_height</item>
+        <item name="android:layout_height">@dimen/sleep_timer_quick_button_height</item>
+        <item name="android:background">@drawable/sleep_timer_quick_button</item>
+        <item name="android:layout_margin">@dimen/tiny_margin</item>
+        <item name="android:padding">@dimen/medium_margin</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+    </style>
+
 </resources>
