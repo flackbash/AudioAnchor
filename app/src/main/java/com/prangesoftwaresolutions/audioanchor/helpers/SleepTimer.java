@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.listeners.SleepTimerStatusListener;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
@@ -24,7 +25,8 @@ public class SleepTimer {
 
     private CountDownTimer mSleepTimer;
 
-    private final MediaPlayerService mPlayer;
+    private MediaPlayerService mPlayer;
+    private SleepTimerStatusListener mListener;
     private TextView mSleepCountDownTV;
     private long mCurrentMillisLeft;
     private int mSecSleepTime;
@@ -36,16 +38,22 @@ public class SleepTimer {
     private float mShakeForceRequired = 3f;
 
     // Preferences
-    private Context mContext;
-    private SharedPreferences mSharedPreferences;
+    private final Context mContext;
+    private final SharedPreferences mSharedPreferences;
 
-    protected SleepTimer(TextView sleepCountDownTV, MediaPlayerService mediaPlayer, SensorManager sensorMng,
-                         Context context) {
-        mSleepCountDownTV = sleepCountDownTV;
+    public SleepTimer(TextView sleepCountDownTV, MediaPlayerService mediaPlayer, SensorManager sensorMng,
+                      Context context) {
+        this(sleepCountDownTV, sensorMng, context);
         mPlayer = mediaPlayer;
+    }
+
+    public SleepTimer(TextView sleepCountDownTV, SensorManager sensorMng,
+                      Context context) {
+        mSleepCountDownTV = sleepCountDownTV;
         mSensorMng = sensorMng;
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         mContext = context;
+        mPlayer = null;
         mShakeDetector = new ShakeDetector(mShakeForceRequired) {
             @Override
             public void shakeDetected() {
@@ -117,13 +125,13 @@ public class SleepTimer {
                 fadeoutTime = Math.min(fadeoutTime, secSleepTime);
                 boolean continueUntilEndOfTrack = mSharedPreferences.getBoolean(mContext.getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(mContext.getString(R.string.settings_continue_until_end_default)));
                 if (!continueUntilEndOfTrack && (l / 1000) < fadeoutTime) {
-                    mPlayer.decreaseVolume((int) (fadeoutTime - (l / 1000)), fadeoutTime);
+                    if (mPlayer != null) mPlayer.decreaseVolume((int) (fadeoutTime - (l / 1000)), fadeoutTime);
                 }
             }
 
             @Override
             public void onFinish() {
-                finished();
+                if (mListener != null) mListener.onSleepTimerFinished();
                 boolean continueUntilEndOfTrack = mSharedPreferences.getBoolean(mContext.getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(mContext.getString(R.string.settings_continue_until_end_default)));
                 if (!continueUntilEndOfTrack) {
                     disableTimer();
@@ -131,6 +139,10 @@ public class SleepTimer {
             }
         };
     }
+
+    public void setPlayer(MediaPlayerService player) { mPlayer = player; }
+
+    public void setListener(SleepTimerStatusListener listener) { mListener = listener; }
 
     public void setNewSleepCountDownTV(TextView countDownTV) {
         boolean visible = false;
@@ -165,7 +177,9 @@ public class SleepTimer {
 
             // We need to avoid the application resetting the volume on slower systems before pause.
             Handler handler = new Handler();
-            handler.postDelayed(() -> mPlayer.setVolume(1.0f), 500);
+            handler.postDelayed(() -> {
+                if (mPlayer != null) mPlayer.setVolume(1.0f);
+            }, 500);
         }
 
         if (mSensorMng != null) {
@@ -176,7 +190,7 @@ public class SleepTimer {
     private void restartTimer() {
         if (mCurrentMillisLeft > 0) {
             mSleepTimer.cancel();
-            mPlayer.setVolume(1.0f);
+            if (mPlayer != null) mPlayer.setVolume(1.0f);
             createTimer(mSecSleepTime);
         }
 
@@ -190,7 +204,7 @@ public class SleepTimer {
             return;
 
         if (onlyIfPlaying) {
-            if (mPlayer.isPlaying()) {
+            if (mPlayer != null && mPlayer.isPlaying()) {
                 mSleepTimer.start();
                 if (mShakeDetectionEnabled)
                     startShakeDetection();
@@ -200,10 +214,6 @@ public class SleepTimer {
             if (mShakeDetectionEnabled)
                 startShakeDetection();
         }
-    }
-
-    // For callback when timer is finished
-    public void finished() {
     }
 }
 

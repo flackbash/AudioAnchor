@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.hardware.SensorManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
@@ -39,6 +40,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.helpers.SleepTimer;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
@@ -63,6 +65,8 @@ public class PlayActivity extends AppCompatActivity {
     BroadcastReceiver mPlayStatusReceiver;
     BroadcastReceiver mNewAudioFileReceiver;
     MediaMetadataRetriever mMetadataRetriever;
+    SleepTimer mSleepTimer = null;
+    SensorManager mSensorManager;
 
     // Audio File variables
     AudioFile mAudioFile;
@@ -128,7 +132,6 @@ public class PlayActivity extends AppCompatActivity {
         mTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
         mLastSleepTime = mSharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.parseInt(getString(R.string.preference_last_sleep_val)));
         mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
-
 
         mAudioFile = AudioFile.getAudioFileById(this, currAudioId);
         mMetadataRetriever = new MediaMetadataRetriever();
@@ -223,6 +226,9 @@ public class PlayActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+
+        // Set up Sleep Timer related variables
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         // Register BroadcastReceivers
         LocalBroadcastManager.getInstance(this).registerReceiver(mPlayStatusReceiver, new IntentFilter(MediaPlayerService.SERVICE_PLAY_STATUS_CHANGE));
@@ -352,6 +358,8 @@ public class PlayActivity extends AppCompatActivity {
             // Connect SleepTimerTV if a sleep timer is active
             if (mPlayer.getSleepTimer() != null) {
                 mPlayer.getSleepTimer().setNewSleepCountDownTV(mSleepCountDownTV);
+            } else if (mSleepTimer != null) {
+                mPlayer.connectSleepTimer(mSleepTimer);
             }
         }
 
@@ -543,6 +551,8 @@ public class PlayActivity extends AppCompatActivity {
 
             if (mPlayer != null) {
                 mPlayer.startSleepTimer(minutes, mSleepCountDownTV);
+            } else {
+                startSleepTimer(minutes);
             }
 
             // Save selection in preferences
@@ -576,9 +586,26 @@ public class PlayActivity extends AppCompatActivity {
             int minutes = Integer.parseInt(button.getText().toString());
             if (mPlayer != null) {
                 mPlayer.startSleepTimer(minutes, mSleepCountDownTV);
+            } else {
+                startSleepTimer(minutes);
             }
             dialog.dismiss();
         });
+    }
+
+    void startSleepTimer(int minutes) {
+        // Get sleep timer preferences
+        boolean shakeEnabledSetting = mSharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
+        int shakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
+        float shakeForceRequired = (100 - shakeSensitivitySetting) / 100f;
+
+        if (mSleepTimer == null) {
+            mSleepTimer = new SleepTimer(mSleepCountDownTV, mSensorManager, this);
+        }
+
+        // Create and start timer
+        mSleepTimer.createTimer(minutes * 60, shakeEnabledSetting, shakeForceRequired);
+        mSleepTimer.startTimer(false);
     }
 
     /*

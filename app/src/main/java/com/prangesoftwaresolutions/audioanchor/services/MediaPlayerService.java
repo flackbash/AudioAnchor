@@ -36,6 +36,7 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.listeners.SleepTimerStatusListener;
 import com.prangesoftwaresolutions.audioanchor.models.Album;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.helpers.LockManager;
@@ -59,7 +60,7 @@ import static android.support.v4.app.NotificationCompat.VISIBILITY_PUBLIC;
  * Media Player Service class
  * Based on a tutorial by Valdio Veliu. See https://github.com/sitepoint-editors/AudioPlayer
  */
-public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener {
+public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener, SleepTimerStatusListener {
 
     public static final String ACTION_PLAY = "com.prangesoftwaresolutions.audioanchor.ACTION_PLAY";
     public static final String ACTION_PAUSE = "com.prangesoftwaresolutions.audioanchor.ACTION_PAUSE";
@@ -930,22 +931,23 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         float shakeForceRequired = (100 - shakeSensitivitySetting) / 100f;
 
         if (mSleepTimer == null) {
-            mSleepTimer = new SleepTimer(countDownTV, this, mSensorManager, this) {
-                @Override
-                public void finished() {
-                    boolean stopAtEndOfTrack = mSharedPreferences.getBoolean(getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(getString(R.string.settings_continue_until_end_default)));
-                    if (stopAtEndOfTrack) {
-                        mStopAtEndOfCurrentTrack = true;
-                    } else {
-                        pause();
-                    }
-                }
-            };
+            mSleepTimer = new SleepTimer(countDownTV, this, mSensorManager, this);
+            mSleepTimer.setListener(this);
         }
 
         // Create and start timer
         mSleepTimer.createTimer(minutes * 60, shakeEnabledSetting, shakeForceRequired);
         mSleepTimer.startTimer(false);
+    }
+
+    @Override
+    public void onSleepTimerFinished() {
+        boolean stopAtEndOfTrack = mSharedPreferences.getBoolean(getString(R.string.settings_continue_until_end_key), Boolean.getBoolean(getString(R.string.settings_continue_until_end_default)));
+        if (stopAtEndOfTrack) {
+            mStopAtEndOfCurrentTrack = true;
+        } else {
+            pause();
+        }
     }
 
     private void terminateSleepTimer() {
@@ -955,6 +957,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     public SleepTimer getSleepTimer() {
         return mSleepTimer;
+    }
+
+    public void connectSleepTimer(SleepTimer sleepTimer) {
+        mStopAtEndOfCurrentTrack = false;
+        mSleepTimer = sleepTimer;
+        mSleepTimer.setPlayer(this);
+        mSleepTimer.setListener(this);
     }
 
     public AudioFile getCurrentAudioFile() {
