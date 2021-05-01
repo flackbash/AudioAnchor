@@ -832,12 +832,24 @@ public class PlayActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_playback_speed, null);
         builder.setView(dialogView);
+        builder.setTitle(R.string.playback_speed);
 
         final TextView playbackSpeedTV = dialogView.findViewById(R.id.playback_speed_tv);
         SeekBar playbackSpeedSB = dialogView.findViewById(R.id.playback_speed_sb);
         float normalSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_default));
+        int minSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));;
         playbackSpeedSB.setMax((int)(2.5 * normalSpeed));  // min + max = 0.5 + 2.5 = 3.0 --> max playback speed 3.0
         int currSpeed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
+        if (currSpeed < minSpeed) {
+            // Ensure backwards compatibility where stored speed was in range 5 - 25
+            currSpeed = currSpeed * 10;
+            // Store new playback speed in shared preferences
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putInt(getString(R.string.preference_playback_speed_key), currSpeed);
+            editor.apply();
+        }
+        float currSpeedFloat = currSpeed / normalSpeed;
+        playbackSpeedTV.setText(getString(R.string.playback_speed_label, currSpeedFloat));
         int progress = getProgressFromPlaybackSpeed(currSpeed);
         playbackSpeedSB.setProgress(progress);
         playbackSpeedSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -890,13 +902,6 @@ public class PlayActivity extends AppCompatActivity {
                 mPlayer.setPlaybackSpeed(speedFloat);
             }
         });
-
-        builder.setTitle(R.string.playback_speed);
-
-        // Set the text of the TextView to the default speed
-        int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
-        float speedFloat = speed / normalSpeed;
-        playbackSpeedTV.setText(getString(R.string.playback_speed_label, speedFloat));
 
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
