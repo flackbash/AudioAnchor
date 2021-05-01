@@ -835,7 +835,8 @@ public class PlayActivity extends AppCompatActivity {
 
         final TextView playbackSpeedTV = dialogView.findViewById(R.id.playback_speed_tv);
         SeekBar playbackSpeedSB = dialogView.findViewById(R.id.playback_speed_sb);
-        playbackSpeedSB.setMax(25);  // min + max = 5 + 25 = 30 --> max playback speed 3.0
+        float normalSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_default));
+        playbackSpeedSB.setMax((int)(2.5 * normalSpeed));  // min + max = 0.5 + 2.5 = 3.0 --> max playback speed 3.0
         int currSpeed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
         int progress = getProgressFromPlaybackSpeed(currSpeed);
         playbackSpeedSB.setProgress(progress);
@@ -844,7 +845,7 @@ public class PlayActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
                     int speed = getPlaybackSpeedFromProgress(progress);
-                    float speedFloat = (float) (speed / 10.0);
+                    float speedFloat = (speed / normalSpeed);
                     playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
                 }
             }
@@ -863,7 +864,7 @@ public class PlayActivity extends AppCompatActivity {
                 editor.apply();
 
                 // Set playback speed to speed selected by the user
-                float speedFloat = (float) (speed / 10.0);
+                float speedFloat = (speed / normalSpeed);
                 if (mPlayer != null) {
                     mPlayer.setPlaybackSpeed(speedFloat);
                 }
@@ -873,7 +874,7 @@ public class PlayActivity extends AppCompatActivity {
         final ImageView resetIV = dialogView.findViewById(R.id.reset);
         resetIV.setOnClickListener(v -> {
             int speed = Integer.parseInt(getString(R.string.preference_playback_speed_default));
-            float speedFloat = (float) (speed / 10.0);
+            float speedFloat = (speed / normalSpeed);
             playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
 
             // Store new playback speed in shared preferences
@@ -894,7 +895,7 @@ public class PlayActivity extends AppCompatActivity {
 
         // Set the text of the TextView to the default speed
         int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
-        float speedFloat = (float) (speed / 10.0);
+        float speedFloat = speed / normalSpeed;
         playbackSpeedTV.setText(getString(R.string.playback_speed_label, speedFloat));
 
         // Create and show the AlertDialog
@@ -903,12 +904,12 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     int getPlaybackSpeedFromProgress(int progress) {
-        int min = 5;
+        int min = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));
         return progress + min;
     }
 
     int getProgressFromPlaybackSpeed(int speed) {
-        int min = 5;
+        int min = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));;
         return speed - min;
     }
 

@@ -275,7 +275,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             // Set playback speed according to preferences
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
-                setPlaybackSpeedIfInLegalRange((float) (speed / 10.0));
+                float normalSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_default));
+                setPlaybackSpeedIfInLegalRange((speed / normalSpeed));
             }
 
             mMediaPlayer.prepare();
