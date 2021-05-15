@@ -16,6 +16,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.hardware.SensorManager;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -25,6 +27,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.media.MediaMetadataCompat;
@@ -262,6 +265,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private AudioAttributes createAudioAttributes() {
+        return new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build();
+    }
+
     void initMediaPlayer(String path, int position) {
         if (mMediaPlayer == null) {
             mMediaPlayer = new MediaPlayer();
@@ -269,7 +280,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
         try {
             mMediaPlayer.reset();
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mMediaPlayer.setAudioAttributes(createAudioAttributes());
+            } else {
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            }
             mMediaPlayer.setDataSource(path);
 
             // Set playback speed according to preferences
@@ -403,7 +418,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private boolean requestAudioFocus() {
         int result = 0;
         if (audioManager != null) {
-            result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                AudioAttributes attributes = createAudioAttributes();
+                AudioFocusRequest request = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(attributes)
+                        .setAcceptsDelayedFocusGain(true)
+                        .setWillPauseWhenDucked(true)
+                        .setOnAudioFocusChangeListener(this)
+                        .build();
+                result = audioManager.requestAudioFocus(request);
+            } else {
+                result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            }
         }
         return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
     }
