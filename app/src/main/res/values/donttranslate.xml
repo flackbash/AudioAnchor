@@ -49,6 +49,8 @@
     <string name="settings_sort_order_default" translatable="false">@string/settings_sort_order_by_directory_value</string>
     <string name="settings_add_last_play_position_bookmark_key" translatable="false">settings_last_play_position_bookmark</string>
     <string name="settings_add_last_play_position_bookmark_default" translatable="false">false</string>
+    <string name="settings_cover_on_lockscreen_key" translatable="false">settings_cover_on_lockscreen</string>
+    <string name="settings_cover_on_lockscreen_default" translatable="false">true</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>

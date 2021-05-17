@@ -62,6 +62,7 @@
     <string name="settings_sort_order_by_directory_label">By directory</string>
     <string name="settings_sort_order_label">Album sort order</string>
     <string name="settings_add_last_play_position_bookmark_label">Add and update last and second to last play position bookmarks whenever play is pressed</string>
+    <string name="settings_cover_on_lockscreen_label">Display cover image on lockscreen</string>
 
     <!-- Layout Texts -->
     <string name="title">Title</string>

@@ -559,13 +559,23 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void updateMetaData() {
-        Bitmap albumArt = getNotificationImage(150);
+        boolean coverOnLockscreen = mSharedPreferences.getBoolean(getString(R.string.settings_cover_on_lockscreen_key), Boolean.getBoolean(getString(R.string.settings_cover_on_lockscreen_default)));
+        MediaMetadataCompat mediaMetadataCompat;
+        if (coverOnLockscreen) {
+            Bitmap albumArt = getNotificationImage(150);
+            mediaMetadataCompat = new MediaMetadataCompat.Builder()
+                    .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, mActiveAudio.getAlbumTitle())
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mActiveAudio.getTitle())
+                    .build();
+        } else {
+            mediaMetadataCompat = new MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, mActiveAudio.getAlbumTitle())
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mActiveAudio.getTitle())
+                    .build();
+        }
         // Update the current metadata
-        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, mActiveAudio.getAlbumTitle())
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mActiveAudio.getTitle())
-                .build());
+        mediaSession.setMetadata(mediaMetadataCompat);
     }
 
     private void createNotificationChannel() {

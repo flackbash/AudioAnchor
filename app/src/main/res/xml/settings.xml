@@ -47,6 +47,10 @@
             android:key="@string/settings_progress_percentage_key"
             android:title="@string/settings_progress_percentage_label" />
         <SwitchPreference
+            android:defaultValue="@string/settings_cover_on_lockscreen_default"
+            android:key="@string/settings_cover_on_lockscreen_key"
+            android:title="@string/settings_cover_on_lockscreen_label" />
+        <SwitchPreference
             android:defaultValue="@string/settings_cover_from_metadata_default"
             android:key="@string/settings_cover_from_metadata_key"
             android:title="@string/settings_cover_from_metadata_label" />
