@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 // Get track ids for all selected albums
                 ArrayList<AudioFile>  albumAudioFiles = new ArrayList<>();
                 for (long albumId : mSelectedAlbums) {
-                    albumAudioFiles = AudioFile.getAllAudioFilesInAlbum(MainActivity.this, albumId, null);
+                    albumAudioFiles.addAll(AudioFile.getAllAudioFilesInAlbum(MainActivity.this, albumId, null));
                 }
 
                 // Perform action
