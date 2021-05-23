@@ -93,6 +93,7 @@
     <string name="playback_speed">Playback speed</string>
     <string name="about_contributors">For a list of contributors visit</string>
     <string name="about_report_bugs">This is also the place to report bugs, make a contribution yourself or leave a star if you like the app.</string>
+    <string name="about_donations">If you like the app and wish to make a donation you can do so via <a href="https://www.paypal.com/donate/?hosted_button_id=ZTVWJXZUVE64U">PayPal</a> (thank you :) ).</string>
     <string name="add_sub_dir">Add directory that\ncontains audio files</string>
     <string name="add_parent_dir">Add directory with\nsubdirectories that\ncontain audio files</string>
     <string name="add_directory">You can select a single directory that contains audio files or a parent directory that contains several directories containing audio files.</string>

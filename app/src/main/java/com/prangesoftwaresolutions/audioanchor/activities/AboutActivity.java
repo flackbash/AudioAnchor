@@ -4,6 +4,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
 import com.prangesoftwaresolutions.audioanchor.R;
@@ -18,6 +19,10 @@ public class AboutActivity extends AppCompatActivity {
         Utils.setActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+
+        // Make paypal link clickable
+        TextView paypalLinkTV = findViewById(R.id.paypal_link_tv);
+        paypalLinkTV.setMovementMethod(LinkMovementMethod.getInstance());
 
         mVersionName = findViewById(R.id.about_text_tv);
 
