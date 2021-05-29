@@ -27,9 +27,10 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -56,7 +57,7 @@ import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static android.support.v4.app.NotificationCompat.VISIBILITY_PUBLIC;
+import static androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC;
 
 
 /*
@@ -290,7 +291,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             // Set playback speed according to preferences
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 int speed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
-                int minSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));;
+                int minSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));
                 if (speed < minSpeed) {
                     // Ensure backwards compatibility where stored speed was in range 5 - 25
                     speed = speed * 10;
@@ -446,7 +447,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /*
      * Receive broadcasts about change in audio outputs
      */
-    private BroadcastReceiver mBecomingNoisyReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mBecomingNoisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // Pause audio on ACTION_AUDIO_BECOMING_NOISY
@@ -457,7 +458,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /*
      * Receive broadcast when a new audio file starts playing
      */
-    private BroadcastReceiver mPlayAudioReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mPlayAudioReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (requestAudioFocus()) {
@@ -469,7 +470,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /*
      * Receive broadcast when the audio is paused
      */
-    private BroadcastReceiver mPauseAudioReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mPauseAudioReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             pause();
@@ -479,7 +480,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /*
      * Receive broadcast when the user deletes the notification
      */
-    private BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("MediaPlayerService", "Received broadcast 'remove notification'");
@@ -546,8 +547,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Create a new MediaSession
         mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioAnchor", mediaButtonReceiverComponentName, mediaButtonReceiverPendingIntent);
-        // Indicate that the MediaSession handles transport control commands through its MediaSessionCompat.Callback.
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS);
         // Attach Callback to receive MediaSession updates
         mediaSession.setCallback(new MediaSessionCallback(this, getApplicationContext()));
         // Set MediaSession -> ready to receive media commands
@@ -668,7 +667,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Hide the timestamp
                 .setShowWhen(false)
                 // Set the notification style
-                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         // Attach our MediaSession token
                         .setMediaSession(mediaSession.getSessionToken())
                         // Show our playback controls in the compat view

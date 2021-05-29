@@ -1,6 +1,6 @@
 package com.prangesoftwaresolutions.audioanchor.models;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.prangesoftwaresolutions.audioanchor.R;
 

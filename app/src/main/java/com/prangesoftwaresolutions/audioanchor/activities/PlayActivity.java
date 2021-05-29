@@ -23,9 +23,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -338,7 +339,7 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     // Binding this Client to the AudioPlayer Service
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.e("PlayActivity", "OnServiceConnected called");
@@ -429,7 +430,7 @@ public class PlayActivity extends AppCompatActivity {
     /*
      * Unbind PlayActivity from MediaPlayerService when the user removes the notification
      */
-    private BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("PlayActivity", "Received broadcast 'remove notification'");
@@ -837,7 +838,7 @@ public class PlayActivity extends AppCompatActivity {
         final TextView playbackSpeedTV = dialogView.findViewById(R.id.playback_speed_tv);
         SeekBar playbackSpeedSB = dialogView.findViewById(R.id.playback_speed_sb);
         float normalSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_default));
-        int minSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));;
+        int minSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));
         playbackSpeedSB.setMax((int)(2.5 * normalSpeed));  // min + max = 0.5 + 2.5 = 3.0 --> max playback speed 3.0
         int currSpeed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
         if (currSpeed < minSpeed) {
@@ -914,7 +915,7 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     int getProgressFromPlaybackSpeed(int speed) {
-        int min = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));;
+        int min = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));
         return speed - min;
     }
 

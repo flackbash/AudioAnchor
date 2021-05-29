@@ -18,14 +18,14 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -378,6 +378,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case PERMISSION_REQUEST_READ_EXTERNAL_STORAGE: {
                 // If request is cancelled, the result arrays are empty.
@@ -462,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /*
      * Bind the MainActivity to the MediaPlayerService if the service was started in the PlayActivity
      */
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.e("MainActivity", "OnServiceConnected called");
@@ -517,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /*
      * Unbind MainActivity from MediaPlayerService when the user removes the notification
      */
-    private BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("MainActivity", "Received broadcast 'remove notification'");
@@ -533,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /*
      * Unbind MainActivity from MediaPlayerService but bind again when returning to activity
      */
-    private BroadcastReceiver mUnbindCurrentServiceReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mUnbindCurrentServiceReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("MainActivity", "Received broadcast 'unbind current service'");
@@ -550,7 +551,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /*
      * Unbind MainActivity from MediaPlayerService when the user removes the notification
      */
-    private BroadcastReceiver mResetReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mResetReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("MainActivity", "Received broadcast 'reset'");

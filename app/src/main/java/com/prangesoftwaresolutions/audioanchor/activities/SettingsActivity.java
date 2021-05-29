@@ -2,14 +2,14 @@ package com.prangesoftwaresolutions.audioanchor.activities;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceManager;
-import android.preference.SwitchPreference;
-import android.support.v7.app.AppCompatActivity;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreference;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.prangesoftwaresolutions.audioanchor.R;
@@ -56,11 +56,11 @@ public class SettingsActivity extends AppCompatActivity {
         mPreferences.unregisterOnSharedPreferenceChangeListener(mPrefListener);
     }
 
-    public static class AnchorPreferenceFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+    public static class AnchorPreferenceFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.settings);
+            // addPreferencesFromResource(R.xml.settings);
 
             // Make sure the autoplay position preference is enabled iff autoplay is
             final SwitchPreference autoplayPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_key));
@@ -71,6 +71,11 @@ public class SettingsActivity extends AppCompatActivity {
             autoplayPositionPref.setEnabled(autoplayPref.isChecked());
 
             initSummary(getPreferenceScreen());
+        }
+
+        @Override
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.settings, rootKey);
         }
 
         @Override

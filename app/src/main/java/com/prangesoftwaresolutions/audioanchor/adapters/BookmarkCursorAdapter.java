@@ -18,7 +18,7 @@ import com.prangesoftwaresolutions.audioanchor.utils.Utils;
  */
 
 public class BookmarkCursorAdapter extends CursorAdapter {
-    private long mTotalMillis;
+    private final long mTotalMillis;
 
     public BookmarkCursorAdapter(Context context, Cursor c, long totalMillis) {
         super(context, c, 0);

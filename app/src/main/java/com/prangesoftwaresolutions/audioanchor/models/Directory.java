@@ -18,8 +18,8 @@ public class Directory {
         PARENT_DIR(0),
         SUB_DIR(1);
 
-        private int value;
-        private static Map<Integer, Type> map = new HashMap<>();
+        private final int value;
+        private static final Map<Integer, Type> map = new HashMap<>();
 
         Type(int value) {
             this.value = value;
@@ -37,8 +37,8 @@ public class Directory {
     }
 
     private long mID = -1;
-    private String mPath;
-    private Type mType;
+    private final String mPath;
+    private final Type mType;
 
     private static final String[] mDirectoryColumns = new String[] {
             AnchorContract.DirectoryEntry._ID,

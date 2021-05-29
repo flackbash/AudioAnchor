@@ -28,9 +28,9 @@ import java.util.ArrayList;
 
 public class AudioFileCursorAdapter extends CursorAdapter {
 
-    private Context mContext;
-    private MediaMetadataRetriever mMetadataRetriever;
-    private SharedPreferences mPrefs;
+    private final Context mContext;
+    private final MediaMetadataRetriever mMetadataRetriever;
+    private final SharedPreferences mPrefs;
 
     public AudioFileCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);

@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class Synchronizer {
-    private Context mContext;
-    private SharedPreferences mPrefManager;
+    private final Context mContext;
+    private final SharedPreferences mPrefManager;
     private SynchronizationStateListener mListener = null;
 
     public Synchronizer(Context context) {

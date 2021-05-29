@@ -16,8 +16,8 @@ import java.util.ArrayList;
 public class AudioFile implements Serializable {
 
     private long mID = -1;
-    private String mTitle;
-    private Album mAlbum;
+    private final String mTitle;
+    private final Album mAlbum;
     private int mTime;
     private int mCompletedTime;
 

@@ -20,8 +20,8 @@ import java.nio.channels.FileChannel;
 
 public class Migrator {
 
-    private static String LOG_TAG = Migrator.class.getName();
-    private Context mContext;
+    private static final String LOG_TAG = Migrator.class.getName();
+    private final Context mContext;
 
     public Migrator(Context context) {
         mContext = context;

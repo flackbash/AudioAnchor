@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class Album {
 
     private long mID = -1;
-    private String mTitle;
+    private final String mTitle;
     private Directory mDirectory;
     private String mCoverPath;
     private long mLastPlayedID;

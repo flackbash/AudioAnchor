@@ -9,8 +9,8 @@ import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 
 public class MediaSessionCallback extends MediaSessionCompat.Callback {
 
-    private MediaPlayerService mService;
-    private Context mContext;
+    private final MediaPlayerService mService;
+    private final Context mContext;
 
     public MediaSessionCallback(MediaPlayerService service, Context context) {
         mService = service;

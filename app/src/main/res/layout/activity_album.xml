@@ -56,7 +56,7 @@
         android:layout_height="match_parent"
         tools:context=".activities.AlbumActivity">
 
-        <android.support.v4.widget.SwipeRefreshLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swiperefresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -67,7 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <TextView
             android:id="@+id/emptyList_album"
@@ -77,7 +77,7 @@
             android:id="@+id/progressBar_album"
             style="@style/EmptyListProgressBar" />
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/play_pause_fab"
             style="@style/MediaControlFAB" />
 

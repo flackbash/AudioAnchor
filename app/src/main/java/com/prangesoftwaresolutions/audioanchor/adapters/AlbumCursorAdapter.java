@@ -31,9 +31,9 @@ import java.util.ArrayList;
  */
 
 public class AlbumCursorAdapter extends CursorAdapter {
-    private Context mContext;
-    private SharedPreferences mPrefs;
-    private LruCache<String, Bitmap> mImageCache;
+    private final Context mContext;
+    private final SharedPreferences mPrefs;
+    private final LruCache<String, Bitmap> mImageCache;
 
     public AlbumCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);

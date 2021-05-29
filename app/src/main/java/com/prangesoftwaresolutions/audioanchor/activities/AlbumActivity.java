@@ -17,14 +17,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -399,6 +399,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE: {
                 // If request is cancelled, the result arrays are empty.
@@ -417,7 +418,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     /*
      * Bind the AlbumActivity to the MediaPlayerService if the service was started in the PlayActivity
      */
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.e("AlbumActivity", "OnServiceConnected called");
@@ -476,7 +477,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     /*
      * Unbind AlbumActivity from MediaPlayerService when the user removes the notification
      */
-    private BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mRemoveNotificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("AlbumActivity", "Received broadcast 'remove notification'");
