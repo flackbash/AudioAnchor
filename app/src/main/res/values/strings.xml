@@ -82,6 +82,7 @@
     <string name="set_bookmark_at">Set bookmark at</string>
     <string name="no_bookmarks">There are no bookmarks for this audio file yet.</string>
     <string name="bookmarks">Bookmarks</string>
+    <string name="untitled_bookmark">Untitled</string>
     <string name="delete">Delete</string>
     <string name="delete_from_db">Delete from database</string>
     <string name="remove_from_library">Remove from library</string>

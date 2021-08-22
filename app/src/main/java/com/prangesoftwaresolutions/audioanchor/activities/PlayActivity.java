@@ -699,27 +699,27 @@ public class PlayActivity extends AppCompatActivity {
             String timeString = hours + ":" + minutes + ":" + seconds;
 
             if (title.isEmpty()) {
-                Toast.makeText(getApplicationContext(), R.string.empty_title_error, Toast.LENGTH_SHORT).show();
-            } else {
-                try {
-                    long millis = Utils.getMillisFromString(timeString);
-                    bookmark.setPosition(millis);
-                    bookmark.setTitle(title);
-                    if (bookmark.getID() == -1) {
-                        // Insert the bookmark into the bookmarks table
-                        bookmark.insertIntoDB(this);
-                    } else {
-                        // Update the bookmark in the bookmarks table
-                        bookmark.updateInDB(this);
+                // Get default title
+                title = getResources().getString(R.string.untitled_bookmark);
+            }
+            try {
+                long millis = Utils.getMillisFromString(timeString);
+                bookmark.setPosition(millis);
+                bookmark.setTitle(title);
+                if (bookmark.getID() == -1) {
+                    // Insert the bookmark into the bookmarks table
+                    bookmark.insertIntoDB(this);
+                } else {
+                    // Update the bookmark in the bookmarks table
+                    bookmark.updateInDB(this);
 
-                        // Reload the ListView
-                        Cursor c = Bookmark.getBookmarksCursor(this, mAudioFile.getID());
-                        mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
-                        mBookmarkListView.setAdapter(mBookmarkAdapter);
-                    }
-                } catch (NumberFormatException e) {
-                    Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
+                    // Reload the ListView
+                    Cursor c = Bookmark.getBookmarksCursor(this, mAudioFile.getID());
+                    mBookmarkAdapter = new BookmarkCursorAdapter(PlayActivity.this, c, mAudioFile.getTime());
+                    mBookmarkListView.setAdapter(mBookmarkAdapter);
                 }
+            } catch (NumberFormatException e) {
+                Toast.makeText(getApplicationContext(), R.string.time_format_error, Toast.LENGTH_SHORT).show();
             }
         });
 

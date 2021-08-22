@@ -16,6 +16,7 @@
         android:id="@+id/bookmark_title_et"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:hint="@string/untitled_bookmark"
         android:textSize="@dimen/medium_font_size"
         android:layout_marginLeft="@dimen/large_margin"
         android:layout_marginRight="@dimen/large_margin"
