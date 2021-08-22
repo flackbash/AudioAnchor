@@ -72,6 +72,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public static final String ACTION_BACKWARD = "com.prangesoftwaresolutions.audioanchor.ACTION_BACKWARD";
     public static final String ACTION_FORWARD = "com.prangesoftwaresolutions.audioanchor.ACTION_FORWARD";
     public static final String ACTION_STOP = "com.prangesoftwaresolutions.audioanchor.ACTION_STOP";
+    public static final String ACTION_BOOKMARK = "com.prangesoftwaresolutions.audioanchor.ACTION_BOOKMARK";
 
     public static final String SERVICE_PLAY_STATUS_CHANGE = "com.prangesoftwaresolutions.audioanchor.SERVICE_PLAY_STATUS_CHANGE";
     public static final String SERVICE_MESSAGE_PLAY_STATUS = "com.prangesoftwaresolutions.audioanchor.SERVICE_MESSAGE_PLAYING";
@@ -671,7 +672,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                         // Attach our MediaSession token
                         .setMediaSession(mediaSession.getSessionToken())
                         // Show our playback controls in the compat view
-                        .setShowActionsInCompactView(0, 1, 2))
+                        .setShowActionsInCompactView(1, 2, 3))
                 // Set the notification color
                 .setColor(getResources().getColor(R.color.colorAccent))
                 // Set the large and small icons
@@ -689,6 +690,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Make notification non-removable if the track is currently playing
                 .setOngoing(title.equals(getString(R.string.button_pause)))
                 // Add playback actions
+                .addAction(R.drawable.ic_media_bookmark, getString(R.string.button_bookmark), playbackAction(4))
                 .addAction(R.drawable.ic_media_backward, getString(R.string.button_backward), playbackAction(3))
                 .addAction(notificationAction, title, play_pauseAction)
                 .addAction(R.drawable.ic_media_forward, getString(R.string.button_forward), playbackAction(2));
@@ -720,6 +722,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Skip backward
                 playbackActionIntent.setAction(ACTION_BACKWARD);
                 return PendingIntent.getService(this, actionNumber, playbackActionIntent, 0);
+            case 4:
+                // Set bookmark
+                playbackActionIntent.setAction(ACTION_BOOKMARK);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, 0);
             default:
                 break;
         }
@@ -748,7 +754,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             forward(30);
         } else if (actionString.equalsIgnoreCase(ACTION_BACKWARD)) {
             backward(30);
+        } else if (actionString.equalsIgnoreCase(ACTION_BOOKMARK)) {
+            setBookmark();
         }
+    }
+
+    private void setBookmark() {
+        String title = getResources().getString(R.string.untitled_bookmark);
+        Bookmark bookmark = new Bookmark(title, getCurrentPosition(), mActiveAudio.getID());
+        bookmark.insertIntoDB(this);
     }
 
     public boolean isPlaying() {

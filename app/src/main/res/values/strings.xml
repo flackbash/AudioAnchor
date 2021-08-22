@@ -5,6 +5,7 @@
     <string name="button_play">Play</string>
     <string name="button_backward">Backward</string>
     <string name="button_forward">Forward</string>
+    <string name="button_bookmark">Bookmark</string>
 
     <!-- Toast messages -->
     <string name="no_albums">It\'s a bit empty here. Start by adding a directory to your library.</string>
