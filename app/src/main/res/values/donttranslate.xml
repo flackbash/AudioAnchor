@@ -51,6 +51,8 @@
     <string name="settings_add_last_play_position_bookmark_default" translatable="false">false</string>
     <string name="settings_cover_on_lockscreen_key" translatable="false">settings_cover_on_lockscreen</string>
     <string name="settings_cover_on_lockscreen_default" translatable="false">true</string>
+    <string name="settings_quick_bookmark_key" translatable="false">quick_bookmark</string>
+    <string name="settings_quick_bookmark_default" translatable="false">false</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>

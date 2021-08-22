@@ -305,7 +305,12 @@ public class PlayActivity extends AppCompatActivity {
                 showGoToDialog();
                 return true;
             case R.id.menu_set_bookmark:
-                showSetBookmarkDialog(null);
+                boolean quickBookmark = mSharedPreferences.getBoolean(getString(R.string.settings_quick_bookmark_key), Boolean.getBoolean(getString(R.string.settings_quick_bookmark_default)));
+                if (quickBookmark) {
+                    setBookmarkWithoutConfirmation();
+                } else {
+                    showSetBookmarkDialog(null);
+                }
                 return true;
             case R.id.menu_show_bookmarks:
                 showShowBookmarksDialog();
@@ -655,6 +660,19 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     /*
+     * Set a new bookmark at the current playback time with the default title and inform the user
+     * with a toast message.
+     */
+    void setBookmarkWithoutConfirmation() {
+        String title = getResources().getString(R.string.untitled_bookmark);
+        Bookmark bookmark = new Bookmark(title, getAudioCompletedTime(), mAudioFile.getID());
+        bookmark.insertIntoDB(this);
+        String timeString = Utils.formatTime(bookmark.getPosition(), 3600000);
+        String addedToastMsg = getResources().getString(R.string.bookmark_added_toast, title, timeString);
+        Toast.makeText(getApplicationContext(), addedToastMsg, Toast.LENGTH_SHORT).show();
+    }
+
+    /*
      * Show a dialog that lets the user specify a title for the bookmark. Let the user confirm
      * that they want to create the bookmark and save the bookmark.
      * If uri is null, a new bookmark is created. Otherwise the bookmark with the corresponding uri
@@ -709,6 +727,8 @@ public class PlayActivity extends AppCompatActivity {
                 if (bookmark.getID() == -1) {
                     // Insert the bookmark into the bookmarks table
                     bookmark.insertIntoDB(this);
+                    String addedToastMsg = getResources().getString(R.string.bookmark_added_toast, title, timeString);
+                    Toast.makeText(getApplicationContext(), addedToastMsg, Toast.LENGTH_SHORT).show();
                 } else {
                     // Update the bookmark in the bookmarks table
                     bookmark.updateInDB(this);
