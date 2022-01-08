@@ -77,7 +77,7 @@
     <string name="set_bookmark_at">Поставить закладку на</string>
     <string name="no_bookmarks">Пока еще нет закладок в этой аудиокниге.</string>
     <string name="bookmarks">Закладки</string>
-    <string name="delete">Удалить</string>
+    <string name="delete_from_device">Удалить из устройства</string>
     <string name="delete_from_db">Удалить из базы данных</string>
     <string name="remove_from_library">Удалить из библиотеки</string>
     <string name="mark_as_not_started">Отметить как неначатый</string>

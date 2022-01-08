@@ -39,7 +39,7 @@
     <string name="settings_autoplay_label">Reprodução automática</string>
     <string name="settings_autoplay_restart_label">Repetir faixas do começo na fila da reprodução automática</string>
     <string name="settings_progress_percentage_label">Mostrar o progresso em porcentagem</string>
-    <string name="settings_keep_deleted_label">Manter o progresso de arquivos apagados no banco de dados</string>
+    <string name="settings_keep_deleted_label">Manter o progresso de arquivos apagados na biblioteca</string>
     <string name="settings_cover_from_metadata_label">Obter imagem de capa a partir dos metadados</string>
     <string name="settings_sleep_timer_category">Temporizador</string>
     <string name="settings_sleep_fadeout_label">Tempo de fade out</string>
@@ -77,8 +77,8 @@
     <string name="set_bookmark_at">Marcar em</string>
     <string name="no_bookmarks">Ainda não há marcadores neste arquivo de áudio.</string>
     <string name="bookmarks">Marcadores</string>
-    <string name="delete">Apagar</string>
-    <string name="delete_from_db">Apagar do banco de dados</string>
+    <string name="delete_from_device">Apagar do aparelho</string>
+    <string name="delete_from_db">Apagar da biblioteca</string>
     <string name="remove_from_library">Remover da biblioteca</string>
     <string name="mark_as_not_started">Marcar como não começado</string>
     <string name="mark_as_completed">Marcar como completo</string>

@@ -184,18 +184,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
                 // Perform action
                 switch (menuItem.getItemId()) {
-                    case R.id.menu_delete:
-                        // Check if app has the necessary permissions
-                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            mTmpAlbumAudioFiles = new ArrayList<>(albumAudioFiles);
-                            mTmpSelectedAlbums = new ArrayList<>(mSelectedAlbums);
-                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE);
-                        } else {
-                            // Delete the selected albums
-                            deleteSelectedAlbumWithConfirmation(albumAudioFiles);
-                        }
-                        actionMode.finish();
-                        return true;
                     case R.id.menu_delete_from_db:
                         // Delete selected albums from db if they do not exist in the file system anymore
                         deleteSelectedAlbumsFromDBWithConfirmation();
