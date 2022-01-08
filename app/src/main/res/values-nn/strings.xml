@@ -92,7 +92,8 @@
   <string name="playback_speed">Avspelingsfart</string>
   <string name="about_contributors">Du finn oversikt over bidragsytarane på</string>
   <string name="about_report_bugs">Der kan du òg melda frå om feil, bidra sjølv eller gje appen karakter.</string>
-  <string name="about_donations">"Viss du likar appen og vil gje ei pengegåve, kan du gjera det via "<a href="https://www.paypal.com/donate/?hosted_button_id=ZTVWJXZUVE64U">PayPal</a>" (tusen takk! 😃)."</string>
+  <string name="about_donations">"Viss du likar appen og vil gje ei pengegåve, kan du gjera det via"</string>
+  <string name="about_donations_thanks">"Tusen takk! 😃"</string>
   <string name="add_sub_dir">Legg til mappe\nmed lydfiler</string>
   <string name="add_parent_dir">Legg til mappe\nmed under­mapper\nmed lydfiler</string>
   <string name="add_directory">Du kan velja ei mappe som inneheld lydfiler eller ei mappe som inneheld undermapper med lydfiler.</string>

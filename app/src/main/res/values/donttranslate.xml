@@ -66,6 +66,7 @@
     <string name="copyright" translatable="false">Copyright © 2018–2021 Natalie Prange</string>
     <string name="playback_speed_label" translatable="false">%.2f</string>
     <string name="github_link" translatable="false">https://github.com/flackbash/AudioAnchor</string>
+    <string name="paypal_link" translatable="false"><a href="https://www.paypal.com/donate/?hosted_button_id=ZTVWJXZUVE64U">PayPal</a></string>
     <string name="sleep_timer_quick_button_0" translatable="false">0</string>
     <string name="sleep_timer_quick_button_1" translatable="false">15</string>
     <string name="sleep_timer_quick_button_2" translatable="false">30</string>

@@ -50,7 +50,6 @@
         android:textAlignment="center"/>
 
     <TextView
-        android:id="@+id/paypal_link_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColorLink="@color/colorPrimaryDark"
@@ -60,6 +59,27 @@
         android:paddingStart="@dimen/large_margin"
         android:paddingTop="@dimen/large_margin"
         android:text="@string/about_donations"
+        android:textAlignment="center"/>
+    <TextView
+        android:id="@+id/paypal_link_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColorLink="@color/colorPrimaryDark"
+        android:linksClickable="true"
+        android:textSize="@dimen/small_font_size"
+        android:paddingEnd="@dimen/small_margin"
+        android:paddingStart="@dimen/small_margin"
+        android:text="@string/paypal_link"
+        android:textAlignment="center"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColorLink="@color/colorPrimaryDark"
+        android:linksClickable="true"
+        android:textSize="@dimen/small_font_size"
+        android:paddingEnd="@dimen/large_margin"
+        android:paddingStart="@dimen/large_margin"
+        android:text="@string/about_donations_thanks"
         android:textAlignment="center"/>
 
     <TextView
