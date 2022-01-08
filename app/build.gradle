@@ -6,8 +6,8 @@ android {
         applicationId "com.prangesoftwaresolutions.audioanchor"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 24
-        versionName "2.2.5"
+        versionCode 25
+        versionName "2.2.6"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildTypes {
