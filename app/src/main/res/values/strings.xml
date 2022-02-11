@@ -41,7 +41,7 @@
 
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Autoplay</string>
-    <string name="settings_autoplay_restart_label">Replay tracks from beginning in autoplay queue</string>
+    <string name="settings_autoplay_restart_label">Replay tracks from beginning when playing next/previous track</string>
     <string name="settings_progress_percentage_label">Show progress in percent</string>
     <string name="settings_keep_deleted_label">Keep progress of deleted files in library</string>
     <string name="settings_cover_from_metadata_label">Get cover image from metadata</string>
@@ -67,6 +67,14 @@
     <string name="settings_add_last_play_position_bookmark_label">Add and update last and second to last play position bookmarks whenever play is pressed</string>
     <string name="settings_cover_on_lockscreen_label">Display cover image on lockscreen</string>
     <string name="settings_quick_bookmark_label">Add bookmark with a single click on the bookmark icon</string>
+    <string name="settings_skip_intervals_category">Skip intervals</string>
+    <string name="settings_forward_button_1">Forward button #1</string>
+    <string name="settings_forward_button_2">Forward button #2</string>
+    <string name="settings_backward_button_1">Backward button #1</string>
+    <string name="settings_backward_button_2">Backward button #2</string>
+    <string name="settings_notification_backward_button">Notification backward button</string>
+    <string name="settings_notification_forward_button">Notification forward button</string>
+    <string name="settings_skip_interval_msg">Skip interval for %s</string>
 
     <!-- Layout Texts -->
     <string name="title">Title</string>

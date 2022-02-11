@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <LinearLayout
+        android:id="@+id/seekbar_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="horizontal"
+        android:layout_marginLeft="@dimen/standard_margin"
+        android:layout_marginRight="@dimen/standard_margin"
+        android:layout_marginBottom="@dimen/standard_margin"
+        android:layout_marginTop="@dimen/large_margin">
+
+
+        <TextView
+            android:layout_width="@dimen/large_margin"
+            android:layout_weight="0"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_next"
+            android:textColor="@color/colorPrimary"
+            android:text="1s"
+            android:textSize="@dimen/medium_font_size"/>
+
+        <SeekBar
+            android:id="@+id/skip_interval_sb"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/large_margin"
+            android:layout_marginBottom="@dimen/small_margin"
+            android:max="99"/>
+
+        <ImageView
+            android:id="@+id/seekbar_max_iv"
+            android:layout_width="@dimen/large_margin"
+            android:layout_weight="0"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_previous"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/skip_interval_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/seekbar_ll"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:textSize="@dimen/medium_font_size"
+        />
+
+    <ImageView
+        android:id="@+id/decrease_interval_iv"
+        android:layout_width="@dimen/change_skip_interval_button_height"
+        android:layout_height="@dimen/change_skip_interval_button_height"
+        app:layout_constraintTop_toBottomOf="@+id/seekbar_ll"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="@dimen/change_skip_interval_button_height"
+        android:layout_marginBottom="@dimen/large_margin"
+        android:src="@drawable/decrease_button" />
+
+    <ImageView
+        android:id="@+id/increase_interval_iv"
+        android:layout_width="@dimen/change_skip_interval_button_height"
+        android:layout_height="@dimen/change_skip_interval_button_height"
+        app:layout_constraintTop_toBottomOf="@+id/seekbar_ll"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginEnd="@dimen/change_skip_interval_button_height"
+        android:layout_marginBottom="@dimen/large_margin"
+        android:src="@drawable/increase_button" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

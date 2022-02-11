@@ -52,6 +52,7 @@ import com.prangesoftwaresolutions.audioanchor.helpers.SleepTimer;
 import com.prangesoftwaresolutions.audioanchor.activities.PlayActivity;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 
 import java.io.IOException;
@@ -322,36 +323,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         boolean playingNext = false;
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
-        boolean autoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
 
         if (autoplay && !mStopAtEndOfCurrentTrack) {
-            if (mAudioIndex + 1 < mAudioIdQueue.size()) {
-                mAudioIndex++;
-                StorageUtil storage = new StorageUtil(this);
-                storage.storeAudioIndex(mAudioIndex);
-                long activeAudioId = mAudioIdQueue.get(mAudioIndex);
-                mActiveAudio = AudioFile.getAudioFileById(this, activeAudioId);
-                if (mActiveAudio != null) {
-                    storage.storeAudioId(mActiveAudio.getID());
-                }
-                sendNewAudioFile(mAudioIndex);
-                playingNext = true;
-                int startPosition;
-                if (autoplayRestart) {
-                    startPosition = 0;
-                } else {
-                    startPosition = mActiveAudio.getCompletedTime();
-                }
-                initMediaPlayer(mActiveAudio.getPath(), startPosition);
-                play();
-            }
+            playingNext = initNextAudioFile();
+        } else if (mStopAtEndOfCurrentTrack) {
+            terminateSleepTimer();
         }
 
-        if (mStopAtEndOfCurrentTrack) {
-          terminateSleepTimer();
-        }
-
-        if (!playingNext) {
+        if (playingNext) {
+            play();
+        } else {
             // Notify the play activity that the playback was paused
             sendPlayStatusResult(MSG_STOP);
 
@@ -363,6 +344,60 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
             mLockManager.releaseWakeLock();
         }
+    }
+
+    public boolean initNextAudioFile() {
+        boolean autoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
+        if (mAudioIndex + 1 < mAudioIdQueue.size()) {
+            mAudioIndex++;
+            StorageUtil storage = new StorageUtil(this);
+            storage.storeAudioIndex(mAudioIndex);
+            long activeAudioId = mAudioIdQueue.get(mAudioIndex);
+            mActiveAudio = AudioFile.getAudioFileById(this, activeAudioId);
+            if (mActiveAudio != null) {
+                storage.storeAudioId(mActiveAudio.getID());
+            }
+            sendNewAudioFile(mAudioIndex);
+            int startPosition;
+            if (autoplayRestart) {
+                startPosition = 0;
+            } else {
+                startPosition = mActiveAudio.getCompletedTime();
+            }
+            initMediaPlayer(mActiveAudio.getPath(), startPosition);
+            updateAudioFileStatus();  // Needed if startPosition is set to 0 such that the time in the AlbumActivity is updated
+            updateMetaData();
+            buildNotification();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean initPreviousAudioFile() {
+        boolean autoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
+        if (mAudioIndex - 1 >= 0) {
+            mAudioIndex--;
+            StorageUtil storage = new StorageUtil(this);
+            storage.storeAudioIndex(mAudioIndex);
+            long activeAudioId = mAudioIdQueue.get(mAudioIndex);
+            mActiveAudio = AudioFile.getAudioFileById(this, activeAudioId);
+            if (mActiveAudio != null) {
+                storage.storeAudioId(mActiveAudio.getID());
+            }
+            sendNewAudioFile(mAudioIndex);
+            int startPosition;
+            if (autoplayRestart) {
+                startPosition = 0;
+            } else {
+                startPosition = mActiveAudio.getCompletedTime();
+            }
+            initMediaPlayer(mActiveAudio.getPath(), startPosition);
+            updateAudioFileStatus();
+            updateMetaData();
+            buildNotification();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -626,20 +661,24 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private void buildNotification() {
         createNotificationChannel();
 
-        int notificationAction = R.drawable.ic_media_pause;
-        PendingIntent play_pauseAction;
-        String title = getString(R.string.button_pause);
-
-        // Build a new notification according to the current state of the MediaPlayer
-        if (isPlaying()) {
-            // Create the pause action
-            play_pauseAction = playbackAction(1);
-        } else {
-            notificationAction = R.drawable.ic_media_play;
+        // Get play/pause image, action and title according to the current state of the MediaPlayer
+        int playPauseImageResource = R.drawable.ic_media_pause;
+        PendingIntent playPauseAction = playbackAction(1);
+        String playPauseTitle = getString(R.string.button_pause);
+        if (!isPlaying()) {
+            playPauseImageResource = R.drawable.ic_media_play;
             // Create the play action
-            play_pauseAction = playbackAction(0);
-            title = getString(R.string.button_play);
+            playPauseAction = playbackAction(0);
+            playPauseTitle = getString(R.string.button_play);
         }
+
+        // Get skip icons according to the notification skip intervals from the settings
+        int skipIntervalBackward = mSharedPreferences.getInt(getString(R.string.settings_notification_backward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+        int skipIntervalForward = mSharedPreferences.getInt(getString(R.string.settings_notification_forward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+        int skipBackwardImageResource = (SkipIntervalUtils.isMaxSkipInterval(skipIntervalBackward)) ? R.drawable.ic_notification_previous : R.drawable.ic_notification_backward;
+        int skipForwardImageResource = (SkipIntervalUtils.isMaxSkipInterval(skipIntervalForward)) ? R.drawable.ic_notification_next : R.drawable.ic_notification_forward;
+        if (skipIntervalBackward == 30) skipBackwardImageResource = R.drawable.ic_notification_backward_30;
+        if (skipIntervalForward == 30) skipForwardImageResource = R.drawable.ic_notification_forward_30;
 
         Bitmap notificationCover = getNotificationImage(200);
 
@@ -688,12 +727,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Set the visibility for the lock screen
                 .setVisibility(VISIBILITY_PUBLIC)
                 // Make notification non-removable if the track is currently playing
-                .setOngoing(title.equals(getString(R.string.button_pause)))
+                .setOngoing(playPauseTitle.equals(getString(R.string.button_pause)))
                 // Add playback actions
                 .addAction(R.drawable.ic_media_bookmark, getString(R.string.button_bookmark), playbackAction(4))
-                .addAction(R.drawable.ic_media_backward, getString(R.string.button_backward), playbackAction(3))
-                .addAction(notificationAction, title, play_pauseAction)
-                .addAction(R.drawable.ic_media_forward, getString(R.string.button_forward), playbackAction(2));
+                .addAction(skipBackwardImageResource, getString(R.string.button_backward), playbackAction(3))
+                .addAction(playPauseImageResource, playPauseTitle, playPauseAction)
+                .addAction(skipForwardImageResource, getString(R.string.button_forward), playbackAction(2));
 
         Notification notification = mNotificationBuilder.build();
         if (isPlaying()) {
@@ -751,9 +790,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
             else play();
         } else if (actionString.equalsIgnoreCase(ACTION_FORWARD)) {
-            forward(30);
+            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_forward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {
+                skipToNextAudioFile();
+            } else {
+                forward(skipInterval);
+            }
         } else if (actionString.equalsIgnoreCase(ACTION_BACKWARD)) {
-            backward(30);
+            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_backward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {
+                skipToPreviousAudioFile();
+            } else {
+                backward(skipInterval);
+            }
         } else if (actionString.equalsIgnoreCase(ACTION_BOOKMARK)) {
             setBookmark();
         }
@@ -840,6 +889,26 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         int newPos = Math.max(0, mMediaPlayer.getCurrentPosition() - seconds * 1000);
         mMediaPlayer.seekTo(newPos);
         updateAudioFileStatus();
+    }
+
+    /*
+     * Skip to next audio file
+     */
+    public void skipToNextAudioFile() {
+        boolean wasPlaying = mMediaPlayer != null && mMediaPlayer.isPlaying();
+        updateAudioFileStatus();
+        initNextAudioFile();
+        if (wasPlaying) play();
+    }
+
+    /*
+     * Skip to previous audio file
+     */
+    public void skipToPreviousAudioFile() {
+        boolean wasPlaying = mMediaPlayer != null && mMediaPlayer.isPlaying();
+        updateAudioFileStatus();
+        initPreviousAudioFile();
+        if (wasPlaying) play();
     }
 
     /*

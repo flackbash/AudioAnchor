@@ -26,5 +26,6 @@
     <dimen name="reset_button_height">72dp</dimen>
     <dimen name="file_selector_icon_height">40dp</dimen>
     <dimen name="sleep_timer_quick_button_height">44dp</dimen>
+    <dimen name="change_skip_interval_button_height">44dp</dimen>
 
 </resources>

@@ -10,8 +10,7 @@
         <SwitchPreference
             android:defaultValue="@string/settings_autoplay_restart_default"
             android:key="@string/settings_autoplay_restart_key"
-            android:title="@string/settings_autoplay_restart_label"
-            android:enabled="false" />
+            android:title="@string/settings_autoplay_restart_label" />
 
         <EditTextPreference
             android:defaultValue="@string/settings_autorewind_default"
@@ -68,6 +67,39 @@
             android:title="@string/settings_show_hidden_label" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/settings_skip_intervals_category">
+        <com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference
+            android:defaultValue="@string/settings_skip_interval_big_default"
+            android:dialogTitle="@string/settings_backward_button_1"
+            android:key="@string/settings_backward_button_1_key"
+            android:title="@string/settings_backward_button_1" />
+        <com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference
+            android:defaultValue="@string/settings_skip_interval_small_default"
+            android:dialogTitle="@string/settings_backward_button_2"
+            android:key="@string/settings_backward_button_2_key"
+            android:title="@string/settings_backward_button_2" />
+        <com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference
+            android:defaultValue="@string/settings_skip_interval_big_default"
+            android:dialogTitle="@string/settings_forward_button_1"
+            android:key="@string/settings_forward_button_1_key"
+            android:title="@string/settings_forward_button_1" />
+        <com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference
+            android:defaultValue="@string/settings_skip_interval_small_default"
+            android:dialogTitle="@string/settings_forward_button_2"
+            android:key="@string/settings_forward_button_2_key"
+            android:title="@string/settings_forward_button_2" />
+
+        <com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference
+            android:defaultValue="@string/settings_skip_interval_big_default"
+            android:dialogTitle="@string/settings_notification_backward_button"
+            android:key="@string/settings_notification_backward_button_key"
+            android:title="@string/settings_notification_backward_button" />
+        <com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference
+            android:defaultValue="@string/settings_skip_interval_big_default"
+            android:dialogTitle="@string/settings_notification_forward_button"
+            android:key="@string/settings_notification_forward_button_key"
+            android:title="@string/settings_notification_forward_button" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_sleep_timer_category">
 
         <EditTextPreference

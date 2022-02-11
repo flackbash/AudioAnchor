@@ -63,41 +63,93 @@
                 android:layout_marginStart="@dimen/small_margin"
                 android:layout_marginEnd="@dimen/small_margin" />
 
-            <ImageView
-                android:id="@+id/play_forward"
+            <RelativeLayout
+                android:id="@+id/skip_backward_1_layout"
                 android:layout_width="@dimen/skip_button_height"
                 android:layout_height="@dimen/skip_button_height"
-                android:src="@drawable/forward_button"
-                android:layout_toEndOf="@+id/play_forward_10"
-                android:layout_marginStart="@dimen/small_margin"
-                android:layout_centerVertical="true" />
-
-            <ImageView
-                android:id="@+id/play_backward"
-                android:layout_width="@dimen/skip_button_height"
-                android:layout_height="@dimen/skip_button_height"
-                android:src="@drawable/backward_button"
-                android:layout_toStartOf="@+id/play_backward_10"
+                android:layout_toStartOf="@+id/skip_backward_2_layout"
                 android:layout_marginEnd="@dimen/small_margin"
-                android:layout_centerVertical="true" />
+                android:layout_centerVertical="true">
+                <TextView
+                    android:id="@+id/backward_1_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:paddingTop="@dimen/standard_margin"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary" />
+                <ImageView
+                    android:id="@+id/backward_1_iv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/backward_button"/>
+            </RelativeLayout>
 
-            <ImageView
-                android:id="@+id/play_backward_10"
+            <RelativeLayout
+                android:id="@+id/skip_backward_2_layout"
                 android:layout_width="@dimen/skip_button_height_big"
                 android:layout_height="@dimen/skip_button_height_big"
-                android:src="@drawable/backward_10_button"
                 android:layout_toStartOf="@+id/play_play"
                 android:layout_marginEnd="@dimen/small_margin"
-                android:layout_centerVertical="true" />
+                android:layout_centerVertical="true">
+                <TextView
+                    android:id="@+id/backward_2_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:paddingTop="@dimen/standard_margin"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary" />
+                <ImageView
+                    android:id="@+id/backward_2_iv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/backward_button"/>
+            </RelativeLayout>
 
-            <ImageView
-                android:id="@+id/play_forward_10"
+            <RelativeLayout
+                android:id="@+id/skip_forward_1_layout"
                 android:layout_width="@dimen/skip_button_height_big"
                 android:layout_height="@dimen/skip_button_height_big"
-                android:src="@drawable/forward_10_button"
                 android:layout_toEndOf="@+id/play_play"
                 android:layout_marginStart="@dimen/small_margin"
-                android:layout_centerVertical="true" />
+                android:layout_centerVertical="true">
+                <TextView
+                    android:id="@+id/forward_1_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:paddingTop="@dimen/standard_margin"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary" />
+                <ImageView
+                    android:id="@+id/forward_1_iv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/forward_button"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/skip_forward_2_layout"
+                android:layout_width="@dimen/skip_button_height"
+                android:layout_height="@dimen/skip_button_height"
+                android:layout_toEndOf="@+id/skip_forward_1_layout"
+                android:layout_marginStart="@dimen/small_margin"
+                android:layout_centerVertical="true">
+                <TextView
+                    android:id="@+id/forward_2_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:paddingTop="@dimen/standard_margin"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary" />
+                <ImageView
+                    android:id="@+id/forward_2_iv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/forward_button"/>
+            </RelativeLayout>
 
         </RelativeLayout>
 

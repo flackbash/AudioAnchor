@@ -2,6 +2,8 @@ package com.prangesoftwaresolutions.audioanchor.activities;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import androidx.fragment.app.DialogFragment;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -10,10 +12,14 @@ import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.view.MenuItem;
 
 import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.dialogs.SkipIntervalSettingsDialog;
+import com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference;
 import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
+import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -60,16 +66,6 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            // addPreferencesFromResource(R.xml.settings);
-
-            // Make sure the autoplay position preference is enabled iff autoplay is
-            final SwitchPreference autoplayPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_key));
-            final SwitchPreference autoplayPositionPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_restart_key));
-
-            // This is needed for cases where autoplay was checked while a previous version of
-            // AudioAnchor was installed
-            autoplayPositionPref.setEnabled(autoplayPref.isChecked());
-
             initSummary(getPreferenceScreen());
         }
 
@@ -84,11 +80,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             updatePrefSummary(pref);
 
-            if (s.equals(getString(R.string.settings_autoplay_key))) {
-                boolean isChecked = ((SwitchPreference) pref).isChecked();
-                final SwitchPreference autoplayPositionPref = (SwitchPreference) findPreference(getString(R.string.settings_autoplay_restart_key));
-                autoplayPositionPref.setEnabled(isChecked);
-            } else if (s.equals(getString(R.string.settings_add_last_play_position_bookmark_key))) {
+            if (s.equals(getString(R.string.settings_add_last_play_position_bookmark_key))) {
                 boolean isChecked = ((SwitchPreference) pref).isChecked();
                 if (!isChecked) {
                     Bookmark.deleteBookmarksWithTitle(getActivity(), getString(R.string.bookmark_last_play_position));
@@ -114,6 +106,38 @@ public class SettingsActivity extends AppCompatActivity {
                 p.setSummary(editTextPref.getText());
             } else if (p instanceof ListPreference) {
                 p.setSummary(((ListPreference)p).getEntry());
+            } else if (p instanceof SkipIntervalPreference) {;
+                int skipInterval = ((SkipIntervalPreference)p).getSkipInterval();
+                String skipIntervalStr;
+                if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {
+                    boolean isForwardButton = ((SkipIntervalPreference)p).isForward();
+                    skipIntervalStr = (isForwardButton) ? getResources().getString(R.string.settings_skip_interval_next) : getResources().getString(R.string.settings_skip_interval_previous);
+                } else {
+                    skipIntervalStr = String.valueOf(skipInterval);
+                }
+                p.setSummary(skipIntervalStr);
+            }
+        }
+
+        @Override
+        public void onDisplayPreferenceDialog(Preference preference) {
+            // Check if the preference is a SkipIntervalPreference
+            DialogFragment dialogFragment = null;
+            if (preference instanceof SkipIntervalPreference) {
+                // Create a new instance of SkipButtonSettingDialog with the key of the related
+                // Preference
+                dialogFragment = SkipIntervalSettingsDialog.newInstance(preference.getKey());
+            }
+
+            // If it was one of our custom Preferences, show its dialog
+            if (dialogFragment != null) {
+                // TODO: Resolve deprecation
+                dialogFragment.setTargetFragment(this, 0);
+                // TODO: What's a proper value for this tag?
+                dialogFragment.show(this.getParentFragmentManager(), "com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference");
+            } else {
+                // Could not be handled here. Try with the super method.
+                super.onDisplayPreferenceDialog(preference);
             }
         }
 

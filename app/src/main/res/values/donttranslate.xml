@@ -13,7 +13,7 @@
     <string name="settings_autoplay_key" translatable="false">autoplay</string>
     <string name="settings_autoplay_default" translatable="false">false</string>
     <string name="settings_autoplay_restart_key" translatable="false">autoplay_position</string>
-    <string name="settings_autoplay_restart_default" translatable="false">true</string>
+    <string name="settings_autoplay_restart_default" translatable="false">false</string>
     <string name="settings_progress_percentage_key" translatable="false">settings_progress_percentage</string>
     <string name="settings_progress_percentage_default" translatable="false">false</string>
     <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
@@ -53,6 +53,17 @@
     <string name="settings_cover_on_lockscreen_default" translatable="false">true</string>
     <string name="settings_quick_bookmark_key" translatable="false">quick_bookmark</string>
     <string name="settings_quick_bookmark_default" translatable="false">false</string>
+    <string name="settings_skip_interval_small_default" translatable="false">10</string>
+    <string name="settings_skip_interval_big_default" translatable="false">30</string>
+    <string name="settings_skip_interval_previous" translatable="false">|&lt;</string>
+    <string name="settings_skip_interval_next" translatable="false">&gt;|</string>
+    <string name="settings_backward_button_1_key" translatable="false">backward_button_1</string>
+    <string name="settings_backward_button_2_key" translatable="false">backward_button_2</string>
+    <string name="settings_forward_button_1_key" translatable="false">forward_button_1</string>
+    <string name="settings_forward_button_2_key" translatable="false">forward_button_2</string>
+    <string name="settings_notification_backward_button_key" translatable="false">notification_backward_button</string>
+    <string name="settings_notification_forward_button_key" translatable="false">notification_forward_button</string>
+    <string name="settings_skip_interval" translatable="false">%d s</string>
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>

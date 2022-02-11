@@ -49,6 +49,7 @@ import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.adapters.BookmarkCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
@@ -68,19 +69,26 @@ public class PlayActivity extends AppCompatActivity {
     MediaMetadataRetriever mMetadataRetriever;
     SleepTimer mSleepTimer = null;
     SensorManager mSensorManager;
+    StorageUtil mStorage;
 
     // Audio File variables
     AudioFile mAudioFile;
+    int mAudioIndex;
+    ArrayList<Long> mAudioIdList;
 
     // The Views
     ImageView mCoverIV;
     TextView mTitleTV;
     TextView mAlbumTV;
     ImageView mPlayIV;
-    ImageView mBackIV;
-    ImageView mBack10IV;
-    ImageView mForwardIV;
-    ImageView mForward10IV;
+    ImageView mBackward1IV;
+    ImageView mBackward2IV;
+    ImageView mForward2IV;
+    ImageView mForward1IV;
+    TextView mBackward1TV;
+    TextView mBackward2TV;
+    TextView mForward2TV;
+    TextView mForward1TV;
     SeekBar mSeekBar;
     TextView mCompletedTimeTV;
     TextView mTimeTV;
@@ -117,11 +125,18 @@ public class PlayActivity extends AppCompatActivity {
         mCoverIV = findViewById(R.id.play_cover);
         mTitleTV = findViewById(R.id.play_audio_file_title);
         mAlbumTV = findViewById(R.id.play_album_title);
+
         mPlayIV = findViewById(R.id.play_play);
-        mBackIV = findViewById(R.id.play_backward);
-        mBack10IV = findViewById(R.id.play_backward_10);
-        mForwardIV = findViewById(R.id.play_forward);
-        mForward10IV = findViewById(R.id.play_forward_10);
+
+        mBackward1IV = findViewById(R.id.backward_1_iv);
+        mBackward2IV = findViewById(R.id.backward_2_iv);
+        mForward1IV = findViewById(R.id.forward_1_iv);
+        mForward2IV = findViewById(R.id.forward_2_iv);
+        mBackward1TV = findViewById(R.id.backward_1_tv);
+        mBackward2TV = findViewById(R.id.backward_2_tv);
+        mForward1TV = findViewById(R.id.forward_1_tv);
+        mForward2TV = findViewById(R.id.forward_2_tv);
+
         mSeekBar = findViewById(R.id.play_seekbar);
         mCompletedTimeTV = findViewById(R.id.play_completed_time);
         mTimeTV = findViewById(R.id.play_time);
@@ -136,6 +151,8 @@ public class PlayActivity extends AppCompatActivity {
 
         mAudioFile = AudioFile.getAudioFileById(this, currAudioId);
         mMetadataRetriever = new MediaMetadataRetriever();
+
+        mStorage = new StorageUtil(getApplicationContext());
 
         setNewAudioFile();
         setAlbumCover();
@@ -192,23 +209,23 @@ public class PlayActivity extends AppCompatActivity {
             }
         });
 
-        mBackIV.setOnClickListener(view -> {
-            int newTime = Math.max(getAudioCompletedTime() - 30*1000, 0);
-            updateAudioCompletedTime(newTime);
-        });
-        mBack10IV.setOnClickListener(view -> {
-            int newTime = Math.max(getAudioCompletedTime() - 10*1000, 0);
-            updateAudioCompletedTime(newTime);
-        });
+        initSkipButtons();
 
-        mForwardIV.setOnClickListener(view -> {
-            int newTime = Math.min(getAudioCompletedTime() + 30*1000, mAudioFile.getTime());
-            updateAudioCompletedTime(newTime);
+        mBackward1IV.setOnClickListener(view -> {
+            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_backward_button_1_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            skipBackward(skipInterval);
         });
-
-        mForward10IV.setOnClickListener(view -> {
-            int newTime = Math.min(getAudioCompletedTime() + 10*1000, mAudioFile.getTime());
-            updateAudioCompletedTime(newTime);
+        mBackward2IV.setOnClickListener(view -> {
+            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_backward_button_2_key), Integer.parseInt(getString(R.string.settings_skip_interval_small_default)));
+            skipBackward(skipInterval);
+        });
+        mForward1IV.setOnClickListener(view -> {
+            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_forward_button_1_key), Integer.parseInt(getString(R.string.settings_skip_interval_small_default)));
+            skipForward(skipInterval);
+        });
+        mForward2IV.setOnClickListener(view -> {
+            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_forward_button_2_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            skipForward(skipInterval);
         });
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -242,6 +259,49 @@ public class PlayActivity extends AppCompatActivity {
         if (immediatePlayback) playAudio();
     }
 
+    void initSkipButtons() {
+        int skipIntervalBackwardButton1 = mSharedPreferences.getInt(getString(R.string.settings_backward_button_1_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+        int skipIntervalBackwardButton2 = mSharedPreferences.getInt(getString(R.string.settings_backward_button_2_key), Integer.parseInt(getString(R.string.settings_skip_interval_small_default)));
+        int skipIntervalForwardButton1 = mSharedPreferences.getInt(getString(R.string.settings_forward_button_1_key), Integer.parseInt(getString(R.string.settings_skip_interval_small_default)));
+        int skipIntervalForwardButton2 = mSharedPreferences.getInt(getString(R.string.settings_forward_button_2_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+
+        // Set the skip interval text within the skip buttons
+        mBackward1TV.setText(String.valueOf(skipIntervalBackwardButton1));
+        mBackward2TV.setText(String.valueOf(skipIntervalBackwardButton2));
+        mForward1TV.setText(String.valueOf(skipIntervalForwardButton1));
+        mForward2TV.setText(String.valueOf(skipIntervalForwardButton2));
+
+        // Set the skip icon to next / previous if a button has a max skip interval set
+        if (SkipIntervalUtils.isMaxSkipInterval(skipIntervalBackwardButton1)) {
+            mBackward1IV.setImageResource(R.drawable.previous_button);
+            mBackward1TV.setVisibility(View.INVISIBLE);
+        } else {
+            mBackward1IV.setImageResource(R.drawable.backward_button);
+            mBackward1TV.setVisibility(View.VISIBLE);
+        }
+        if (SkipIntervalUtils.isMaxSkipInterval(skipIntervalBackwardButton2)) {
+            mBackward2IV.setImageResource(R.drawable.previous_button);
+            mBackward2TV.setVisibility(View.INVISIBLE);
+        } else {
+            mBackward2IV.setImageResource(R.drawable.backward_button);
+            mBackward2TV.setVisibility(View.VISIBLE);
+        }
+        if (SkipIntervalUtils.isMaxSkipInterval(skipIntervalForwardButton1)) {
+            mForward1IV.setImageResource(R.drawable.next_button);
+            mForward1TV.setVisibility(View.INVISIBLE);
+        } else {
+            mForward1IV.setImageResource(R.drawable.forward_button);
+            mForward1TV.setVisibility(View.VISIBLE);
+        }
+        if (SkipIntervalUtils.isMaxSkipInterval(skipIntervalForwardButton2)) {
+            mForward2IV.setImageResource(R.drawable.next_button);
+            mForward2TV.setVisibility(View.INVISIBLE);
+        } else {
+            mForward2IV.setImageResource(R.drawable.forward_button);
+            mForward2TV.setVisibility(View.VISIBLE);
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -264,6 +324,8 @@ public class PlayActivity extends AppCompatActivity {
         if (mDarkTheme != currentDarkTheme || mCoverFromMetadata != currentGetCoverFromMetadata || mTitleFromMetadata != currentGetTitleFromMetadata) {
             recreate();
         }
+        initSkipButtons();
+
         super.onRestart();
     }
 
@@ -410,23 +472,21 @@ public class PlayActivity extends AppCompatActivity {
         String sortOrder = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
 
         ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesInAlbum(this, mAudioFile.getAlbumId(), sortOrder);
-        ArrayList<Long> audioIdList = new ArrayList<>();
+        mAudioIdList = new ArrayList<>();
         for (AudioFile audioFile : audioList) {
-            audioIdList.add(audioFile.getID());
+            mAudioIdList.add(audioFile.getID());
         }
 
-        int audioIndex = audioIdList.indexOf(mAudioFile.getID());
-        StorageUtil storage = new StorageUtil(getApplicationContext());
-        storage.storeAudioIds(audioIdList);
-        storage.storeAudioIndex(audioIndex);
-        storage.storeAudioId(mAudioFile.getID());
+        mAudioIndex = mAudioIdList.indexOf(mAudioFile.getID());
+        mStorage.storeAudioIds(mAudioIdList);
+        mStorage.storeAudioIndex(mAudioIndex);
+        mStorage.storeAudioId(mAudioFile.getID());
     }
 
     private void loadAudioFile(int audioIndex) {
         // Load data from SharedPreferences
-        StorageUtil storage = new StorageUtil(getApplicationContext());
-        ArrayList<Long> audioList = new ArrayList<>(storage.loadAudioIds());
-        long audioId = audioList.get(audioIndex);
+        mAudioIndex = audioIndex;
+        long audioId = mAudioIdList.get(audioIndex);
         mAudioFile = AudioFile.getAudioFileById(this, audioId);
         setNewAudioFile();
         setAlbumCover();
@@ -602,7 +662,7 @@ public class PlayActivity extends AppCompatActivity {
     void startSleepTimer(int minutes) {
         // Get sleep timer preferences
         boolean shakeEnabledSetting = mSharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
-        int shakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
+        int shakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), Integer.parseInt(getString(R.string.settings_shake_sensitivity_default)));
         float shakeForceRequired = (100 - shakeSensitivitySetting) / 100f;
 
         if (mSleepTimer == null) {
@@ -960,5 +1020,77 @@ public class PlayActivity extends AppCompatActivity {
         } else {
             return mAudioFile.getCompletedTime();
         }
+    }
+
+    /*
+     * Skip backward: Depending on the user settings either to the previous file or within the
+     * current file.
+     * If MediaPlayerService is already started, use MediaPlayerService function, else set previous
+     * file within PlayActivity.
+     */
+    void skipBackward(int skipInterval) {
+        if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {
+            if (mPlayer != null) {
+                mPlayer.skipToPreviousAudioFile();
+            } else {
+                if (mAudioIndex > 0) {
+                    // Store current audio completed time
+                    updateAudioCompletedTime(mAudioFile.getCompletedTime());
+                    // Load new audio file
+                    int audioIndex = mAudioIndex - 1;
+                    initNewAudioFileViaPlayActivity(audioIndex);
+                }
+            }
+        } else {
+            int newTime = Math.max(getAudioCompletedTime() - skipInterval*1000, 0);
+            updateAudioCompletedTime(newTime);
+        }
+    }
+
+    /*
+     * Skip forward: Depending on the user settings either to the next file or within the
+     * current file.
+     * If MediaPlayerService is already started, use MediaPlayerService function, else set next
+     * file within PlayActivity.
+     */
+    void skipForward(int skipInterval) {
+        if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {
+            if (mPlayer != null) {
+                mPlayer.skipToNextAudioFile();
+            } else {
+                if (mAudioIndex + 1 < mAudioIdList.size()) {
+                    // Store current audio completed time
+                    updateAudioCompletedTime(mAudioFile.getCompletedTime());
+                    // Load new audio file
+                    int audioIndex = mAudioIndex + 1;
+                    initNewAudioFileViaPlayActivity(audioIndex);
+                }
+            }
+        } else {
+            int newTime = Math.min(getAudioCompletedTime() + skipInterval * 1000, mAudioFile.getTime());
+            updateAudioCompletedTime(newTime);
+        }
+    }
+
+    /*
+     * Initialize the audio file with the given index in the stored AudioFile list for when the
+     * MediaPlayerService is not yet started.
+     */
+    void initNewAudioFileViaPlayActivity(int audioIndex) {
+        mAudioIndex = audioIndex;
+        loadAudioFile(mAudioIndex);
+
+        // Update the storage
+        mStorage.storeAudioIndex(mAudioIndex);
+        mStorage.storeAudioId(mAudioFile.getID());
+
+        // Restart audio file from the beginning if this option is set
+        boolean restartFromBeginning = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
+        if (restartFromBeginning) {
+            mAudioFile.setCompletedTime(0);
+            updateAudioCompletedTime(mAudioFile.getCompletedTime());
+        }
+
+        initializeSeekBar();
     }
 }
