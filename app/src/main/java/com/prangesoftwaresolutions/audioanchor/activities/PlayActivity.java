@@ -202,6 +202,13 @@ public class PlayActivity extends AppCompatActivity {
         };
 
         mPlayIV.setOnClickListener(view -> {
+            // Avoid "App not responding" error when clicking play on a completed file by not
+            // starting the MediaPlayerService in that case.
+            boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
+            if (mPlayer == null && mAudioFile.getCompletedTime() == mAudioFile.getTime() && !autoplay) {
+                return;
+            }
+
             if (mPlayer == null || !mPlayer.isPlaying()) {
                 playAudio();
             } else {
