@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -260,6 +261,27 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // This needs to be a receiver for global broadcasts, as the deleteIntent is broadcast by
         // Android's notification framework
         registerReceiver(mRemoveNotificationReceiver, new IntentFilter(MediaPlayerService.BROADCAST_REMOVE_NOTIFICATION));
+
+        // Extract version code and version name of the app
+        PackageInfo pInfo = null;
+        try {
+            pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (pInfo != null) {
+            int previousVersionCode = mSharedPreferences.getInt(getString(R.string.preference_version_code_key), Integer.parseInt(getString(R.string.preference_version_code_default)));
+            int versionCode = pInfo.versionCode;
+            String versionName = pInfo.versionName;
+            if (previousVersionCode != versionCode) {
+                // TODO: Show Changelog
+                // Save new version code and name
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+                editor.putInt(getString(R.string.preference_version_code_key), versionCode);
+                editor.putString(getString(R.string.preference_version_name_key), versionName);
+                editor.apply();
+            }
+        }
     }
 
     @Override

@@ -8,6 +8,10 @@
     <string name="preference_playback_speed_key" translatable="false">preference_playback_speed</string>
     <string name="preference_playback_speed_default" translatable="false">100</string>
     <string name="preference_playback_speed_minimum" translatable="false">50</string>
+    <string name="preference_version_code_key" translatable="false">app_version_code</string>
+    <string name="preference_version_code_default" translatable="false">0</string>
+    <string name="preference_version_name_key" translatable="false">app_version_name</string>
+    <string name="preference_version_name_default" translatable="false">0</string>
 
     <!-- Settings strings -->
     <string name="settings_autoplay_key" translatable="false">autoplay</string>
