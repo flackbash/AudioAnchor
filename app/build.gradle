@@ -10,9 +10,6 @@ android {
         versionName "2.3.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
-    lintOptions {
-        abortOnError false
-    }
     buildTypes {
         release {
             minifyEnabled false
@@ -26,6 +23,7 @@ android {
     }
     lintOptions {
         disable 'GoogleAppIndexingWarning'
+        abortOnError false
     }
     packagingOptions {
         exclude 'META-INF/*'
