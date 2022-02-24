@@ -35,6 +35,8 @@
     <string name="settings_continue_until_end_default" translatable="false">false</string>
     <string name="settings_title_from_metadata_key" translatable="false">settings_title_from_metadata</string>
     <string name="settings_title_from_metadata_default" translatable="false">false</string>
+    <string name="settings_display_cover_below_track_data_key" translatable="false">cover_below_track_data</string>
+    <string name="settings_display_cover_below_track_data_default" translatable="false">false</string>
     <string name="settings_dark_key" translatable="false">settings_dark</string>
     <string name="settings_dark_default" translatable="false">false</string>
     <string name="settings_autorewind_key" translatable="false">autorewind</string>

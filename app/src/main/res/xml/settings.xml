@@ -58,6 +58,10 @@
             android:key="@string/settings_title_from_metadata_key"
             android:title="@string/settings_title_from_metadata_label" />
         <SwitchPreference
+            android:defaultValue="@string/settings_display_cover_below_track_data_default"
+            android:key="@string/settings_display_cover_below_track_data_key"
+            android:title="@string/settings_display_cover_below_track_data_label" />
+        <SwitchPreference
             android:defaultValue="@string/settings_dark_default"
             android:key="@string/settings_dark_key"
             android:title="@string/settings_dark_label" />
