@@ -37,6 +37,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -108,6 +109,7 @@ public class PlayActivity extends AppCompatActivity {
     // Settings flags
     private boolean mCoverFromMetadata;
     private boolean mTitleFromMetadata;
+    private boolean mCoverBelowTrackData;
     boolean mDarkTheme;
 
     // Shared preferences
@@ -146,6 +148,7 @@ public class PlayActivity extends AppCompatActivity {
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mCoverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
         mTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
+        mCoverBelowTrackData = mSharedPreferences.getBoolean(getString(R.string.settings_display_cover_below_track_data_key), Boolean.getBoolean(getString(R.string.settings_display_cover_below_track_data_default)));
         mLastSleepTime = mSharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.parseInt(getString(R.string.preference_last_sleep_val)));
         mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
 
@@ -264,6 +267,13 @@ public class PlayActivity extends AppCompatActivity {
 
         boolean immediatePlayback = mSharedPreferences.getBoolean(getString(R.string.settings_immediate_playback_key), Boolean.getBoolean(getString(R.string.settings_immediate_playback_default)));
         if (immediatePlayback) playAudio();
+
+        // Show album cover below track data if the user set it as a preference
+        if (mCoverBelowTrackData) {
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mCoverIV.getLayoutParams();
+            params.addRule(RelativeLayout.BELOW, mAlbumTV.getId());
+            mCoverIV.setLayoutParams(params);
+        }
     }
 
     void initSkipButtons() {
@@ -324,11 +334,12 @@ public class PlayActivity extends AppCompatActivity {
 
     @Override
     protected void onRestart() {
-        // Recreate if theme, getCoverFromMetadata or getTitleFromMetadata has changed
+        // Recreate if theme, getCoverFromMetadata, getTitleFromMetadata, or coverImageBelowTrackData has changed
         boolean currentDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
         boolean currentGetCoverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
         boolean currentGetTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
-        if (mDarkTheme != currentDarkTheme || mCoverFromMetadata != currentGetCoverFromMetadata || mTitleFromMetadata != currentGetTitleFromMetadata) {
+        boolean currentCoverImageBelowTrackData = mSharedPreferences.getBoolean(getString(R.string.settings_display_cover_below_track_data_key), Boolean.getBoolean(getString(R.string.settings_display_cover_below_track_data_default)));
+        if (mDarkTheme != currentDarkTheme || mCoverFromMetadata != currentGetCoverFromMetadata || mTitleFromMetadata != currentGetTitleFromMetadata || mCoverBelowTrackData != currentCoverImageBelowTrackData) {
             recreate();
         }
         initSkipButtons();
