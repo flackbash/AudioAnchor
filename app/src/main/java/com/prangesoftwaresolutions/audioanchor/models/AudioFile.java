@@ -169,11 +169,11 @@ public class AudioFile implements Serializable {
      * Create an Audio File from a cursor that is already at the correct position
      */
     private static AudioFile getAudioFileFromPositionedCursor(Context context, Cursor c) {
-        long id = c.getLong(c.getColumnIndex(AnchorContract.AudioEntry._ID));
-        String title = c.getString(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TITLE));
-        long albumId = c.getLong(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_ALBUM));
-        int completedTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
-        int time = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+        long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AudioEntry._ID));
+        String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TITLE));
+        long albumId = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_ALBUM));
+        int completedTime = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+        int time = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
         return new AudioFile(context, id, title, albumId, time, completedTime);
     }
 }

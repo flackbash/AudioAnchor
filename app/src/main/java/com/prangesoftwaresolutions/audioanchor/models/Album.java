@@ -214,14 +214,14 @@ public class Album {
     }
 
     private static Album getAlbumFromPositionedCursor(Context context, Cursor c) {
-        long id = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
-        String title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
-        long directoryId = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_DIRECTORY));
+        long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
+        String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE));
+        long directoryId = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DIRECTORY));
         Directory directory = Directory.getDirectoryByID(context, directoryId);
-        String coverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+        String coverPath = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
         long lastPlayed = -1;
-        if (!c.isNull(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {
-            lastPlayed = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED));
+        if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {
+            lastPlayed = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED));
         }
         return new Album(id, title, directory, coverPath, lastPlayed);
     }

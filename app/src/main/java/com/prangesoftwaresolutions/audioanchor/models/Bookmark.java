@@ -177,10 +177,10 @@ public class Bookmark {
     }
 
     private static Bookmark getBookmarkFromPositionedCursor(Cursor c) {
-        long id = c.getLong(c.getColumnIndex(AnchorContract.BookmarkEntry._ID));
-        String title = c.getString(c.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_TITLE));
-        long position = c.getLong(c.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_POSITION));
-        long audioFileID = c.getLong(c.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE));
+        long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.BookmarkEntry._ID));
+        String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.BookmarkEntry.COLUMN_TITLE));
+        long position = c.getLong(c.getColumnIndexOrThrow(AnchorContract.BookmarkEntry.COLUMN_POSITION));
+        long audioFileID = c.getLong(c.getColumnIndexOrThrow(AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE));
 
         return new Bookmark(id, title, position, audioFileID);
     }

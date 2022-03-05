@@ -319,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (cursor != null && cursor.getCount() > 0) {
                 cursor.moveToFirst();
                 while (true) {
-                    int id = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
                     currPosition++;
                     if (id == albumId) {
                         mCurrPlayingAlbumPosition = currPosition;

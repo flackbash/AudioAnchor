@@ -42,8 +42,8 @@ public class DBAccessUtils {
         int sumDuration = 0;
         int sumCompletedTime = 0;
         while (c.moveToNext()) {
-            sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-            sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+            sumDuration += c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
+            sumCompletedTime += c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
         }
         c.close();
 
@@ -89,7 +89,7 @@ public class DBAccessUtils {
 
         String title = null;
         if (c.moveToNext()) {
-            title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
+            title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE));
         }
         c.close();
 
@@ -155,7 +155,7 @@ public class DBAccessUtils {
 
         int totalTime = 0;
         while (c.moveToNext()) {
-            totalTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+            totalTime = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
         }
         c.close();
 

@@ -71,8 +71,8 @@ public class Migrator {
                     if (c.getCount() > 0) {
                         c.moveToFirst();
                         while (c.moveToNext()) {
-                            String oldCoverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-                            int id = c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
+                            String oldCoverPath = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+                            int id = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
                             if (oldCoverPath != null && !oldCoverPath.isEmpty()) {
                                 // Replace the old cover path in the database by the new relative path
                                 String newCoverPath = new File(oldCoverPath).getName();

@@ -141,12 +141,12 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
         }
 
         while (c.moveToNext()) {
-            long id = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
-            String title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
-            String coverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+            long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
+            String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE));
+            String coverPath = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
             long lastPlayed = -1;
-            if (!c.isNull(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {
-                lastPlayed = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED));
+            if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {
+                lastPlayed = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED));
             }
             Album album = new Album(id, title, directory, coverPath, lastPlayed);
             albums.add(album);

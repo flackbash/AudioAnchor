@@ -47,7 +47,7 @@ public class AudioFileCursorAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         // Get the path to the audio file
-        long audioID = cursor.getLong(cursor.getColumnIndex(AnchorContract.AudioEntry._ID));
+        long audioID = cursor.getLong(cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry._ID));
         AudioFile audioFile = AudioFile.getAudioFileById(mContext, audioID);
 
         // Get the title of the current audio file and set this text to the titleTV
