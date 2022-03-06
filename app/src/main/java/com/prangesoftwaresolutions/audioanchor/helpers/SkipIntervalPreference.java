@@ -21,6 +21,7 @@ public class SkipIntervalPreference extends DialogPreference {
 
     Context mContext;
     String mDialogTitle;
+    String mSettingsKey;
     int mDefault;
     int mSkipInterval;
 
@@ -45,6 +46,11 @@ public class SkipIntervalPreference extends DialogPreference {
         int dialogTitleId = attrs.getAttributeResourceValue(ANDROID_NS, "dialogTitle", 0);
         if(dialogTitleId == 0) mDialogTitle = attrs.getAttributeValue(ANDROID_NS, "dialogTitle");
         else mDialogTitle = mContext.getString(dialogTitleId);
+
+        // Get settings key as specified in the xml file
+        int settingsKeyId = attrs.getAttributeResourceValue(ANDROID_NS, "key", 0);
+        if(settingsKeyId == 0) mSettingsKey = attrs.getAttributeValue(ANDROID_NS, "key");
+        else mSettingsKey = mContext.getString(settingsKeyId);
 
         // Get default seekbar value as specified in the xml file with a string resource
         // Note that this will fail if the xml file contains the actual value and not a string resource
@@ -72,7 +78,7 @@ public class SkipIntervalPreference extends DialogPreference {
     }
 
     public boolean isForward() {
-        return mDialogTitle.toLowerCase().contains("forward");
+        return mSettingsKey.toLowerCase().contains("forward");
     }
 
     @Override
