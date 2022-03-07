@@ -25,31 +25,39 @@ public class DBAccessUtils {
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(albumID)};
-
-        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
-                columns, sel, selArgs, null, null);
-
         int[] times = new int[2];
-
-        if (c == null) {
-            return times;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return times;
-        }
-
-        // Loop through the database rows and sum up the audio durations and completed times
         int sumDuration = 0;
         int sumCompletedTime = 0;
-        while (c.moveToNext()) {
-            sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-            sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+        try (Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                columns, sel, selArgs, null, null)) {
+
+            // Loop through the database rows and sum up the audio durations and completed times
+            while (moveToNext(c)) {
+                sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+                sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+            }
+
         }
-        c.close();
 
         times[0] = sumCompletedTime;
         times[1] = sumDuration;
         return times;
+    }
+
+    public static boolean moveToNext(Cursor cursor) {
+        boolean hasNext = false;
+        if (cursor != null && cursor.getCount() > 0) {
+            hasNext = cursor.moveToNext();
+        }
+        return hasNext;
+    }
+
+    public static boolean moveToLast(Cursor cursor) {
+        boolean hasNext = false;
+        if (cursor != null && cursor.getCount() > 0) {
+            hasNext = cursor.moveToLast();
+        }
+        return hasNext;
     }
 
 
@@ -77,21 +85,12 @@ public class DBAccessUtils {
         // Get the title of the album to check if the album still exists in the file system
         Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, albumId);
         String[] proj = new String[]{AnchorContract.AlbumEntry.COLUMN_TITLE};
-        Cursor c = context.getContentResolver().query(uri, proj, null, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return false;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return false;
-        }
-
         String title = null;
-        if (c.moveToNext()) {
-            title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
+        try (Cursor c = context.getContentResolver().query(uri, proj, null, null, null)) {
+            if (moveToNext(c)) {
+                title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
+            }
         }
-        c.close();
 
         if (title == null) return false;
 
@@ -141,23 +140,15 @@ public class DBAccessUtils {
         String[] columns = new String[]{AnchorContract.AudioEntry.COLUMN_TIME};
         String sel = AnchorContract.AudioEntry._ID + "=?";
         String[] selArgs = {Long.toString(trackId)};
-
-        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
-                columns, sel, selArgs, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return;
-        }
-
         int totalTime = 0;
-        while (c.moveToNext()) {
-            totalTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+
+        try (Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                columns, sel, selArgs, null, null)) {
+
+            while (moveToNext(c)) {
+                totalTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+            }
         }
-        c.close();
 
         // Set completedTime to totalTime
         Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);

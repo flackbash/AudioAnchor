@@ -1,5 +1,8 @@
 package com.prangesoftwaresolutions.audioanchor.models;
 
+import static com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils.moveToLast;
+import static com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils.moveToNext;
+
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,6 +10,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
 
 import java.util.ArrayList;
 
@@ -94,22 +98,12 @@ public class Bookmark {
      */
     static public Bookmark getBookmarkByID(Context context, long id) {
         Uri uri = ContentUris.withAppendedId(AnchorContract.BookmarkEntry.CONTENT_URI, id);
-        Cursor c = context.getContentResolver().query(uri, mBookmarkColumns, null, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return null;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return null;
-        }
-
         Bookmark bookmark = null;
-        if (c.moveToNext()) {
-            bookmark = getBookmarkFromPositionedCursor(c);
+        try (Cursor c = context.getContentResolver().query(uri, mBookmarkColumns, null, null, null)) {
+            if (moveToNext(c)) {
+                bookmark = getBookmarkFromPositionedCursor(c);
+            }
         }
-        c.close();
-
         return bookmark;
     }
 
@@ -119,22 +113,13 @@ public class Bookmark {
     static public Bookmark getBookmarkForAudioFileByTitle(Context context, String title, long audioFileID) {
         String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=? AND " + AnchorContract.BookmarkEntry.COLUMN_TITLE + "=?";
         String[] selArgs = {Long.toString(audioFileID), title};
-        Cursor c = context.getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, mBookmarkColumns, sel, selArgs, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return null;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return null;
-        }
-
         Bookmark bookmark = null;
-        if (c.moveToLast()) {
-            // If multiple bookmarks for the same audio file with the same name exist, choose the last one
-            bookmark = getBookmarkFromPositionedCursor(c);
+        try (Cursor c = context.getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI, mBookmarkColumns, sel, selArgs, null)) {
+            if (moveToLast(c)) {
+                // If multiple bookmarks for the same audio file with the same name exist, choose the last one
+                bookmark = getBookmarkFromPositionedCursor(c);
+            }
         }
-        c.close();
 
         return bookmark;
     }
@@ -156,22 +141,14 @@ public class Bookmark {
         String sel = AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + "=?";
         String[] selArgs = {Long.toString(audioFileID)};
 
-        Cursor c = context.getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI,
-                mBookmarkColumns, sel, selArgs, null);
+        try (Cursor c = context.getContentResolver().query(AnchorContract.BookmarkEntry.CONTENT_URI,
+                mBookmarkColumns, sel, selArgs, null)) {
 
-        // Bail early if the cursor is null
-        if (c == null) {
-            return bookmarks;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return bookmarks;
+            while (moveToNext(c)) {
+                Bookmark bookmark = getBookmarkFromPositionedCursor(c);
+                bookmarks.add(bookmark);
+            }
         }
-
-        while (c.moveToNext()) {
-            Bookmark bookmark = getBookmarkFromPositionedCursor(c);
-            bookmarks.add(bookmark);
-        }
-        c.close();
 
         return bookmarks;
     }

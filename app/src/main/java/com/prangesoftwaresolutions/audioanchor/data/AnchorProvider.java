@@ -1,5 +1,7 @@
 package com.prangesoftwaresolutions.audioanchor.data;
 
+import static com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils.moveToNext;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -670,20 +672,12 @@ public class AnchorProvider extends ContentProvider {
         }
 
         // Query the database
-        Cursor c = query(uri, new String[]{column}, selection, selectionArgs, null);
-
-        if (c == null) {
-            return ids;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return ids;
+        try (Cursor c = query(uri, new String[]{column}, selection, selectionArgs, null)) {
+            while (moveToNext(c)) {
+                long id = c.getLong(c.getColumnIndex(column));
+                ids.add(id);
+            }
         }
-
-        while (c.moveToNext()) {
-            long id = c.getLong(c.getColumnIndex(column));
-            ids.add(id);
-        }
-        c.close();
 
         return ids;
     }

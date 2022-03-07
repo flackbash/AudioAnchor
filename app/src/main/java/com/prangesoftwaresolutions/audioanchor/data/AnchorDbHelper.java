@@ -1,5 +1,7 @@
 package com.prangesoftwaresolutions.audioanchor.data;
 
+import static com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils.moveToNext;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -130,29 +132,19 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
      */
     private ArrayList<Album> getAllAlbums(SQLiteDatabase db, Directory directory) {
         ArrayList<Album> albums = new ArrayList<>();
-        Cursor c = db.query(AnchorContract.AlbumEntry.TABLE_NAME, Album.getColumns(), null, null, null, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return albums;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return albums;
-        }
-
-        while (c.moveToNext()) {
-            long id = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
-            String title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
-            String coverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-            long lastPlayed = -1;
-            if (!c.isNull(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {
-                lastPlayed = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED));
+        try (Cursor c = db.query(AnchorContract.AlbumEntry.TABLE_NAME, Album.getColumns(), null, null, null, null, null)) {
+            while (moveToNext(c)) {
+                long id = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
+                String title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
+                String coverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+                long lastPlayed = -1;
+                if (!c.isNull(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {
+                    lastPlayed = c.getLong(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED));
+                }
+                Album album = new Album(id, title, directory, coverPath, lastPlayed);
+                albums.add(album);
             }
-            Album album = new Album(id, title, directory, coverPath, lastPlayed);
-            albums.add(album);
         }
-        c.close();
-
         return albums;
     }
 }

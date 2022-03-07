@@ -47,12 +47,10 @@ public class Migrator {
             int fileExists = 0;
             for (int i = 0; i < importFiles.length; i++) {
                 if (importFiles[i].exists()) {
-                    FileChannel src = new FileInputStream(importFiles[i]).getChannel();
-                    FileChannel dst = new FileOutputStream(newFiles[i]).getChannel();
-                    dst.transferFrom(src, 0, src.size());
-                    src.close();
-                    dst.close();
-
+                    try (FileChannel src = new FileInputStream(importFiles[i]).getChannel();
+                         FileChannel dst = new FileOutputStream(newFiles[i]).getChannel()) {
+                        dst.transferFrom(src, 0, src.size());
+                    }
                     fileExists++;
                 } else {
                     newFiles[i].delete();
@@ -65,25 +63,25 @@ public class Migrator {
                 String[] proj = new String[]{
                         AnchorContract.AlbumEntry._ID,
                         AnchorContract.AlbumEntry.COLUMN_COVER_PATH};
-                Cursor c = mContext.getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI,
-                        proj, null, null, null);
-                if (c != null) {
-                    if (c.getCount() > 0) {
-                        c.moveToFirst();
-                        while (c.moveToNext()) {
-                            String oldCoverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
-                            int id = c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
-                            if (oldCoverPath != null && !oldCoverPath.isEmpty()) {
-                                // Replace the old cover path in the database by the new relative path
-                                String newCoverPath = new File(oldCoverPath).getName();
-                                ContentValues values = new ContentValues();
-                                values.put(AnchorContract.AlbumEntry.COLUMN_COVER_PATH, newCoverPath);
-                                Uri albumUri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
-                                mContext.getContentResolver().update(albumUri, values, null, null);
+                try (Cursor c = mContext.getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI,
+                        proj, null, null, null)) {
+                    if (c != null) {
+                        if (c.getCount() > 0) {
+                            c.moveToFirst();
+                            while (c.moveToNext()) {
+                                String oldCoverPath = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
+                                int id = c.getInt(c.getColumnIndex(AnchorContract.AlbumEntry._ID));
+                                if (oldCoverPath != null && !oldCoverPath.isEmpty()) {
+                                    // Replace the old cover path in the database by the new relative path
+                                    String newCoverPath = new File(oldCoverPath).getName();
+                                    ContentValues values = new ContentValues();
+                                    values.put(AnchorContract.AlbumEntry.COLUMN_COVER_PATH, newCoverPath);
+                                    Uri albumUri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
+                                    mContext.getContentResolver().update(albumUri, values, null, null);
+                                }
                             }
                         }
                     }
-                    c.close();
                 }
                 Toast.makeText(mContext.getApplicationContext(), R.string.import_success, Toast.LENGTH_LONG).show();
             }
@@ -123,11 +121,10 @@ public class Migrator {
                 int fileExists = 0;
                 for (int i = 0; i < currentFiles.length; i++) {
                     if (currentFiles[i].exists()) {
-                        FileChannel src = new FileInputStream(currentFiles[i]).getChannel();
-                        FileChannel dst = new FileOutputStream(backupFiles[i]).getChannel();
-                        dst.transferFrom(src, 0, src.size());
-                        src.close();
-                        dst.close();
+                        try (FileChannel src = new FileInputStream(currentFiles[i]).getChannel();
+                            FileChannel dst = new FileOutputStream(backupFiles[i]).getChannel()) {
+                            dst.transferFrom(src, 0, src.size());
+                        }
 
                         fileExists++;
                     }

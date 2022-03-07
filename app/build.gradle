@@ -23,6 +23,7 @@ android {
     }
     lintOptions {
         disable 'GoogleAppIndexingWarning'
+        abortOnError false
     }
     packagingOptions {
         exclude 'META-INF/*'
