@@ -132,9 +132,9 @@ public class Directory {
      * Create a Directory from a cursor that is already at the correct position
      */
     private static Directory getDirectoryFromPositionedCursor(Cursor c) {
-        long id = c.getLong(c.getColumnIndex(AnchorContract.DirectoryEntry._ID));
-        String path = c.getString(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_PATH));
-        int type = c.getInt(c.getColumnIndex(AnchorContract.DirectoryEntry.COLUMN_TYPE));
+        long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.DirectoryEntry._ID));
+        String path = c.getString(c.getColumnIndexOrThrow(AnchorContract.DirectoryEntry.COLUMN_PATH));
+        int type = c.getInt(c.getColumnIndexOrThrow(AnchorContract.DirectoryEntry.COLUMN_TYPE));
         return new Directory(id, path, type);
     }
 }

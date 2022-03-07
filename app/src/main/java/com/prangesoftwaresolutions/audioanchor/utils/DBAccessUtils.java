@@ -33,8 +33,8 @@ public class DBAccessUtils {
 
             // Loop through the database rows and sum up the audio durations and completed times
             while (moveToNext(c)) {
-                sumDuration += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-                sumCompletedTime += c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+                sumDuration += c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
+                sumCompletedTime += c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
             }
 
         }
@@ -88,7 +88,7 @@ public class DBAccessUtils {
         String title = null;
         try (Cursor c = context.getContentResolver().query(uri, proj, null, null, null)) {
             if (moveToNext(c)) {
-                title = c.getString(c.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
+                title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE));
             }
         }
 
@@ -146,7 +146,7 @@ public class DBAccessUtils {
                 columns, sel, selArgs, null, null)) {
 
             while (moveToNext(c)) {
-                totalTime = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
+                totalTime = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
             }
         }
 

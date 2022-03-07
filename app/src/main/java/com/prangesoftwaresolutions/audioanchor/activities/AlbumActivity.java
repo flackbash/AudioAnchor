@@ -541,8 +541,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         int scrollTo = 0;
         c.moveToFirst();
         while (c.moveToNext()) {
-            int duration = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_TIME));
-            int completed = c.getInt(c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+            int duration = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
+            int completed = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
             if (completed < duration || duration == 0) {
                 break;
             }
@@ -562,7 +562,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         int scrollTo = 0;
         c.moveToFirst();
         while (c.moveToNext()) {
-            long id = c.getLong(c.getColumnIndex(AnchorContract.AudioEntry._ID));
+            long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AudioEntry._ID));
             if (id == lastPlayedID) {
                 scrollTo = count;
                 break;

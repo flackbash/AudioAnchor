@@ -52,6 +52,7 @@
     <string name="settings_vibrate_shake_reset_label">Vibrate on reset by shake</string>
     <string name="settings_continue_until_end_label">Keep playing until end of current track</string>
     <string name="settings_title_from_metadata_label">Get track title from metadata</string>
+    <string name="settings_display_cover_below_track_data_label">Display cover image below track information</string>
     <string name="settings_dark_label">Dark theme</string>
     <string name="settings_autorewind_label">Autorewind time</string>
     <string name="settings_immediate_playback_label">Start playback immediately after selecting item</string>

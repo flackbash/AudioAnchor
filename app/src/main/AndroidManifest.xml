@@ -32,7 +32,8 @@
         </activity>
         <activity
             android:name=".activities.MainActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -77,7 +78,8 @@
 
         <service android:name=".services.MediaPlayerService" />
 
-        <receiver android:name=".receivers.MediaButtonIntentReceiver">
+        <receiver android:name=".receivers.MediaButtonIntentReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
