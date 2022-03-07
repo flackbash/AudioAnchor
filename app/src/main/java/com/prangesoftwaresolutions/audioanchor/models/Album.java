@@ -1,5 +1,7 @@
 package com.prangesoftwaresolutions.audioanchor.models;
 
+import static com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils.moveToNext;
+
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -165,22 +167,12 @@ public class Album {
      */
     static public Album getAlbumByID(Context context, long id) {
         Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, id);
-        Cursor c = context.getContentResolver().query(uri, mAlbumColumns, null, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return null;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return null;
-        }
-
         Album album = null;
-        if (c.moveToNext()) {
-            album = getAlbumFromPositionedCursor(context, c);
+        try (Cursor c = context.getContentResolver().query(uri, mAlbumColumns, null, null, null)) {
+            if (moveToNext(c)) {
+                album = getAlbumFromPositionedCursor(context, c);
+            }
         }
-        c.close();
-
         return album;
     }
 
@@ -193,23 +185,13 @@ public class Album {
         String sel = AnchorContract.AlbumEntry.COLUMN_DIRECTORY + "=?";
         String[] selArgs = {Long.toString(directoryId)};
 
-        Cursor c = context.getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI,
-                mAlbumColumns, sel, selArgs, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return albums;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return albums;
+        try (Cursor c = context.getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI,
+                mAlbumColumns, sel, selArgs, null, null)) {
+            while (c.moveToNext()) {
+                Album album = getAlbumFromPositionedCursor(context, c);
+                albums.add(album);
+            }
         }
-
-        while (c.moveToNext()) {
-            Album album = getAlbumFromPositionedCursor(context, c);
-            albums.add(album);
-        }
-        c.close();
-
         return albums;
     }
 

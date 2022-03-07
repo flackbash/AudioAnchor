@@ -1,5 +1,7 @@
 package com.prangesoftwaresolutions.audioanchor.models;
 
+import static com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils.moveToNext;
+
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -102,22 +104,12 @@ public class Directory {
      */
     static Directory getDirectoryByID(Context context, long id) {
         Uri uri = ContentUris.withAppendedId(AnchorContract.DirectoryEntry.CONTENT_URI, id);
-        Cursor c = context.getContentResolver().query(uri, mDirectoryColumns, null, null, null);
-
-        // Bail early if the cursor is null
-        if (c == null) {
-            return null;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return null;
-        }
-
         Directory directory = null;
-        if (c.moveToNext()) {
-            directory = getDirectoryFromPositionedCursor(c);
+        try (Cursor c = context.getContentResolver().query(uri, mDirectoryColumns, null, null, null)) {
+             if (moveToNext(c)) {
+                directory = getDirectoryFromPositionedCursor(c);
+            }
         }
-        c.close();
-
         return directory;
     }
 
@@ -126,22 +118,13 @@ public class Directory {
      */
     public static ArrayList<Directory> getDirectories(Context context) {
         ArrayList<Directory> directories = new ArrayList<>();
-        Cursor c = context.getContentResolver().query(AnchorContract.DirectoryEntry.CONTENT_URI, mDirectoryColumns, null, null, null);
+        try (Cursor c = context.getContentResolver().query(AnchorContract.DirectoryEntry.CONTENT_URI, mDirectoryColumns, null, null, null)) {
+            while (moveToNext(c)) {
+                Directory directory = getDirectoryFromPositionedCursor(c);
+                directories.add(directory);
+            }
 
-        // Bail early if the cursor is null
-        if (c == null) {
-            return directories;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return directories;
         }
-
-        while (c.moveToNext()) {
-            Directory directory = getDirectoryFromPositionedCursor(c);
-            directories.add(directory);
-        }
-        c.close();
-
         return directories;
     }
 

@@ -119,21 +119,13 @@ public class AudioFile implements Serializable {
      */
     public static AudioFile getAudioFileById(Context context, long id) {
         Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, id);
-        Cursor c = context.getContentResolver().query(uri, mAudioFileColumns, null, null, null);
-
-        if (c == null) {
-            return null;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return null;
-        }
-
+        // content://com.prangesoftwaresolutions.audioanchor/audio/40
         AudioFile audioFile = null;
-        if (c.moveToFirst()) {
-            audioFile = getAudioFileFromPositionedCursor(context, c);
+        try (Cursor c = context.getContentResolver().query(uri, mAudioFileColumns, null, null, null)) {
+            if (c != null && c.getCount() > 0 && c.moveToFirst()) {
+                audioFile = getAudioFileFromPositionedCursor(context, c);
+            }
         }
-        c.close();
-
         return audioFile;
     }
 
@@ -145,23 +137,17 @@ public class AudioFile implements Serializable {
         String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(albumId)};
 
-        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
-                mAudioFileColumns, sel, selArgs, sortOrder, null);
+        try (Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                mAudioFileColumns, sel, selArgs, sortOrder, null)) {
 
-        // Bail early if the cursor is null
-        if (c == null) {
-            return audioFiles;
-        } else if (c.getCount() < 1) {
-            c.close();
-            return audioFiles;
+            // Bail early if the cursor is null
+            if (c != null && c.getCount() > 0) {
+                while (c.moveToNext()) {
+                    AudioFile audioFile = getAudioFileFromPositionedCursor(context, c);
+                    audioFiles.add(audioFile);
+                }
+            }
         }
-
-        while (c.moveToNext()) {
-            AudioFile audioFile = getAudioFileFromPositionedCursor(context, c);
-            audioFiles.add(audioFile);
-        }
-        c.close();
-
         return audioFiles;
     }
 

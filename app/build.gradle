@@ -31,6 +31,7 @@ android {
     }
     lint {
         disable 'GoogleAppIndexingWarning'
+        abortOnError false
     }
 }
 
