@@ -34,11 +34,11 @@ public class BookmarkCursorAdapter extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
         // Get the title of the current bookmark and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.bookmark_title_tv);
-        String title = cursor.getString(cursor.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_TITLE));
+        String title = cursor.getString(cursor.getColumnIndexOrThrow(AnchorContract.BookmarkEntry.COLUMN_TITLE));
         titleTV.setText(title);
         // Get the position of the current bookmark
         TextView positionTV = view.findViewById(R.id.bookmark_position_tv);
-        long position = cursor.getLong(cursor.getColumnIndex(AnchorContract.BookmarkEntry.COLUMN_POSITION));
+        long position = cursor.getLong(cursor.getColumnIndexOrThrow(AnchorContract.BookmarkEntry.COLUMN_POSITION));
         String positionString = Utils.formatTime(position, mTotalMillis);
         positionTV.setText(positionString);
     }

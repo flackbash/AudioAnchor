@@ -68,12 +68,12 @@ public class AlbumCursorAdapter extends CursorAdapter {
         // Get the title of the current album and set this text to the titleTV
         TextView titleTV = view.findViewById(R.id.audio_storage_item_title);
         titleTV.setSelected(true);
-        String title = cursor.getString(cursor.getColumnIndex(AnchorContract.AlbumEntry.COLUMN_TITLE));
+        String title = cursor.getString(cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE));
         titleTV.setText(title);
 
         // Get the progress of this album and update the view
         TextView progressTV = view.findViewById(R.id.album_info_time_album);
-        int id = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
+        int id = cursor.getInt(cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
         int[] times = DBAccessUtils.getAlbumTimes(context, id);
         String timeStr = Utils.getTimeString(context, times[0], times[1]);
         progressTV.setText(timeStr);
@@ -81,7 +81,7 @@ public class AlbumCursorAdapter extends CursorAdapter {
         // Get the path of the thumbnail of the current album and set the src of the image view
         ImageView thumbnailIV = view.findViewById(R.id.audio_storage_item_thumbnail);
 
-        int albumId = cursor.getInt(cursor.getColumnIndex(AnchorContract.AlbumEntry._ID));
+        int albumId = cursor.getInt(cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
         Album album = Album.getAlbumByID(mContext, albumId);
         if (isCurrentItemActive(albumId)) {
             boolean darkTheme = mPrefs.getBoolean(mContext.getString(R.string.settings_dark_key), Boolean.getBoolean(mContext.getString(R.string.settings_dark_default)));
