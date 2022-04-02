@@ -114,7 +114,8 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
                 } else {
                     mSelectedDirectories.remove(l);
                 }
-                String menuTitle = getResources().getString(R.string.items_selected, mSelectedDirectories.size());
+                String menuTitle = getResources().getQuantityString(R.plurals.items_selected,
+                        mSelectedDirectories.size(), mSelectedDirectories.size());
                 actionMode.setTitle(menuTitle);
             }
 
@@ -219,7 +220,8 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
                 getContentResolver().delete(uri, null, null);
                 deletionCount++;
             }
-            String deletedTracks = getResources().getString(R.string.directories_deleted_from_db, deletionCount);
+            String deletedTracks = getResources().getQuantityString(R.plurals.directories_deleted_from_db,
+                    deletionCount, deletionCount);
             Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
