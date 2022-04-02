@@ -24,11 +24,31 @@
   <string name="jumped_to_bookmark">Hoppa til bokmerket «%s», tidspunkt %s.</string>
   <string name="bookmark_deleted">Bokmerket er no sletta.</string>
   <string name="bookmark_added_toast">La til bokmerke «%s», tidspunkt %s.</string>
-  <string name="tracks_deleted">%d spor sletta.</string>
-  <string name="tracks_deleted_from_db">Sletta %d spor frå biblioteket.</string>
-  <string name="files_deleted">Sletta %d album og %d spor.</string>
-  <string name="albums_deleted_from_db">Sletta %d album frå biblioteket.</string>
-  <string name="directories_deleted_from_db">Sletta %d mappe(r) frå biblioteket.</string>
+  <plurals name="tracks_deleted">
+    <item quantity="one">%d spor sletta.</item>
+    <item quantity="other">%d spor sletta.</item>
+  </plurals>
+  <plurals name="tracks_removed_from_db">
+    <item quantity="one">Fjerna %d spor frå biblioteket.</item>
+    <item quantity="other">Fjerna %d spor frå biblioteket.</item>
+  </plurals>
+  <plurals name="quant_albums">
+    <item quantity="one">%d album</item>
+    <item quantity="other">%d album</item>
+  </plurals>
+  <plurals name="quant_tracks">
+    <item quantity="one">%d spor</item>
+    <item quantity="other">%d spor</item>
+  </plurals>
+  <string name="album_and_tracks_deleted">Sletta %s og %s.</string>
+  <plurals name="albums_removed_from_db">
+    <item quantity="one">Fjerna %d album frå biblioteket.</item>
+    <item quantity="other">Fjerna %d album frå biblioteket.</item>
+  </plurals>
+  <plurals name="directories_removed_from_db">
+    <item quantity="one">Fjerna %d mappe frå biblioteket.</item>
+    <item quantity="other">Fjerna %d mapper frå biblioteket.</item>
+  </plurals>
   <string name="cannot_mark_as_not_started">Kan ikkje markera gjeldande spor som ikkje påbegynt.</string>
   <string name="cannot_mark_as_completed">Kan ikkje markera gjeldande spor som avspela.</string>
   <string name="path">Adresse: %s</string>
@@ -48,6 +68,7 @@
   <string name="settings_vibrate_shake_reset_label">Vibrer ved nullstilling frå risting</string>
   <string name="settings_continue_until_end_label">Spel vidare til gjeldande spor er ferdig</string>
   <string name="settings_title_from_metadata_label">Hent sportittel frå fil-metadata</string>
+  <string name="settings_display_cover_below_track_data_label">Vis omslags­biletet under sporinformasjonen</string>
   <string name="settings_dark_label">Mørkt tema</string>
   <string name="settings_autorewind_label">Automatisk tilbakespoling (sekund)</string>
   <string name="settings_immediate_playback_label">Start avspeling rett etter sporval</string>
@@ -68,8 +89,8 @@
   <string name="settings_forward_button_2">Framknapp 2</string>
   <string name="settings_backward_button_1">Tilbakeknapp 1</string>
   <string name="settings_backward_button_2">Tilbakeknapp 2</string>
-  <string name="settings_notification_backward_button">Framknapp i varsling</string>
-  <string name="settings_notification_forward_button">Tilbakeknapp i varsling</string>
+  <string name="settings_notification_backward_button">Tilbakeknapp i varsling</string>
+  <string name="settings_notification_forward_button">Framknapp i varsling</string>
   <string name="settings_skip_interval_msg">Spolelengd for %s</string>
   <string name="title">Tittel</string>
   <string name="album">Album</string>
@@ -94,7 +115,10 @@
   <string name="remove_from_library">Fjern frå biblioteket</string>
   <string name="mark_as_not_started">Merk som ikkje påbegynt</string>
   <string name="mark_as_completed">Merk som avspela</string>
-  <string name="items_selected">%d spor</string>
+  <plurals name="items_selected">
+    <item quantity="one">%d vald</item>
+    <item quantity="other">%d valde</item>
+  </plurals>
   <string name="mark_all_as_not_started">Merk alle spora som ikkje påbegynte</string>
   <string name="mark_all_as_completed">Merk alle spora som avspela</string>
   <string name="playback_speed">Avspelingsfart</string>
@@ -112,12 +136,24 @@
   <string name="dialog_msg_close">Lukk</string>
   <string name="dialog_msg_delete">Slett</string>
   <string name="dialog_msg_goto">Skriv inn tidspunktet du vil hoppa til</string>
-  <string name="dialog_msg_delete_album">Er du sikker på at du vil sletta mappa/mappene og alt innhaldet?</string>
-  <string name="dialog_msg_delete_album_from_db">Er du sikker på at du vil fjerna albumet/albuma og album­innhaldet frå biblioteket? Denne handlinga vert berre utført for filer som ikkje lenger finst på disken.</string>
-  <string name="dialog_msg_delete_audio">Er du sikker på at du vil sletta sporet/spora?</string>
-  <string name="dialog_msg_delete_audio_from_db">Er du sikker på at du vil fjerna sporet/spora frå biblioteket? Denne handlinga vert berre utført for filer som ikkje lenger finst på filsystemet.</string>
+  <plurals name="dialog_msg_delete_album">
+    <item quantity="one">Er du sikker på at du vil sletta den valde mappa og alt innhaldet hennar?</item>
+    <item quantity="other">Er du sikker på at du vil sletta dei valde mappene og alt innhaldet deira?</item>
+  </plurals>
+  <plurals name="dialog_msg_remove_album_from_db">
+    <item quantity="one">Er du sikker på at du vil fjerna det valde albumet og innhaldet der frå biblioteket? Denne handlinga vert berre utført for filer som ikkje lenger finst på disken.</item>
+    <item quantity="other">Er du sikker på at du vil fjerna dei valde albuma og innhaldet der frå biblioteket? Denne handlinga vert berre utført for filer som ikkje lenger finst på disken.</item>
+  </plurals>
+  <plurals name="dialog_msg_delete_audio">
+    <item quantity="one">Er du sikker på at du vil sletta det valde sporet?</item>
+    <item quantity="other">Er du sikker på at du vil sletta dei valde spora?</item>
+  </plurals>
+  <plurals name="dialog_msg_remove_audio_from_db">
+    <item quantity="one">Er du sikker på at du vil fjerna det valde sporet frå biblioteket? Denne handlinga vert berre utført for filer som ikkje lenger finst på filsystemet.</item>
+    <item quantity="other">Er du sikker på at du vil fjerna dei valde spora frå biblioteket? Denne handlinga vert berre utført for filer som ikkje lenger finst på filsystemet.</item>
+  </plurals>
   <string name="dialog_msg_delete_bookmark">Vil du sletta bokmerket?</string>
-  <string name="dialog_msg_remove_directory_from_db">Er du sikker på at du vil sletta mappa frå biblioteket? Alle album, lydfiler og bokmerke i mappa vert òg sletta.</string>
+  <string name="dialog_msg_remove_directory_from_db">Er du sikker på at du vil fjerna mappa frå biblioteket? Alle album, lydfiler og bokmerke i mappa vert òg fjerna.</string>
   <string name="bookmark_second_to_last_play_position">&lt;nest siste avspelingsposisjon&gt;</string>
   <string name="bookmark_last_play_position">&lt;siste avspelingsposisjon&gt;</string>
 </resources>
