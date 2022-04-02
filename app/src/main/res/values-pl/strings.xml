@@ -56,7 +56,7 @@
     <string name="set_bookmark_at">Ustaw zakładkę w</string>
     <string name="no_bookmarks">Nie ma zakładek dla tego pliku audio</string>
     <string name="bookmarks">Zakładki</string>
-    <string name="delete_from_db">Usuń z bazy danych</string>
+    <string name="remove_from_db">Usuń z bazy danych</string>
     <string name="mark_as_not_started">Oznacz jako nie rozpoczęty</string>
     <string name="mark_as_completed">Oznacz jako ukończony</string>
     <string name="items_selected">%d zaznaczonych</string>

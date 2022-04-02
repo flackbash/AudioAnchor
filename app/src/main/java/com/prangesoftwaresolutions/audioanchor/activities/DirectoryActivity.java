@@ -211,7 +211,7 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
 
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_msg_delete_directory_from_db);
+        builder.setMessage(R.string.dialog_msg_remove_directory_from_db);
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the "Ok" button, so delete the directories from the database
             int deletionCount = 0;
@@ -220,7 +220,7 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
                 getContentResolver().delete(uri, null, null);
                 deletionCount++;
             }
-            String deletedTracks = getResources().getQuantityString(R.plurals.directories_deleted_from_db,
+            String deletedTracks = getResources().getQuantityString(R.plurals.directories_removed_from_db,
                     deletionCount, deletionCount);
             Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
         });

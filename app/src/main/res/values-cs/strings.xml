@@ -80,7 +80,7 @@
     <string name="no_bookmarks">V tomto souboru nejsou ještě žádné záložky.</string>
     <string name="bookmarks">Záložky</string>
     <string name="delete_from_device">Smazat z úložiště zařízení</string>
-    <string name="delete_from_db">Smazat z knihovny</string>
+    <string name="remove_from_db">Smazat z knihovny</string>
     <string name="remove_from_library">Odstranit z knihovny</string>
     <string name="mark_as_not_started">Označit jako neposlouchané</string>
     <string name="mark_as_completed">Označit jako dokončené</string>
@@ -107,5 +107,5 @@
     <string name="dialog_msg_delete_audio">Opravdu smazat vybrané stopy?</string>
     <string name="dialog_msg_delete_audio_from_db">Opravdu odebrat vybrané stopy z databáze? Tato operace proběhne pouze pro soubory které už jsou smazané.</string>
     <string name="dialog_msg_delete_bookmark">Smazat záložku?</string>
-    <string name="dialog_msg_delete_directory_from_db">Opravdu odebrat vybraný adresář z knihovny? Odebere z databáze všechna alba, audio soubory a záložky z tohoto adresáře.</string>
+    <string name="dialog_msg_remove_directory_from_db">Opravdu odebrat vybraný adresář z knihovny? Odebere z databáze všechna alba, audio soubory a záložky z tohoto adresáře.</string>
 </resources>

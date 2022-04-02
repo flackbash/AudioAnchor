@@ -584,7 +584,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String confirmationMessage = getResources().getQuantityString(
-                R.plurals.dialog_msg_delete_audio_from_db, mSelectedTracks.size());
+                R.plurals.dialog_msg_remove_audio_from_db, mSelectedTracks.size());
         builder.setMessage(confirmationMessage);
 
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
@@ -596,7 +596,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     deletionCount++;
                 }
             }
-            String deletedTracks = getResources().getQuantityString(R.plurals.tracks_deleted_from_db,
+            String deletedTracks = getResources().getQuantityString(R.plurals.tracks_removed_from_db,
                     deletionCount, deletionCount);
             Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
         });

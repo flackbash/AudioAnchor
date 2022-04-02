@@ -639,7 +639,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String confirmationMessage = getResources().getQuantityString(
-                R.plurals.dialog_msg_delete_album_from_db, mSelectedAlbums.size());
+                R.plurals.dialog_msg_remove_album_from_db, mSelectedAlbums.size());
         builder.setMessage(confirmationMessage);
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the "Ok" button, so delete the album and / or tracks from the database
@@ -648,7 +648,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 boolean deleted = DBAccessUtils.deleteAlbumFromDB(MainActivity.this, albumId);
                 if (deleted) deletionCount++;
             }
-            String deletedAlbums = getResources().getQuantityString(R.plurals.albums_deleted_from_db,
+            String deletedAlbums = getResources().getQuantityString(R.plurals.albums_removed_from_db,
                     deletionCount, deletionCount);
             Toast.makeText(getApplicationContext(), deletedAlbums, Toast.LENGTH_LONG).show();
         });

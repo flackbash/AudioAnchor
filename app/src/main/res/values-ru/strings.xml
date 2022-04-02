@@ -78,7 +78,7 @@
     <string name="no_bookmarks">Пока еще нет закладок в этой аудиокниге.</string>
     <string name="bookmarks">Закладки</string>
     <string name="delete_from_device">Удалить из устройства</string>
-    <string name="delete_from_db">Удалить из базы данных</string>
+    <string name="remove_from_db">Удалить из базы данных</string>
     <string name="remove_from_library">Удалить из библиотеки</string>
     <string name="mark_as_not_started">Отметить как неначатый</string>
     <string name="mark_as_completed">Отметить как прослушанный</string>
@@ -105,5 +105,5 @@
     <string name="dialog_msg_delete_audio">Вы уверены, что хотите удалить выбранные эпизоды?</string>
     <string name="dialog_msg_delete_audio_from_db">Вы уверены, что хотите удалить выбранные эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
     <string name="dialog_msg_delete_bookmark">Удалить эту закладку?</string>
-    <string name="dialog_msg_delete_directory_from_db">Вы уверены, что хотите удалить выбранную папку из вашей библиотеки? Это также удалит альбомы, аудиофайлы и закладки из вашей библиотеки.</string>
+    <string name="dialog_msg_remove_directory_from_db">Вы уверены, что хотите удалить выбранную папку из вашей библиотеки? Это также удалит альбомы, аудиофайлы и закладки из вашей библиотеки.</string>
 </resources>

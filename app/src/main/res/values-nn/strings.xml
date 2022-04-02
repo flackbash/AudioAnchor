@@ -90,7 +90,7 @@
   <string name="bookmarks">Bokmerke</string>
   <string name="untitled_bookmark">Namnlaus</string>
   <string name="delete_from_device">Slett frå eininga</string>
-  <string name="delete_from_db">Fjern frå biblioteket</string>
+  <string name="remove_from_db">Fjern frå biblioteket</string>
   <string name="remove_from_library">Fjern frå biblioteket</string>
   <string name="mark_as_not_started">Merk som ikkje påbegynt</string>
   <string name="mark_as_completed">Merk som avspela</string>
@@ -117,7 +117,7 @@
   <string name="dialog_msg_delete_audio">Er du sikker på at du vil sletta sporet/spora?</string>
   <string name="dialog_msg_delete_audio_from_db">Er du sikker på at du vil fjerna sporet/spora frå biblioteket? Denne handlinga vert berre utført for filer som ikkje lenger finst på filsystemet.</string>
   <string name="dialog_msg_delete_bookmark">Vil du sletta bokmerket?</string>
-  <string name="dialog_msg_delete_directory_from_db">Er du sikker på at du vil sletta mappa frå biblioteket? Alle album, lydfiler og bokmerke i mappa vert òg sletta.</string>
+  <string name="dialog_msg_remove_directory_from_db">Er du sikker på at du vil sletta mappa frå biblioteket? Alle album, lydfiler og bokmerke i mappa vert òg sletta.</string>
   <string name="bookmark_second_to_last_play_position">&lt;nest siste avspelingsposisjon&gt;</string>
   <string name="bookmark_last_play_position">&lt;siste avspelingsposisjon&gt;</string>
 </resources>
