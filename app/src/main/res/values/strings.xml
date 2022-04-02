@@ -151,7 +151,7 @@
     </plurals>
     <plurals name="dialog_msg_delete_album_from_db">
         <item quantity="one">Are you sure you want to remove the selected album and its contents from your library? This operation will only be performed for files that do not exist anymore in the file system.</item>
-        <item quantity="other">Are you sure you want to remove the selected albums and their contents from your library? This operation will only be performed for files that do not exist anymore in the file system..</item>
+        <item quantity="other">Are you sure you want to remove the selected albums and their contents from your library? This operation will only be performed for files that do not exist anymore in the file system.</item>
     </plurals>
     <plurals name="dialog_msg_delete_audio">
         <item quantity="one">Are you sure you want to delete the selected track?</item>
@@ -159,7 +159,7 @@
     </plurals>
     <plurals name="dialog_msg_delete_audio_from_db">
         <item quantity="one">Are you sure you want to remove the selected track from the library? This operation will only be performed for files that do not exist anymore in the file system.</item>
-        <item quantity="other">Are you sure you want to remove the selected tracks from the library? This operation will only be performed for files that do not exist anymore in the file system..</item>
+        <item quantity="other">Are you sure you want to remove the selected tracks from the library? This operation will only be performed for files that do not exist anymore in the file system.</item>
     </plurals>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
     <string name="dialog_msg_delete_directory_from_db">Are you sure you want to remove the selected directory from your library? This will also delete its albums, audio files and bookmarks from your library.</string>
