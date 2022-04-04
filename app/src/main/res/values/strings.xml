@@ -25,11 +25,32 @@
     <string name="jumped_to_bookmark">Jumped to bookmark \"%s\" at %s.</string>
     <string name="bookmark_deleted">Bookmark deleted.</string>
     <string name="bookmark_added_toast">Added bookmark \"%s\" at %s.</string>
-    <string name="tracks_deleted">%d track(s) deleted.</string>
-    <string name="tracks_deleted_from_db">Deleted %d track(s) from your library.</string>
-    <string name="files_deleted">Deleted %d album(s) and %d track(s).</string>
-    <string name="albums_deleted_from_db">Deleted %d album(s) from your library.</string>
-    <string name="directories_deleted_from_db">Deleted %d directoy(s) from library</string>
+    <plurals name="tracks_deleted">
+        <item quantity="one">%d track deleted.</item>
+        <item quantity="other">%d tracks deleted.</item>
+    </plurals>
+    <plurals name="tracks_removed_from_db">
+        <item quantity="one">Removed %d track from your library.</item>
+        <item quantity="other">Removed %d tracks from your library.</item>
+    </plurals>
+    <plurals name="quant_albums">
+        <item quantity="one">%d album</item>
+        <item quantity="other">%d albums</item>
+    </plurals>
+    <plurals name="quant_tracks">
+        <item quantity="one">%d track</item>
+        <item quantity="other">%d tracks</item>
+    </plurals>
+    <!-- First %s = "x albums" (quant_albums), second %s = "x tracks" (quant_tracks) -->
+    <string name="album_and_tracks_deleted">Deleted %s and %s.</string>
+    <plurals name="albums_removed_from_db">
+        <item quantity="one">Removed %d album from your library.</item>
+        <item quantity="other">Removed %d albums from your library.</item>
+    </plurals>
+    <plurals name="directories_removed_from_db">
+        <item quantity="one">Removed %d directory from your library.</item>
+        <item quantity="other">Removed %d directories from your library.</item>
+    </plurals>
     <string name="cannot_mark_as_not_started">Cannot mark currently playing track as not started.</string>
     <string name="cannot_mark_as_completed">Cannot mark currently playing track as completed.</string>
     <string name="path">Path: %s</string>
@@ -97,11 +118,14 @@
     <string name="bookmarks">Bookmarks</string>
     <string name="untitled_bookmark">Untitled</string>
     <string name="delete_from_device">Delete from device</string>
-    <string name="delete_from_db">Delete from library</string>
+    <string name="remove_from_db">Remove from library</string>
     <string name="remove_from_library">Remove from library</string>
     <string name="mark_as_not_started">Mark as not started</string>
     <string name="mark_as_completed">Mark as completed</string>
-    <string name="items_selected">%d selected</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
     <string name="mark_all_as_not_started">Mark all tracks as not started</string>
     <string name="mark_all_as_completed">Mark all tracks as completed</string>
     <string name="playback_speed">Playback speed</string>
@@ -121,12 +145,24 @@
     <string name="dialog_msg_close">Close</string>
     <string name="dialog_msg_delete">Delete</string>
     <string name="dialog_msg_goto">Enter the time to which you want to jump</string>
-    <string name="dialog_msg_delete_album">Are you sure you want to delete the selected directory(s) and their contents?</string>
-    <string name="dialog_msg_delete_album_from_db">Are you sure you want to remove the selected album(s) and their contents from your library? This operation will only be performed for files that do not exist anymore in the file system.</string>
-    <string name="dialog_msg_delete_audio">Are you sure you want to delete the selected track(s)?</string>
-    <string name="dialog_msg_delete_audio_from_db">Are you sure you want to remove the selected track(s) from the library? This operation will only be performed for files that do not exist anymore in the file system.</string>
+    <plurals name="dialog_msg_delete_album">
+        <item quantity="one">Are you sure you want to delete the selected directory and its contents?</item>
+        <item quantity="other">Are you sure you want to delete the selected directories and their contents?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_album_from_db">
+        <item quantity="one">Are you sure you want to remove the selected album and its contents from your library? This operation will only be performed for files that do not exist anymore in the file system.</item>
+        <item quantity="other">Are you sure you want to remove the selected albums and their contents from your library? This operation will only be performed for files that do not exist anymore in the file system.</item>
+    </plurals>
+    <plurals name="dialog_msg_delete_audio">
+        <item quantity="one">Are you sure you want to delete the selected track?</item>
+        <item quantity="other">Are you sure you want to delete the selected tracks?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_audio_from_db">
+        <item quantity="one">Are you sure you want to remove the selected track from the library? This operation will only be performed for files that do not exist anymore in the file system.</item>
+        <item quantity="other">Are you sure you want to remove the selected tracks from the library? This operation will only be performed for files that do not exist anymore in the file system.</item>
+    </plurals>
     <string name="dialog_msg_delete_bookmark">Delete this bookmark?</string>
-    <string name="dialog_msg_delete_directory_from_db">Are you sure you want to remove the selected directory from your library? This will also delete its albums, audio files and bookmarks from your library.</string>
+    <string name="dialog_msg_remove_directory_from_db">Are you sure you want to remove the selected directory from your library? This will also remove its albums, audio files and bookmarks from your library.</string>
 
     <string name="bookmark_second_to_last_play_position">&lt;second to last play position&gt;</string>
     <string name="bookmark_last_play_position">&lt;last play position&gt;</string>

@@ -155,7 +155,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 } else {
                     mSelectedAlbums.remove(l);
                 }
-                String menuTitle = getResources().getString(R.string.items_selected, mSelectedAlbums.size());
+                String menuTitle = getResources().getQuantityString(R.plurals.items_selected,
+                        mSelectedAlbums.size(), mSelectedAlbums.size());
                 actionMode.setTitle(menuTitle);
             }
 
@@ -637,7 +638,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_msg_delete_album_from_db);
+        String confirmationMessage = getResources().getQuantityString(
+                R.plurals.dialog_msg_remove_album_from_db, mSelectedAlbums.size());
+        builder.setMessage(confirmationMessage);
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the "Ok" button, so delete the album and / or tracks from the database
             int deletionCount = 0;
@@ -645,7 +648,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 boolean deleted = DBAccessUtils.deleteAlbumFromDB(MainActivity.this, albumId);
                 if (deleted) deletionCount++;
             }
-            String deletedAlbums = getResources().getString(R.string.albums_deleted_from_db, deletionCount);
+            String deletedAlbums = getResources().getQuantityString(R.plurals.albums_removed_from_db,
+                    deletionCount, deletionCount);
             Toast.makeText(getApplicationContext(), deletedAlbums, Toast.LENGTH_LONG).show();
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
@@ -670,7 +674,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_msg_delete_album);
+        String confirmationMessage = getResources().getQuantityString(
+                R.plurals.dialog_msg_delete_album, mSelectedAlbums.size());
+        builder.setMessage(confirmationMessage);
 
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // Delete tracks within the selected albums
@@ -708,7 +714,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
             // Update database tables and notify user about the deletion
             mSynchronizer.updateDBTables();
-            String deletedFiles = getResources().getString(R.string.files_deleted, albumDeletionCount, trackDeletionCount);
+            String deletedAlbums = getResources().getQuantityString(R.plurals.quant_albums, albumDeletionCount, albumDeletionCount);
+            String deletedTracks = getResources().getQuantityString(R.plurals.quant_tracks, trackDeletionCount, trackDeletionCount);
+            String deletedFiles = getResources().getString(R.string.album_and_tracks_deleted, deletedAlbums, deletedTracks);
             Toast.makeText(getApplicationContext(), deletedFiles, Toast.LENGTH_LONG).show();
             mSelectedAlbums.clear();
         });

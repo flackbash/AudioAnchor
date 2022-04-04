@@ -41,7 +41,7 @@ public class Utils {
         FilenameFilter imgFilter = (dir1, filename) -> {
             File sel = new File(dir1, filename);
             // Only list files that are readable and images
-            return sel.getName().endsWith(".jpg") || sel.getName().endsWith(".jpeg") || sel.getName().endsWith(".png");
+            return sel.getName().endsWith(".jpg") || sel.getName().endsWith(".jpeg") || sel.getName().endsWith(".png") || sel.getName().endsWith(".webp");
         };
 
         String[] fileList = dir.list(imgFilter);

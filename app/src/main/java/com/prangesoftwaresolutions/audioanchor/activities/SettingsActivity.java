@@ -106,7 +106,7 @@ public class SettingsActivity extends AppCompatActivity {
                 p.setSummary(editTextPref.getText());
             } else if (p instanceof ListPreference) {
                 p.setSummary(((ListPreference)p).getEntry());
-            } else if (p instanceof SkipIntervalPreference) {;
+            } else if (p instanceof SkipIntervalPreference) {
                 int skipInterval = ((SkipIntervalPreference)p).getSkipInterval();
                 String skipIntervalStr;
                 if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {

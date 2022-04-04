@@ -9,7 +9,7 @@
         app:showAsAction="ifRoom"  />
     <item
         android:id="@+id/menu_delete_from_db"
-        android:title="@string/delete_from_db"
+        android:title="@string/remove_from_db"
         android:orderInCategory="101"
         app:showAsAction="never"/>
     <item

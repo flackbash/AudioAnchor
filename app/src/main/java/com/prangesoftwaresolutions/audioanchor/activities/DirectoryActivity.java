@@ -114,7 +114,8 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
                 } else {
                     mSelectedDirectories.remove(l);
                 }
-                String menuTitle = getResources().getString(R.string.items_selected, mSelectedDirectories.size());
+                String menuTitle = getResources().getQuantityString(R.plurals.items_selected,
+                        mSelectedDirectories.size(), mSelectedDirectories.size());
                 actionMode.setTitle(menuTitle);
             }
 
@@ -210,7 +211,7 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
 
         // Create a confirmation dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_msg_delete_directory_from_db);
+        builder.setMessage(R.string.dialog_msg_remove_directory_from_db);
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the "Ok" button, so delete the directories from the database
             int deletionCount = 0;
@@ -219,7 +220,8 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
                 getContentResolver().delete(uri, null, null);
                 deletionCount++;
             }
-            String deletedTracks = getResources().getString(R.string.directories_deleted_from_db, deletionCount);
+            String deletedTracks = getResources().getQuantityString(R.plurals.directories_removed_from_db,
+                    deletionCount, deletionCount);
             Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
         });
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {

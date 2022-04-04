@@ -78,7 +78,7 @@
     <string name="no_bookmarks">Ainda não há marcadores neste arquivo de áudio.</string>
     <string name="bookmarks">Marcadores</string>
     <string name="delete_from_device">Apagar do aparelho</string>
-    <string name="delete_from_db">Apagar da biblioteca</string>
+    <string name="remove_from_db">Apagar da biblioteca</string>
     <string name="remove_from_library">Remover da biblioteca</string>
     <string name="mark_as_not_started">Marcar como não começado</string>
     <string name="mark_as_completed">Marcar como completo</string>
@@ -105,5 +105,5 @@
     <string name="dialog_msg_delete_audio">Você tem certeza que deseja apagar a(s) faixa(s) selecionada(s)?</string>
     <string name="dialog_msg_delete_audio_from_db">Você tem certeza que deseja remover a(s) faixa(s) selecionada(s) da biblioteca? Essa operação só será feita em arquivos que não existem mais no sistema de arquivos.</string>
     <string name="dialog_msg_delete_bookmark">Apagar este marcador?</string>
-    <string name="dialog_msg_delete_directory_from_db">Você tem certeza que deseja remover o diretório selecionado da sua biblioteca? Isso também irá apagar seus álbuns, arquivos de áudio e marcadores da sua biblioteca.</string>
+    <string name="dialog_msg_remove_directory_from_db">Você tem certeza que deseja remover o diretório selecionado da sua biblioteca? Isso também irá apagar seus álbuns, arquivos de áudio e marcadores da sua biblioteca.</string>
 </resources>
