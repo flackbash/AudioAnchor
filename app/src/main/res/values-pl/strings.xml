@@ -1,47 +1,113 @@
 <resources>
     <string name="channel_name">Pokaż sterowanie multimediami</string>
     <string name="channel_description">Kanał powiadomień do wyświetlania elementów sterujących mediami.</string>
+    <string name="button_pause">Pauza</string>
+    <string name="button_play">Odtwórz</string>
+    <string name="button_backward">Do tyłu</string>
+    <string name="button_forward">Do przodu</string>
+    <string name="button_bookmark">Zakładka</string>
 
     <!-- Toast messages -->
     <string name="no_albums">Nie znaleziono żadnych albumów w podanym katalogu.</string>
+    <string name="no_directories">Nie dodano jeszcze żadnych folderów.</string>
     <string name="no_audio_files">Nie znaleziono żadnych plików audio w tym albumie.</string>
-    <string name="play_error">Wybrany plik audio nie nie może być odtwarzany. Możliwe, że ten plik już nie istnieje.</string>
+    <string name="play_error">Wybrany plik audio nie może być odtwarzany. Możliwe, że ten plik już nie istnieje.</string>
     <string name="permission_denied">Nie udzielono niezbędnej zgody. Zamknięto AudioAnchor.</string>
-    <string name="write_permission_denied">Nie udzielono niezbędnej zgody. Eksport nie może zostać wykonany.</string>
+    <string name="write_permission_denied">Nie udzielono niezbędnej zgody. Nie można zapisywać w pamięci.</string>
     <string name="time_format_error">Proszę wpisać prawidłowy czas w formacie hh:mm:ss.</string>
     <string name="import_success">Importowanie udane :)</string>
     <string name="import_fail">Coś poszło nie tak. Import nie powiódł się.</string>
-    <string name="export_success">Wyeksportowano bazę danych do %s</string>
+    <string name="export_success">Wyeksportowano bazę danych do %s.</string>
     <string name="export_fail">Coś poszło nie tak. Eksport nie powiódł się.</string>
-    <string name="synchronize_success">Zsynchronizowano katalog.</string>
-    <string name="audio_file_error">Wystąpił problem z plikami audio \"%s\".</string>
+    <string name="synchronize_success">Zsynchronizowano bibliotekę.</string>
+    <string name="audio_file_error">Wystąpił problem z plikiem audio \"%s\".</string>
     <string name="empty_title_error">Proszę wpisać tytuł swojej zakładki.</string>
-    <string name="jumped_to_bookmark">Skoczono do zakładki \"%s\" w %s</string>
+    <string name="jumped_to_bookmark">Skoczono do zakładki \"%s\" w %s.</string>
     <string name="bookmark_deleted">Usunięto zakładkę.</string>
-    <string name="tracks_deleted_from_db">Usunięto %d ścieżkę(-ki) dźwiękową(-wych) z bazy danych.</string>
+    <string name="bookmark_added_toast">Dodano zakładkę \"%s\" w %s.</string>
+    <plurals name="tracks_deleted">
+        <item quantity="one">Usunięto %d ścieżkę dźwiękową.</item>
+        <item quantity="few">Usunięto %d ścieżki dźwiękowe.</item>
+        <item quantity="other">Usunięto %d ścieżek dźwiękowych.</item>
+    </plurals>
+    <plurals name="tracks_removed_from_db">
+        <item quantity="one">Usunięto %d ścieżkę dźwiękową z biblioteki.</item>
+        <item quantity="few">Usunięto %d ścieżki dźwiękowe z biblioteki.</item>
+        <item quantity="other">Usunięto %d ścieżek dźwiękowych z biblioteki.</item>
+    </plurals>
+    <plurals name="quant_albums">
+        <item quantity="one">%d album</item>
+        <item quantity="few">%d albumy</item>
+        <item quantity="other">%d albumów</item>
+    </plurals>
+    <plurals name="quant_tracks">
+        <item quantity="one">%d ścieżka dźwiękowa</item>
+        <item quantity="few">%d ścieżki dźwiękowe</item>
+        <item quantity="other">%d ścieżek dźwiękowych</item>
+    </plurals>
+    <!-- First %s = "x albums" (quant_albums), second %s = "x tracks" (quant_tracks) -->
+    <string name="album_and_tracks_deleted">Usunięto %s i %s.</string>
+    <plurals name="albums_removed_from_db">
+        <item quantity="one">Usunięto %d album z biblioteki.</item>
+        <item quantity="few">Usunięto %d albumy z biblioteki.</item>
+        <item quantity="other">Usunięto %d albumów z biblioteki.</item>
+    </plurals>
+    <plurals name="directories_removed_from_db">
+        <item quantity="one">Usunięto %d katalog z biblioteki.</item>
+        <item quantity="few">Usunięto %d katalogi z biblioteki.</item>
+        <item quantity="other">Usunięto %d katalogów z biblioteki.</item>
+    </plurals>
     <string name="cannot_mark_as_not_started">Nie można oznaczyć aktualnie odtwarzanego utworu jako nierozpoczęty.</string>
     <string name="cannot_mark_as_completed">Nie można oznaczyć aktualnie odtwarzanego utworu jako ukończony.</string>
+    <string name="path">Ścieżka: %s</string>
+    <string name="directory_exists">Wybrany katalog już istnieje w bibliotece: %s.</string>
+    <string name="parent_directory_exists">Nie możesz dodawać podkatalogów katalogu, który już istnieje w bibliotece:\n%s\n%s.</string>
+    <string name="sub_directory_exists">Nie możesz dodawać katalogów nadrzędnych dla katalogów, które już istnieją w bibliotece:\n%s\n%s.</string>
+    <string name="illegal_speed">Obecny plik nie może być odtwarzany w prędkości %.1fx. Proszę wybrać inną wartość.</string>
+
 
     <!-- Settings strings -->
-    <string name="settings_autoplay_label">Auto-odtwarzanie</string>
-    <string name="settings_autoplay_restart_label">Odtwarzaj utwory od początku w kolejce auto-odtwarzania</string>
+    <string name="settings_autoplay_label">Autoodtwarzanie</string>
+    <string name="settings_autoplay_restart_label">Odtwarzaj ponownie utwory od początku podczas odtwarzania następnego/poprzedniego utworu</string>
     <string name="settings_progress_percentage_label">Pokaż postęp w procentach</string>
-    <string name="settings_keep_deleted_label">Zachowaj postęp usuniętych plików w bazie danych</string>
+    <string name="settings_keep_deleted_label">Zachowaj postęp usuniętych plików w bibliotece</string>
     <string name="settings_cover_from_metadata_label">Uzyskaj obraz okładki z metadanych</string>
     <string name="settings_sleep_timer_category">Wyłącznik czasowy</string>
     <string name="settings_sleep_fadeout_label">Czas wygaszania</string>
     <string name="settings_shake_label">Potrząśnij, aby zresetować wyłącznik czasowy</string>
     <string name="settings_shake_sensitivity_label">Czułość wstrząsania</string>
+    <string name="settings_vibrate_shake_reset_label">Wibruj przy zresetowaniu przez potrząśnięcie</string>
+    <string name="settings_continue_until_end_label">Odtwarzaj dalej do końca bieżącej ścieżki dźwiękowej</string>
     <string name="settings_title_from_metadata_label">Uzyskaj tytuł utworu z metadanych</string>
+    <string name="settings_display_cover_below_track_data_label">Pokazuj okładkę poniżej informacji o ścieżce dźwiękowej</string>
     <string name="settings_dark_label">Ciemny motyw</string>
-    <string name="settings_display_category">Display</string>
+    <string name="settings_autorewind_label">Czas autocofania</string>
+    <string name="settings_immediate_playback_label">Rozpocznij odtwarzanie natychmiast po wybraniu elementu</string>
+    <string name="settings_duck_audio_label">Przycisz dźwięk, gdy odtwarzanie zostanie przerwane</string>
+    <string name="settings_show_hidden_label">Pokaż ukryte pliki</string>
+    <string name="settings_display_category">Wyświetlanie</string>
     <string name="settings_playback_category">Odtwarzanie</string>
+    <string name="settings_bookmarks_category">Zakładki</string>
     <string name="settings_miscellaneous_category">Różne</string>
+    <string name="settings_sort_order_by_title_label">Według tytułu</string>
+    <string name="settings_sort_order_by_directory_label">Według katalogu</string>
+    <string name="settings_sort_order_label">Kolejność sortowania albumów</string>
+    <string name="settings_add_last_play_position_bookmark_label">Dodawaj i aktualizuj zakładki ostatniej i przedostatniej pozycji odtwarzania po każdym naciśnięciu przycisku odtwarzania</string>
+    <string name="settings_cover_on_lockscreen_label">Wyświetlaj okładkę na ekranie blokady</string>
+    <string name="settings_quick_bookmark_label">Dodawaj zakładkę jednym kliknięciem na ikonę zakładki</string>
+    <string name="settings_skip_intervals_category">Interwały pomijania</string>
+    <string name="settings_forward_button_1">Przycisk do przodu #1</string>
+    <string name="settings_forward_button_2">Przycisk do przodu #2</string>
+    <string name="settings_backward_button_1">Przycisk cofania #1</string>
+    <string name="settings_backward_button_2">Przycisk cofania #2</string>
+    <string name="settings_notification_backward_button">Przycisk cofania w powiadomieniach</string>
+    <string name="settings_notification_forward_button">Przycisk do przodu w powiadomieniach</string>
+    <string name="settings_skip_interval_msg">Przycisk pomijania dla %s</string>
 
     <!-- Layout Texts -->
     <string name="title">Tytuł</string>
     <string name="album">Album</string>
-    <string name="choose_directory">Wybierz katalog</string>
+    <string name="choose_directory">Dodaj katalog</string>
     <string name="settings">Ustawienia</string>
     <string name="time_completed_percent">ukończono %d%%</string>
     <string name="sleep_timer">Wyłącznik czasowy</string>
@@ -54,24 +120,57 @@
     <string name="synchronize">Synchronizuj</string>
     <string name="set_bookmark_name">Wpisz nazwę zakładki</string>
     <string name="set_bookmark_at">Ustaw zakładkę w</string>
-    <string name="no_bookmarks">Nie ma zakładek dla tego pliku audio</string>
+    <string name="no_bookmarks">Nie ma jeszcze zakładek dla tego pliku audio</string>
     <string name="bookmarks">Zakładki</string>
+    <string name="untitled_bookmark">Niezatytułowana</string>
+    <string name="delete_from_device">Usuń z urządzenia</string>
     <string name="remove_from_db">Usuń z bazy danych</string>
+    <string name="remove_from_library">Usuń z biblioteki</string>
     <string name="mark_as_not_started">Oznacz jako nie rozpoczęty</string>
     <string name="mark_as_completed">Oznacz jako ukończony</string>
-    <string name="items_selected">%d zaznaczonych</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d zaznaczona/y</item>
+        <item quantity="other">%d zaznaczone/ych</item>
+    </plurals>
     <string name="mark_all_as_not_started">Oznacz wszystkie ścieżki dźwiękowe jako nie rozpoczęte</string>
     <string name="mark_all_as_completed">Oznacz wszystkie ścieżki dźwiękowe jako ukończone</string>
     <string name="playback_speed">Prędkość odtwarzania</string>
+    <string name="about_contributors">Aby uzyskać listę współtwórców, odwiedź</string>
+    <string name="about_report_bugs">Jest to także miejsce do zgłaszania błędów, wnoszenia swojego wkładu lub zostawienia gwiazdkę, jeśli aplikacja Ci się podoba.</string>
+    <string name="about_donations">Jeśli podoba Ci się aplikacja i chcesz przekazać darowiznę, możesz to zrobić przez</string>
+    <string name="about_donations_thanks">Dziękuję :)</string>
+    <string name="add_sub_dir">Dodaj katalog, który\nzawiera pliki dźwiękowe</string>
+    <string name="add_parent_dir">Dodaj katalog z\npodkatalogami, które\nzawierają pliki dźwiękowe</string>
+    <string name="add_directory">Możesz wybrać pojedynczy katalog, który zawiera pliki audio lub katalog nadrzędny zawierający kilka katalogów, które z kolei posiadają pliki dźwiękowe.</string>
 
     <!-- Dialog strings -->
+    <string name="dialog_msg_select_dir">Wybierz katalog</string>
     <string name="dialog_msg_sleep_timer">Wprowadź liczbę minut, przez które odtwarzacz powinien dalej odtwarzać</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Anuluj</string>
     <string name="dialog_msg_close">Zamknij</string>
     <string name="dialog_msg_delete">Usuń</string>
     <string name="dialog_msg_goto">Wprowadź czas, do którego chcesz skoczyć</string>
-    <string name="dialog_msg_delete_album_from_db">Czy na pewno chcesz usunąć wybrany album(y) i ich zawartość z bazy danych? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</string>
-    <string name="dialog_msg_delete_audio_from_db">Czy na pewno chcesz usunąć wybraną ścieżkę(-ki) z bazy danych? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</string>
+    <plurals name="dialog_msg_delete_album">
+        <item quantity="one">Czy na pewno chcesz usunąć wybrany katalog i jego zawartość?</item>
+        <item quantity="other">Czy na pewno chcesz usunąć wybrane katalogi i ich zawartość?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_album_from_db">
+        <item quantity="one">Czy na pewno chcesz usunąć wybrany album i jego zawartość z biblioteki? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</item>
+        <item quantity="other">Czy na pewno chcesz usunąć wybrane albumy i ich zawartość z biblioteki? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</item>
+    </plurals>
+    <plurals name="dialog_msg_delete_audio">
+        <item quantity="one">Czy na pewno chcesz usunąć wybraną ścieżkę dźwiękową?</item>
+        <item quantity="other">Czy na pewno chcesz usunąć wybrane ścieżki dźwiękowe?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_audio_from_db">
+        <item quantity="one">Czy na pewno chcesz usunąć wybraną ścieżkę dźwiękową z biblioteki? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</item>
+        <item quantity="other">Czy na pewno chcesz usunąć wybrane ścieżki dźwiękowe z biblioteki? Ta operacja zostanie wykonana tylko w przypadku plików, które nie istnieją już w systemie plików.</item>
+    </plurals>
     <string name="dialog_msg_delete_bookmark">Usunąć tę zakładkę?</string>
+    <string name="dialog_msg_remove_directory_from_db">Czy na pewno chcesz usunąć wybrany katalog z biblioteki? To usunie także jego albumy, pliki dźwiękowe i zakładki z biblioteki.</string>
+
+    <string name="bookmark_second_to_last_play_position">&lt;przedostatnia i ostatnia pozycja odtwarzania&gt;</string>
+    <string name="bookmark_last_play_position">&lt;ostatnia pozycja odtwarzania&gt;</string>
+
 </resources>
