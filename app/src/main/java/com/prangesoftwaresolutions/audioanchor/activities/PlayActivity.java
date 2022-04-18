@@ -935,9 +935,11 @@ public class PlayActivity extends AppCompatActivity {
 
         final TextView playbackSpeedTV = dialogView.findViewById(R.id.playback_speed_tv);
         SeekBar playbackSpeedSB = dialogView.findViewById(R.id.playback_speed_sb);
+
         float normalSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_default));
         int minSpeed = Integer.parseInt(getString(R.string.preference_playback_speed_minimum));
-        playbackSpeedSB.setMax((int)(2.5 * normalSpeed));  // min + max = 0.5 + 2.5 = 3.0 --> max playback speed 3.0
+        int maxSpeed = 300;  // max playback speed is 3.0
+        playbackSpeedSB.setMax(getProgressFromPlaybackSpeed(maxSpeed));
         int currSpeed = mSharedPreferences.getInt(getString(R.string.preference_playback_speed_key), Integer.parseInt(getString(R.string.preference_playback_speed_default)));
         if (currSpeed < minSpeed) {
             // Ensure backwards compatibility where stored speed was in range 5 - 25
@@ -976,10 +978,42 @@ public class PlayActivity extends AppCompatActivity {
 
                 // Set playback speed to speed selected by the user
                 float speedFloat = (speed / normalSpeed);
-                if (mPlayer != null) {
-                    mPlayer.setPlaybackSpeed(speedFloat);
-                }
+                if (mPlayer != null) mPlayer.setPlaybackSpeed(speedFloat);
             }
+        });
+
+        ImageView decreaseSpeedIV = dialogView.findViewById(R.id.decrease_playback_speed_iv);
+        decreaseSpeedIV.setOnClickListener(view -> {
+            int speed = getPlaybackSpeedFromProgress(playbackSpeedSB.getProgress());
+            speed = Math.max(minSpeed, speed - 1);
+            float speedFloat = (speed / normalSpeed);
+            playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
+            playbackSpeedSB.setProgress(getProgressFromPlaybackSpeed(speed));
+
+            // Store new playback speed in shared preferences
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putInt(getString(R.string.preference_playback_speed_key), speed);
+            editor.apply();
+
+            // Set playback speed to speed selected by the user
+            if (mPlayer != null) mPlayer.setPlaybackSpeed(speedFloat);
+        });
+
+        ImageView increaseSpeedIV = dialogView.findViewById(R.id.increase_playback_speed_iv);
+        increaseSpeedIV.setOnClickListener(view -> {
+            int speed = getPlaybackSpeedFromProgress(playbackSpeedSB.getProgress());
+            speed = Math.min(maxSpeed, speed + 1);
+            float speedFloat = (speed / normalSpeed);
+            playbackSpeedTV.setText(getResources().getString(R.string.playback_speed_label, speedFloat));
+            playbackSpeedSB.setProgress(getProgressFromPlaybackSpeed(speed));
+
+            // Store new playback speed in shared preferences
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putInt(getString(R.string.preference_playback_speed_key), speed);
+            editor.apply();
+
+            // Set playback speed to speed selected by the user
+            if (mPlayer != null) mPlayer.setPlaybackSpeed(speedFloat);
         });
 
         final ImageView resetIV = dialogView.findViewById(R.id.reset);

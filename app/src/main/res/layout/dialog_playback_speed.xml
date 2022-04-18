@@ -1,41 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <RelativeLayout
+    <ImageView
+        android:id="@+id/reset"
+        android:layout_width="@dimen/reset_button_height"
+        android:layout_height="@dimen/reset_button_height"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:src="@drawable/reset_button"
+        android:layout_margin="@dimen/small_margin"/>
+
+
+    <LinearLayout
+        android:id="@+id/seekbar_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical">
+        app:layout_constraintTop_toBottomOf="@+id/reset"
+        android:orientation="horizontal"
+        android:layout_marginLeft="@dimen/standard_margin"
+        android:layout_marginRight="@dimen/standard_margin"
+        android:layout_marginBottom="32dp"
+        android:layout_marginTop="@dimen/large_margin">
+
 
         <TextView
-            android:id="@+id/playback_speed_tv"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_weight="0"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_centerVertical="true"
-            android:textSize="@dimen/medium_font_size"
-            android:padding="@dimen/standard_margin" />
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_next"
+            android:textColor="@color/colorPrimary"
+            android:text="0.5x"
+            android:textSize="@dimen/medium_font_size"/>
 
-        <ImageView
-            android:id="@+id/reset"
-            android:layout_width="@dimen/reset_button_height"
-            android:layout_height="@dimen/reset_button_height"
-            android:layout_alignParentEnd="true"
-            android:src="@drawable/reset_button"
-            android:layout_centerVertical="true"
-            android:padding="@dimen/standard_margin"/>
-    </RelativeLayout>
+        <SeekBar
+            android:id="@+id/playback_speed_sb"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:max="99"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_weight="0"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_next"
+            android:textColor="@color/colorPrimary"
+            android:text="3x"
+            android:textSize="@dimen/medium_font_size"/>
+    </LinearLayout>
 
-    <SeekBar
-        android:id="@+id/playback_speed_sb"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/playback_speed_tv"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/standard_margin"
-        android:paddingRight="@dimen/standard_margin"
-        android:paddingBottom="@dimen/standard_margin" />
+        app:layout_constraintTop_toBottomOf="@+id/seekbar_ll"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:textSize="@dimen/medium_font_size"
+        />
 
-</LinearLayout>
+    <ImageView
+        android:id="@+id/decrease_playback_speed_iv"
+        android:layout_width="@dimen/change_skip_interval_button_height"
+        android:layout_height="@dimen/change_skip_interval_button_height"
+        app:layout_constraintTop_toBottomOf="@+id/seekbar_ll"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="@dimen/change_skip_interval_button_height"
+        android:layout_marginBottom="@dimen/large_margin"
+        android:src="@drawable/decrease_button" />
+
+    <ImageView
+        android:id="@+id/increase_playback_speed_iv"
+        android:layout_width="@dimen/change_skip_interval_button_height"
+        android:layout_height="@dimen/change_skip_interval_button_height"
+        app:layout_constraintTop_toBottomOf="@+id/seekbar_ll"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginEnd="@dimen/change_skip_interval_button_height"
+        android:layout_marginBottom="@dimen/large_margin"
+        android:src="@drawable/increase_button" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
