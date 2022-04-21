@@ -8,8 +8,8 @@ android {
         applicationId = "com.prangesoftwaresolutions.audioanchor"
         minSdk = 19
         targetSdk = 30
-        versionCode = 26
-        versionName = "2.3.0"
+        versionCode = 27
+        versionName = "2.3.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
