@@ -50,8 +50,6 @@
     <string name="dialog_msg_close">Sluiten</string>
     <string name="dialog_msg_delete">Verwijderen</string>
     <string name="dialog_msg_goto">Voer de tijd in waarnaar je wilt doorspoelen:</string>
-    <string name="dialog_msg_delete_album_from_db">Weet je zeker dat je het album en alle inhoud ervan wilt verwijderen uit de databank?</string>
-    <string name="dialog_msg_delete_audio_from_db">Weet je zeker dat dit audiobestand wilt verwijderen uit de databank?</string>
     <string name="dialog_msg_delete_bookmark">Wil je deze bladwijzer verwijderen?</string>
 
 </resources>

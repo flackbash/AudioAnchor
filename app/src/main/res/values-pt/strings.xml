@@ -23,11 +23,31 @@
     <string name="empty_title_error">Por favor, digite o nome do seu marcador.</string>
     <string name="jumped_to_bookmark">Avançado para o marcador \"%s\" em %s.</string>
     <string name="bookmark_deleted">Marcador apagado.</string>
-    <string name="tracks_deleted">%d faixa(s) apagada(s).</string>
-    <string name="tracks_deleted_from_db">Apagada(s) %d faixa(s) da sua biblioteca.</string>
-    <string name="files_deleted">Apagado(s) %d álbum(s) e %d faixa(s).</string>
-    <string name="albums_deleted_from_db">Apagado(s) %d álbum(s) da sua biblioteca.</string>
-    <string name="directories_deleted_from_db">Apagado(s) %d diretório(s) da sua biblioteca</string>
+    <plurals name="tracks_deleted">
+        <item quantity="one">%d faixa apagada.</item>
+        <item quantity="other">%d faixas apagadas.</item>
+    </plurals>
+    <plurals name="tracks_removed_from_db">
+        <item quantity="one">Removida %d faixa da sua biblioteca.</item>
+        <item quantity="other">Removidas %d faixas da sua biblioteca.</item>
+    </plurals>
+    <plurals name="quant_albums">
+        <item quantity="one">%d álbum</item>
+        <item quantity="other">%d álbums</item>
+    </plurals>
+    <plurals name="quant_tracks">
+        <item quantity="one">%d faixa</item>
+        <item quantity="other">%d faixas</item>
+    </plurals>
+    <string name="album_and_tracks_deleted">Apagados %s e %s.</string>
+    <plurals name="albums_removed_from_db">
+        <item quantity="one">Removido %d álbum da sua biblioteca.</item>
+        <item quantity="other">Removidos %d álbums da sua biblioteca.</item>
+    </plurals>
+    <plurals name="directories_removed_from_db">
+        <item quantity="one">Removido %d diretório da sua biblioteca</item>
+        <item quantity="other">Removidos %d diretórios da sua biblioteca</item>
+    </plurals>
     <string name="cannot_mark_as_not_started">Não foi possível marcar a faixa tocando agora como não começada.</string>
     <string name="cannot_mark_as_completed">Não foi possível marcar a faixa tocando agora como completada.</string>
     <string name="path">Caminho: %s</string>
@@ -82,7 +102,10 @@
     <string name="remove_from_library">Remover da biblioteca</string>
     <string name="mark_as_not_started">Marcar como não começado</string>
     <string name="mark_as_completed">Marcar como completo</string>
-    <string name="items_selected">%d selecionado</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d selecionado</item>
+        <item quantity="other">%d selecionados</item>
+    </plurals>
     <string name="mark_all_as_not_started">Marcar todas as faixas como não começadas</string>
     <string name="mark_all_as_completed">Marcar todas as faixas como completas</string>
     <string name="playback_speed">Velocidade da reprodução</string>
@@ -100,10 +123,22 @@
     <string name="dialog_msg_close">Fechar</string>
     <string name="dialog_msg_delete">Apagar</string>
     <string name="dialog_msg_goto">Digite o tempo para qual você deseja avançar</string>
-    <string name="dialog_msg_delete_album">Você tem certeza que deseja apagar o(s) diretório(s) selecionados e seus respectivos conteúdos?</string>
-    <string name="dialog_msg_delete_album_from_db">Você tem certeza que deseja remover o(s) álbum(s) selecionados e seus respectivos conteúdos da sua biblioteca? Essa operação só será feita em arquivos que não existem mais no sistema de arquivos.</string>
-    <string name="dialog_msg_delete_audio">Você tem certeza que deseja apagar a(s) faixa(s) selecionada(s)?</string>
-    <string name="dialog_msg_delete_audio_from_db">Você tem certeza que deseja remover a(s) faixa(s) selecionada(s) da biblioteca? Essa operação só será feita em arquivos que não existem mais no sistema de arquivos.</string>
+    <plurals name="dialog_msg_delete_album">
+        <item quantity="one">Você tem certeza que deseja apagar o diretório selecionado e seu conteúdo?</item>
+        <item quantity="other">Você tem certeza que deseja apagar os diretórios selecionados e seus respectivos conteúdos?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_album_from_db">
+        <item quantity="one">Você tem certeza que deseja remover o álbum selecionado e seu conteúdo da sua biblioteca? Essa operação só será feita em arquivos que não existem mais no sistema de arquivos.</item>
+        <item quantity="other">Você tem certeza que deseja remover os álbums selecionados e seus respectivos conteúdos da sua biblioteca? Essa operação só será feita em arquivos que não existem mais no sistema de arquivos.</item>
+    </plurals>
+    <plurals name="dialog_msg_delete_audio">
+        <item quantity="one">Você tem certeza que deseja apagar a faixa selecionada?</item>
+        <item quantity="other">Você tem certeza que deseja apagar as faixas selecionadas?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_audio_from_db">
+        <item quantity="one">Você tem certeza que deseja remover a faixa selecionada da biblioteca? Essa operação só será feita em arquivos que não existem mais no sistema de arquivos.</item>
+        <item quantity="other">Você tem certeza que deseja remover as faixas selecionadas da biblioteca? Essa operação só será feita em arquivos que não existem mais no sistema de arquivos.</item>
+    </plurals>
     <string name="dialog_msg_delete_bookmark">Apagar este marcador?</string>
     <string name="dialog_msg_remove_directory_from_db">Você tem certeza que deseja remover o diretório selecionado da sua biblioteca? Isso também irá apagar seus álbuns, arquivos de áudio e marcadores da sua biblioteca.</string>
 </resources>

@@ -23,11 +23,6 @@
     <string name="empty_title_error">Введите название закладки.</string>
     <string name="jumped_to_bookmark">Переход к закладке \"%s\" на %s.</string>
     <string name="bookmark_deleted">Закладка удалена.</string>
-    <string name="tracks_deleted">%d эпизодов удалено из базы данных.</string>
-    <string name="tracks_deleted_from_db">Удалено %d эпизодов из библиотеки.</string>
-    <string name="files_deleted">Удалено %d альбомов и %d эпизодов.</string>
-    <string name="albums_deleted_from_db">Удалено %d альбомов из библиотеки.</string>
-    <string name="directories_deleted_from_db">Удалено %d папок из библиотеки</string>
     <string name="cannot_mark_as_not_started">Не удалось отметить проигрывемый эпизод как неначатый.</string>
     <string name="cannot_mark_as_completed">Не удалось отметить проигрывемый эпизод как прослушанный.</string>
     <string name="path">Путь: %s</string>
@@ -82,7 +77,6 @@
     <string name="remove_from_library">Удалить из библиотеки</string>
     <string name="mark_as_not_started">Отметить как неначатый</string>
     <string name="mark_as_completed">Отметить как прослушанный</string>
-    <string name="items_selected">%d выбрано</string>
     <string name="mark_all_as_not_started">Отметить все эпизоды как неначатые</string>
     <string name="mark_all_as_completed">Отметить все эпизоды как прослушанные</string>
     <string name="playback_speed">Скорость воспроизведения</string>
@@ -100,10 +94,6 @@
     <string name="dialog_msg_close">Закрыть</string>
     <string name="dialog_msg_delete">Удалить</string>
     <string name="dialog_msg_goto">Введите время, на которое хотите перейти</string>
-    <string name="dialog_msg_delete_album">Вы уверены, что хотите удалить выбранные папки и их содержимое?</string>
-    <string name="dialog_msg_delete_album_from_db">Вы уверены, хотите удалить выбранные аудиокниги и их эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
-    <string name="dialog_msg_delete_audio">Вы уверены, что хотите удалить выбранные эпизоды?</string>
-    <string name="dialog_msg_delete_audio_from_db">Вы уверены, что хотите удалить выбранные эпизоды из базы данных? Эта операция будет применена только для файлов, которые отсутствуют в файловой системе.</string>
     <string name="dialog_msg_delete_bookmark">Удалить эту закладку?</string>
     <string name="dialog_msg_remove_directory_from_db">Вы уверены, что хотите удалить выбранную папку из вашей библиотеки? Это также удалит альбомы, аудиофайлы и закладки из вашей библиотеки.</string>
 </resources>

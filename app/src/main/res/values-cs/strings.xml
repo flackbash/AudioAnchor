@@ -23,11 +23,37 @@
     <string name="empty_title_error">Prosím zadejte název záložky.</string>
     <string name="jumped_to_bookmark">Přechod na záložku \"%s\" v %s.</string>
     <string name="bookmark_deleted">Záložka smazaná.</string>
-    <string name="tracks_deleted">%d stopa/y smazaná.</string>
-    <string name="tracks_deleted_from_db">Smazáno %d stopa/y z knihovny.</string>
-    <string name="files_deleted">Smazáno %d album a %d stopa/y.</string>
-    <string name="albums_deleted_from_db">Smazáno %d alb z knihovny.</string>
-    <string name="directories_deleted_from_db">Smazán %d adresář/e z knihovny</string>
+    <plurals name="tracks_deleted">
+        <item quantity="one">%d stopa smazán.</item>
+        <item quantity="few">%d stopy smazány.</item>
+        <item quantity="many">%d stop smazáno.</item>
+    </plurals>
+    <plurals name="tracks_removed_from_db">
+        <item quantity="one">Odebrána %d stopa z knihovny.</item>
+        <item quantity="few">Odebrány %d stopy z knihovny.</item>
+        <item quantity="many">Odebráno %d stop z knihovny.</item>
+    </plurals>
+    <plurals name="quant_albums">
+        <item quantity="one">%d album</item>
+        <item quantity="few">%d alba</item>
+        <item quantity="many">%d alb</item>
+    </plurals>
+    <plurals name="quant_tracks">
+        <item quantity="one">%d stopa</item>
+        <item quantity="few">%d stopy</item>
+        <item quantity="many">%d stop</item>
+    </plurals>
+    <string name="album_and_tracks_deleted">Smazáno %s a %s.</string>
+    <plurals name="albums_removed_from_db">
+        <item quantity="one">Odebráno %d album z knihovny.</item>
+        <item quantity="few">Odebrány %d alba z knihovny.</item>
+        <item quantity="many">Odebráno %d alb z knihovny.</item>
+    </plurals>
+    <plurals name="directories_removed_from_db">
+        <item quantity="one">Odebrán %d adresář z knihovny.</item>
+        <item quantity="few">Odebrány %d adresáře z knihovny.</item>
+        <item quantity="many">Odebráno %d adresářů z knihovny.</item>
+    </plurals>
     <string name="cannot_mark_as_not_started">Nemohu označit právě přehrávanou stopu jako nepřehranou.</string>
     <string name="cannot_mark_as_completed">Nemohu označit právě přehrávanou stopu jako dokončenou.</string>
     <string name="path">Cesta: %s</string>
@@ -84,7 +110,11 @@
     <string name="remove_from_library">Odstranit z knihovny</string>
     <string name="mark_as_not_started">Označit jako neposlouchané</string>
     <string name="mark_as_completed">Označit jako dokončené</string>
-    <string name="items_selected">%d vybráno</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d vybráno</item>
+        <item quantity="few">%d vybráno</item>
+        <item quantity="many">%d vybráno</item>
+    </plurals>
     <string name="mark_all_as_not_started">Označit všechny stopy jako neposlouchané</string>
     <string name="mark_all_as_completed">Označit všechny stopy jako dokončené</string>
     <string name="playback_speed">Rychlost přehrávání</string>
@@ -102,10 +132,27 @@
     <string name="dialog_msg_close">Zavřít</string>
     <string name="dialog_msg_delete">Smazat</string>
     <string name="dialog_msg_goto">Zadejte čas na který chcete přeskočit</string>
-    <string name="dialog_msg_delete_album">Opravdu smazat vybraný adresář/e a jejich obsah?</string>
-    <string name="dialog_msg_delete_album_from_db">Opravdu odebrat vybrané album/alba a jejich obsah z knihovny? Tato operace proběhne pouze pro soubory které už jsou smazané.</string>
-    <string name="dialog_msg_delete_audio">Opravdu smazat vybrané stopy?</string>
-    <string name="dialog_msg_delete_audio_from_db">Opravdu odebrat vybrané stopy z databáze? Tato operace proběhne pouze pro soubory které už jsou smazané.</string>
+    <plurals name="dialog_msg_delete_album">
+        <item quantity="one">Opravdu smazat vybraný adresář a jeho obsah?</item>
+        <item quantity="few">Opravdu smazat vybrané adresáře a jejich obsah?</item>
+        <item quantity="many">Opravdu smazat vybraných adresářů a jejich obsah?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_album_from_db">
+        <item quantity="one">Opravdu odebrat vybrané album a jeho obsah z knihovny? Tato operace proběhne pouze pro soubory které už jsou smazané.</item>
+        <item quantity="few">Opravdu odebrat vybraná alba a jejich obsah z knihovny? Tato operace proběhne pouze pro soubory které už jsou smazané.</item>
+        <item quantity="many">Opravdu odebrat vybraných alb a jejich obsah z knihovny? Tato operace proběhne pouze pro soubory které už jsou smazané.</item>
+    </plurals>
+    <plurals name="dialog_msg_delete_audio">
+        <item quantity="one">Opravdu smazat vybranou stopu?</item>
+        <item quantity="few">Opravdu smazat vybrané stopy?</item>
+        <item quantity="many">Opravdu smazat vybraných stop?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_audio_from_db">
+        <item quantity="one">Opravdu odebrat vybranou stopu z knihovny? Tato operace proběhne pouze pro soubory které už jsou smazané.</item>
+        <item quantity="few">Opravdu odebrat vybrané stopy z knihovny? Tato operace proběhne pouze pro soubory které už jsou smazané.</item>
+        <item quantity="many">Opravdu odebrat vybraných stop z knihovny? Tato operace proběhne pouze pro soubory které už jsou smazané.</item>
+    </plurals>
+
     <string name="dialog_msg_delete_bookmark">Smazat záložku?</string>
     <string name="dialog_msg_remove_directory_from_db">Opravdu odebrat vybraný adresář z knihovny? Odebere z databáze všechna alba, audio soubory a záložky z tohoto adresáře.</string>
 </resources>
