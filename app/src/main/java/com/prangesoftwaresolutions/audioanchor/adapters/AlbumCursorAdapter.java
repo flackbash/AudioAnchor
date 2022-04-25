@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Bitmap;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
