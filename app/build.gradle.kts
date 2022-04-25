@@ -43,7 +43,7 @@ dependencies {
     implementation("com.getbase:floatingactionbutton:1.10.1")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("androidx.core:core:1.7.0")
-    implementation("androidx.media:media:1.5.0")
+    implementation("androidx.media:media:1.6.0")
     implementation("androidx.preference:preference:1.2.0")
 
 
