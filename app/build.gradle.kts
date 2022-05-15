@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId = "com.prangesoftwaresolutions.audioanchor"
         minSdk = 19
-        targetSdk = 30
+        targetSdk = 29
         versionCode = 27
         versionName = "2.3.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
