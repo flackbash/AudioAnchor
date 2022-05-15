@@ -20,8 +20,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.nambimobile.widgets.efab.FabOption;
 import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.adapters.DirectoryCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
@@ -63,39 +62,12 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
         mCursorAdapter = new DirectoryCursorAdapter(this, null);
 
         // Set up FloatingActionsMenu
-        FloatingActionsMenu addDirectoryFAM = findViewById(R.id.add_directory_fam);
-        FloatingActionButton addSubDirFAB = findViewById(R.id.add_sub_dir_fab);
-        FloatingActionButton addParentDirFAB = findViewById(R.id.add_parent_dir_fab);
-
-        // Set up overlay
-        View overlay = findViewById(R.id.overlay);
-        overlay.setOnClickListener(v -> addDirectoryFAM.collapse());
-
-        // Set up FAM update listener
-        addDirectoryFAM.setOnFloatingActionsMenuUpdateListener( new FloatingActionsMenu.OnFloatingActionsMenuUpdateListener()
-        {
-            @Override
-            public void onMenuExpanded()
-            {
-                overlay.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onMenuCollapsed()
-            {
-                overlay.setVisibility(View.INVISIBLE);
-            }
-        });
+        final FabOption addSubDirFAB = findViewById(R.id.add_sub_dir_fab);
+        final FabOption addParentDirFAB = findViewById(R.id.add_parent_dir_fab);
 
         // Set up the FAB onClickListeners
-        addSubDirFAB.setOnClickListener(v -> {
-            addDirectory(false);
-            addDirectoryFAM.collapse();
-        });
-        addParentDirFAB.setOnClickListener(v -> {
-            addDirectory(true);
-            addDirectoryFAM.collapse();
-        });
+        addSubDirFAB.setOnClickListener(v -> addDirectory(false));
+        addParentDirFAB.setOnClickListener(v -> addDirectory(true));
 
         // Use a ListView and CursorAdapter to recycle space
         mListView = findViewById(R.id.list);

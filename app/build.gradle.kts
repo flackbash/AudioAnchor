@@ -46,5 +46,5 @@ dependencies {
 
 // Other
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("com.getbase:floatingactionbutton:1.10.1")
+    implementation("com.nambimobile.widgets:expandable-fab:1.2.1")
 }

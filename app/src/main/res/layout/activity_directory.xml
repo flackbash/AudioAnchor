@@ -21,48 +21,54 @@
         android:id="@+id/progressBar"
         style="@style/EmptyListProgressBar" />
 
-    <View
-        android:id="@+id/overlay"
+    <com.nambimobile.widgets.efab.ExpandableFabLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="invisible"
-        android:background="@color/colorOverlay" />
+        android:layout_height="match_parent">
 
-    <com.getbase.floatingactionbutton.FloatingActionsMenu
-        android:id="@+id/add_directory_fam"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:src="@drawable/ic_play_white"
-        android:layout_margin="@dimen/standard_margin"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        app:fab_addButtonColorNormal="@color/colorAccent"
-        app:fab_addButtonColorPressed="@color/colorAccent"
-        app:fab_title="@string/add_directory"
-        app:fab_labelStyle="@style/fab_label_style"
-        app:fab_labelsPosition="left">
+        <com.nambimobile.widgets.efab.Overlay
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:overlay_color="@color/colorOverlay"
+            app:overlay_orientation="portrait" />
 
-        <com.getbase.floatingactionbutton.FloatingActionButton
+        <com.nambimobile.widgets.efab.ExpandableFab
+            android:id="@+id/add_directory_fam"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="24dp"
+            app:efab_closingAnimationDurationMs="250"
+            app:efab_closingAnticipateTension="0"
+            app:efab_color="@color/colorAccent"
+            app:efab_firstFabOptionMarginPx="100"
+            app:efab_successiveFabOptionMarginPx="100" />
+
+        <com.nambimobile.widgets.efab.FabOption
             android:id="@+id/add_sub_dir_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:fab_size="mini"
-            app:fab_colorNormal="@color/colorAccent"
-            app:fab_colorPressed="@color/colorAccent"
+            app:fabSize="mini"
+            app:fab_color="@color/colorAccent"
             app:fab_icon="@drawable/ic_directory_white"
-            app:fab_title="@string/add_sub_dir" />
+            app:label_backgroundColor="@color/colorBackgroundMediumNoTrans"
+            app:label_position="left"
+            app:label_text="@string/add_sub_dir"
+            app:label_textColor="@color/colorBackgroundLightNoTrans" />
 
-        <com.getbase.floatingactionbutton.FloatingActionButton
+        <com.nambimobile.widgets.efab.FabOption
             android:id="@+id/add_parent_dir_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:fab_size="mini"
-            app:fab_colorNormal="@color/colorAccent"
-            app:fab_colorPressed="@color/colorAccent"
+            app:fabSize="mini"
+            app:fab_color="@color/colorAccent"
             app:fab_icon="@drawable/ic_parent_directory_white"
-            app:fab_title="@string/add_parent_dir" />
+            app:label_backgroundColor="@color/colorBackgroundMediumNoTrans"
+            app:label_position="left"
+            app:label_text="@string/add_parent_dir"
+            app:label_textColor="@color/colorBackgroundLightNoTrans" />
 
-    </com.getbase.floatingactionbutton.FloatingActionsMenu>
+    </com.nambimobile.widgets.efab.ExpandableFabLayout>
 
 </RelativeLayout>
