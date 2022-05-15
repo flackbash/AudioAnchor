@@ -10,7 +10,6 @@ android {
         targetSdk = 29
         versionCode = 28
         versionName = "2.3.2"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -49,9 +48,4 @@ dependencies {
 
 // Gson
     implementation("com.google.code.gson:gson:2.9.0")
-
-// Test
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }
