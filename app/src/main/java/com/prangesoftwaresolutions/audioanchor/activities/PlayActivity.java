@@ -569,8 +569,11 @@ public class PlayActivity extends AppCompatActivity {
             if (coverData != null) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(coverData, 0, coverData.length);
                 mCoverIV.setImageBitmap(bitmap);
-            } else {
+            } else if (mAudioFile.getCoverPath() != null) {
                 BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
+            } else {
+                // No cover image exists for this track. Set default cover image.
+                mCoverIV.setImageResource(R.drawable.empty_cover_grey_blue);
             }
         } else {
             BitmapUtils.setImage(mCoverIV, mAudioFile.getCoverPath(), reqSize);
