@@ -110,12 +110,12 @@ public class DBAccessUtils {
     /*
      * Mark track with the specified id as not started, i.e. set completedTime to 0 in the db
      */
-    public static void markTrackAsNotStarted(Context context, long trackId) {
+    public static boolean markTrackAsNotStarted(Context context, long trackId) {
         // Do not mark as not started if the track is currently active in the MediaPlayerService
         StorageUtil storage = new StorageUtil(context);
         if (storage.loadAudioId() == trackId) {
             Toast.makeText(context, R.string.cannot_mark_as_not_started, Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
 
         // Mark as not started
@@ -123,18 +123,19 @@ public class DBAccessUtils {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, 0);
         context.getContentResolver().update(uri, values, null, null);
+        return true;
     }
 
 
     /*
      * Mark track with the specified id as completed, i.e. set completedTime to totalTime in the db
      */
-    public static void markTrackAsCompleted(Context context, long trackId) {
+    public static boolean markTrackAsCompleted(Context context, long trackId) {
         // Do not mark as completed if the track is currently active in the MediaPlayerService
         StorageUtil storage = new StorageUtil(context);
         if (storage.loadAudioId() == trackId) {
             Toast.makeText(context, R.string.cannot_mark_as_completed, Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
 
         // Get total time for the specified track
@@ -147,10 +148,10 @@ public class DBAccessUtils {
 
         // Bail early if the cursor is null
         if (c == null) {
-            return;
+            return false;
         } else if (c.getCount() < 1) {
             c.close();
-            return;
+            return false;
         }
 
         int totalTime = 0;
@@ -164,5 +165,6 @@ public class DBAccessUtils {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, totalTime);
         context.getContentResolver().update(uri, values, null, null);
+        return true;
     }
 }

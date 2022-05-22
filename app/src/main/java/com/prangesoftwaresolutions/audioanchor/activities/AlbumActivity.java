@@ -81,6 +81,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     // Variables for multi choice mode
     ArrayList<Long> mSelectedTracks = new ArrayList<>();
     ArrayList<Long> mTmpSelectedTracks;
+    // Used to disable scrolling in onLoadFinished for DB-ops started from within the activity
+    boolean mScroll = true;
 
     // MediaPlayerService variables
     private MediaPlayerService mPlayer;
@@ -218,6 +220,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                         } else {
                             deleteSelectedTracksWithConfirmation();
                         }
+
                         actionMode.finish();
                         return true;
                     case R.id.menu_delete_from_db:
@@ -226,13 +229,15 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                         return true;
                     case R.id.menu_mark_as_not_started:
                         for (long trackId : mSelectedTracks) {
-                            DBAccessUtils.markTrackAsNotStarted(AlbumActivity.this, trackId);
+                            // Skip scrolling in Loader if at least one DB operation was performed
+                            // (and thus the Loader is called)
+                            mScroll &= !DBAccessUtils.markTrackAsNotStarted(AlbumActivity.this, trackId);
                         }
                         actionMode.finish();
                         return true;
                     case R.id.menu_mark_as_completed:
                         for (long trackId : mSelectedTracks) {
-                            DBAccessUtils.markTrackAsCompleted(AlbumActivity.this, trackId);
+                           mScroll &= !DBAccessUtils.markTrackAsCompleted(AlbumActivity.this, trackId);
                         }
                         actionMode.finish();
                         return true;
@@ -367,7 +372,11 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Swap the new cursor in. The framework will take care of closing the old cursor
         mCursorAdapter.swapCursor(cursor);
-        scrollToLastPlayed(cursor);
+
+        // Scroll to the last played track, unless scrolling is skipped because the reload was
+        // triggered by a DB op from within the AlbumActivity such as marking tracks as completed
+        if (mScroll) scrollToLastPlayed(cursor);
+        mScroll = true;
     }
 
     @Override
@@ -594,6 +603,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 boolean deleted = DBAccessUtils.deleteTrackFromDB(AlbumActivity.this, trackId);
                 if (deleted) {
                     deletionCount++;
+                    mScroll = false;
                 }
             }
             String deletedTracks = getResources().getQuantityString(R.plurals.tracks_removed_from_db,
@@ -643,7 +653,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 boolean keepDeleted = mPrefs.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
                 AudioFile audioFile =  AudioFile.getAudioFileById(AlbumActivity.this, audioFileID);
                 boolean deleted = Utils.deleteTrack(this, audioFile, keepDeleted);
-                if (deleted) deletionCount += 1;
+                if (deleted) {
+                    deletionCount += 1;
+                    mScroll = false;
+                }
             }
             mSynchronizer.updateDBTables();
             String deletedTracks = getResources().getQuantityString(R.plurals.tracks_deleted,
