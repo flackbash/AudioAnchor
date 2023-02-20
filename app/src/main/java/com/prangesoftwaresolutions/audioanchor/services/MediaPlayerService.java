@@ -602,11 +602,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, mActiveAudio.getAlbumTitle())
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mActiveAudio.getTitle())
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,mActiveAudio.getTime())
                     .build();
         } else {
             mediaMetadataCompat = new MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, mActiveAudio.getAlbumTitle())
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mActiveAudio.getTitle())
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,mActiveAudio.getTime())
                     .build();
         }
         // Update the current metadata
@@ -1100,12 +1102,17 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     private void setMediaPlaybackState(int state) {
         PlaybackStateCompat.Builder playbackstateBuilder = new PlaybackStateCompat.Builder();
+        float playbackSpeed = 1;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            playbackSpeed = mMediaPlayer.getPlaybackParams().getSpeed();
+        }
         if( state == PlaybackStateCompat.STATE_PLAYING ) {
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE);
+            playbackstateBuilder.setState(state,mMediaPlayer.getCurrentPosition(),1);
         } else {
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY);
+            playbackstateBuilder.setState(state, mMediaPlayer.getCurrentPosition(), 0);
         }
-        playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
         mediaSession.setPlaybackState(playbackstateBuilder.build());
     }
 }
