@@ -84,8 +84,8 @@ public class AlbumCursorAdapter extends CursorAdapter {
         int albumId = cursor.getInt(cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
         Album album = Album.getAlbumByID(mContext, albumId);
         if (isCurrentItemActive(albumId)) {
-            boolean darkTheme = mPrefs.getBoolean(mContext.getString(R.string.settings_dark_key), Boolean.getBoolean(mContext.getString(R.string.settings_dark_default)));
-            if (darkTheme) {
+            String darkTheme = mPrefs.getString(mContext.getString(R.string.settings_dark_key), mContext.getString(R.string.settings_dark_default));
+            if (darkTheme.equals(mContext.getString(R.string.settings_dark_theme_true_value))) {
                 thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked_dark_theme);
             } else {
                 thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked);

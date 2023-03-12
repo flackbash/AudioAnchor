@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Preferences
     private SharedPreferences mSharedPreferences;
-    private boolean mDarkTheme;
+    private String mDarkTheme;
     private boolean mShowHiddenFiles;
 
     // Database variables
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Set up the shared preferences.
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
+        mDarkTheme = mSharedPreferences.getString(getString(R.string.settings_dark_key), getString(R.string.settings_dark_default));
         mShowHiddenFiles = mSharedPreferences.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
@@ -346,9 +346,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onRestart() {
         // Recreate if theme has changed
-        boolean currentDarkTheme;
-        currentDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
-        if (mDarkTheme != currentDarkTheme) {
+        String currentDarkTheme;
+        currentDarkTheme = mSharedPreferences.getString(getString(R.string.settings_dark_key), "dark_theme_system");
+        if (!mDarkTheme.equals(currentDarkTheme)) {
             recreate();
         }
         // Synchronize if setting show-hidden-files has changed

@@ -38,7 +38,10 @@
     <string name="settings_display_cover_below_track_data_key" translatable="false">cover_below_track_data</string>
     <string name="settings_display_cover_below_track_data_default" translatable="false">false</string>
     <string name="settings_dark_key" translatable="false">settings_dark</string>
-    <string name="settings_dark_default" translatable="false">false</string>
+    <string name="settings_dark_default" translatable="false">@string/settings_dark_theme_system_value</string>
+    <string name="settings_dark_theme_system_value" translatable="false">dark_theme_system</string>
+    <string name="settings_dark_theme_false_value" translatable="false">dark_theme_false</string>
+    <string name="settings_dark_theme_true_value" translatable="false">dark_theme_true</string>
     <string name="settings_autorewind_key" translatable="false">autorewind</string>
     <string name="settings_autorewind_default" translatable="false">0</string>
     <string name="settings_immediate_playback_key" translatable="false">immediate_playback</string>
