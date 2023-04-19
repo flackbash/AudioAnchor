@@ -5,6 +5,7 @@ plugins {
 android {
     compileSdk = 33
     defaultConfig {
+        namespace = "com.prangesoftwaresolutions.audioanchor"
         applicationId = "com.prangesoftwaresolutions.audioanchor"
         minSdk = 19
         targetSdk = 29
