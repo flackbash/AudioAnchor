@@ -32,7 +32,7 @@ public class BitmapUtils {
         Bitmap bmp = decodeSampledBitmap(file, reqSize, reqSize);
         if (bmp != null) {
             while (bmp.getByteCount() > MAX_BITMAP_SIZE) {
-                Log.d(LOG_TAG, "Bitmap was probably too large at " + String.valueOf(bmp.getByteCount()) + " bytes, resizing to 1/2 size.");
+                Log.d(LOG_TAG, "Bitmap was probably too large at " + bmp.getByteCount() + " bytes, resizing to 1/2 size.");
                 bmp = Bitmap.createScaledBitmap(bmp, bmp.getWidth() / 2, bmp.getHeight() / 2, false);
             }
             iv.setImageBitmap(bmp);
