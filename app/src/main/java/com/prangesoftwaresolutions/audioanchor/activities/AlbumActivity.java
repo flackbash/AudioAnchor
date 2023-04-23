@@ -454,6 +454,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            mServiceBound = false;
             Log.e("AlbumActivity", "OnServiceDisconnected called");
         }
     };
