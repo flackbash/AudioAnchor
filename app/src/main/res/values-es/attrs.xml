@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <!-- Other values-->
-    <attr name="playActivityHeaderBG" format="reference" />
-    <attr name="colorDeletableIcon" format="reference" />
-
-</resources>
