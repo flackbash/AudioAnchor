@@ -19,6 +19,7 @@ android {
 
         debug {
             applicationIdSuffix = ".debug"
+            versionNameSuffix = "-DEBUG"
             isDebuggable = true
         }
     }
