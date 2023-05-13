@@ -71,7 +71,6 @@ public class Utils {
 
         seconds = seconds % 60;
         minutes = minutes % 60;
-        hours = hours % 60;
 
         long hoursFullTime = fullTime / (60 * 60 * 1000);
 
