@@ -26,7 +26,19 @@ public class Utils {
      */
     public static void setActivityTheme(Context context) {
         SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(context);
-        String darkTheme = prefManager.getString(context.getString(R.string.settings_dark_key), context.getString(R.string.settings_dark_default));
+
+        String darkTheme;
+        try {
+            darkTheme = prefManager.getString(context.getString(R.string.settings_dark_key), context.getString(R.string.settings_dark_default));
+        } catch (ClassCastException e) {
+            // This is needed so switching from the old version where darkTheme was stored as boolean
+            // to the new version where it is stored as a string works.
+            boolean darkThemeBool = prefManager.getBoolean(context.getString(R.string.settings_dark_key), Boolean.getBoolean(context.getString(R.string.settings_dark_default)));
+            darkTheme = (darkThemeBool) ? context.getString(R.string.settings_dark_theme_true_value) : context.getString(R.string.settings_dark_theme_false_value);
+            SharedPreferences.Editor editor = prefManager.edit();
+            editor.putString(context.getString(R.string.settings_dark_key), darkTheme);
+            editor.apply();
+        }
 
         if (darkTheme.equals(context.getString(R.string.settings_dark_theme_true_value))) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
