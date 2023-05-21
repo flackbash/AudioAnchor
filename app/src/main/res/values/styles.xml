@@ -1,27 +1,13 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="colorDeletableIcon">@color/colorBackgroundLightDarkTheme</item>
-        <item name="playActivityHeaderBG">@color/colorBackgroundStrong</item>
-        <item name="android:activatedBackgroundIndicator">@drawable/list_item_activated_background
-        </item>
-        <item name="actionModeStyle">@style/LStyled.ActionMode</item>
-    </style>
-
-    <!-- Application dark theme. -->
-    <style name="AppThemeDark" parent="Theme.AppCompat">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="colorDeletableIcon">@color/colorBackgroundLightNoTrans</item>
-        <item name="playActivityHeaderBG">@color/colorBackgroundStrongDarkTheme</item>
-        <item name="android:activatedBackgroundIndicator">
-            @drawable/list_item_activated_background_dark
-        </item>
+        <item name="colorDeletableIcon">@color/colorDeletableIcon</item>
+        <item name="playActivityHeaderBG">@color/colorPlayActivityHeaderBG</item>
+        <item name="android:activatedBackgroundIndicator">@drawable/list_item_activated_background</item>
         <item name="actionModeStyle">@style/LStyled.ActionMode</item>
     </style>
 

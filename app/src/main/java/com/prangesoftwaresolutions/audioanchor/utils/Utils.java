@@ -3,6 +3,8 @@ package com.prangesoftwaresolutions.audioanchor.utils;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
 
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
@@ -24,13 +26,16 @@ public class Utils {
      */
     public static void setActivityTheme(Context context) {
         SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean darkTheme = prefManager.getBoolean(context.getString(R.string.settings_dark_key), Boolean.getBoolean(context.getString(R.string.settings_dark_default)));
+        String darkTheme = prefManager.getString(context.getString(R.string.settings_dark_key), context.getString(R.string.settings_dark_default));
 
-        if (darkTheme) {
-            context.setTheme(R.style.AppThemeDark);
+        if (darkTheme.equals(context.getString(R.string.settings_dark_theme_true_value))) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else if (darkTheme.equals(context.getString(R.string.settings_dark_theme_false_value))){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         } else {
-            context.setTheme(R.style.AppTheme);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         }
+        context.setTheme(R.style.AppTheme);
     }
 
     /*

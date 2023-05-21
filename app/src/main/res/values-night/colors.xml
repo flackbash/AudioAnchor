@@ -13,6 +13,6 @@
     <color name="colorOverlay">#88000000</color>
     <color name="colorBackgroundMediumNoTrans">#5b5c5e</color>
 
-    <color name="colorDeletableIcon">#BB6D6E71</color>
-    <color name="colorPlayActivityHeaderBG">#BBDBDDE3</color>
+    <color name="colorDeletableIcon">#E3E4E9</color>
+    <color name="colorPlayActivityHeaderBG">#BB000000</color>
 </resources>

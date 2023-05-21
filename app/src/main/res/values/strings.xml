@@ -75,6 +75,9 @@
     <string name="settings_title_from_metadata_label">Get track title from metadata</string>
     <string name="settings_display_cover_below_track_data_label">Display cover image below track information</string>
     <string name="settings_dark_label">Dark theme</string>
+    <string name="settings_dark_theme_system_label">Follow system theme</string>
+    <string name="settings_dark_theme_false_label">Light theme</string>
+    <string name="settings_dark_theme_true_label">Dark theme</string>
     <string name="settings_autorewind_label">Autorewind time</string>
     <string name="settings_immediate_playback_label">Start playback immediately after selecting item</string>
     <string name="settings_duck_audio_label">Duck audio when playback is interrupted</string>

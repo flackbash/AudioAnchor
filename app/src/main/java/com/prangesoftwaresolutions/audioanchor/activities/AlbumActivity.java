@@ -75,7 +75,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     // Settings variables
     SharedPreferences mPrefs;
-    boolean mDarkTheme;
     boolean mShowHiddenFiles;
 
     // Variables for multi choice mode
@@ -116,7 +115,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // Set up the shared preferences.
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mDarkTheme = mPrefs.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
         mShowHiddenFiles = mPrefs.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
 
         // Initialize the cursor adapter
@@ -294,14 +292,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         getLoaderManager().restartLoader(0, null, this);
     }
 
+
     @Override
     protected void onRestart() {
-        // Recreate if theme has changed
-        boolean currentDarkTheme;
-        currentDarkTheme = mPrefs.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
-        if (mDarkTheme != currentDarkTheme) {
-            recreate();
-        }
         // Synchronize if setting show-hidden-files has changed
         boolean currentShowHiddenFiles;
         currentShowHiddenFiles = mPrefs.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));

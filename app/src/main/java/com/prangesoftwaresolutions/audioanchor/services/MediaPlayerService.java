@@ -602,11 +602,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, mActiveAudio.getAlbumTitle())
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mActiveAudio.getTitle())
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,mActiveAudio.getTime())
                     .build();
         } else {
             mediaMetadataCompat = new MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, mActiveAudio.getAlbumTitle())
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mActiveAudio.getTitle())
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,mActiveAudio.getTime())
                     .build();
         }
         // Update the current metadata
@@ -795,6 +797,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 skipToNextAudioFile();
             } else {
                 forward(skipInterval);
+                setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
             }
         } else if (actionString.equalsIgnoreCase(ACTION_BACKWARD)) {
             int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_backward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
@@ -802,6 +805,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 skipToPreviousAudioFile();
             } else {
                 backward(skipInterval);
+                setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
             }
         } else if (actionString.equalsIgnoreCase(ACTION_BOOKMARK)) {
             setBookmark();
@@ -937,6 +941,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void setCurrentPosition(int progress) {
         if (mMediaPlayer != null) {
             mMediaPlayer.seekTo(progress);
+            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
         }
         updateAudioFileStatus();
     }
@@ -1100,12 +1105,17 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     private void setMediaPlaybackState(int state) {
         PlaybackStateCompat.Builder playbackstateBuilder = new PlaybackStateCompat.Builder();
+        float playbackSpeed = 1;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            playbackSpeed = mMediaPlayer.getPlaybackParams().getSpeed();
+        }
         if( state == PlaybackStateCompat.STATE_PLAYING ) {
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE);
+            playbackstateBuilder.setState(state,mMediaPlayer.getCurrentPosition(), playbackSpeed);
         } else {
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY);
+            playbackstateBuilder.setState(state, mMediaPlayer.getCurrentPosition(), 0);
         }
-        playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
         mediaSession.setPlaybackState(playbackstateBuilder.build());
     }
 }

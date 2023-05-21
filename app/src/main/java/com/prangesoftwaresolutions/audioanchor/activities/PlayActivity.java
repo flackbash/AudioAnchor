@@ -110,7 +110,6 @@ public class PlayActivity extends AppCompatActivity {
     private boolean mCoverFromMetadata;
     private boolean mTitleFromMetadata;
     private boolean mCoverBelowTrackData;
-    boolean mDarkTheme;
 
     // Shared preferences
     SharedPreferences mSharedPreferences;
@@ -150,8 +149,6 @@ public class PlayActivity extends AppCompatActivity {
         mTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
         mCoverBelowTrackData = mSharedPreferences.getBoolean(getString(R.string.settings_display_cover_below_track_data_key), Boolean.getBoolean(getString(R.string.settings_display_cover_below_track_data_default)));
         mLastSleepTime = mSharedPreferences.getInt(getString(R.string.preference_last_sleep_key), Integer.parseInt(getString(R.string.preference_last_sleep_val)));
-        mDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
-
         mAudioFile = AudioFile.getAudioFileById(this, currAudioId);
         mMetadataRetriever = new MediaMetadataRetriever();
 
@@ -335,11 +332,10 @@ public class PlayActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         // Recreate if theme, getCoverFromMetadata, getTitleFromMetadata, or coverImageBelowTrackData has changed
-        boolean currentDarkTheme = mSharedPreferences.getBoolean(getString(R.string.settings_dark_key), Boolean.getBoolean(getString(R.string.settings_dark_default)));
         boolean currentGetCoverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
         boolean currentGetTitleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
         boolean currentCoverImageBelowTrackData = mSharedPreferences.getBoolean(getString(R.string.settings_display_cover_below_track_data_key), Boolean.getBoolean(getString(R.string.settings_display_cover_below_track_data_default)));
-        if (mDarkTheme != currentDarkTheme || mCoverFromMetadata != currentGetCoverFromMetadata || mTitleFromMetadata != currentGetTitleFromMetadata || mCoverBelowTrackData != currentCoverImageBelowTrackData) {
+        if (mCoverFromMetadata != currentGetCoverFromMetadata || mTitleFromMetadata != currentGetTitleFromMetadata || mCoverBelowTrackData != currentCoverImageBelowTrackData) {
             recreate();
         }
         initSkipButtons();

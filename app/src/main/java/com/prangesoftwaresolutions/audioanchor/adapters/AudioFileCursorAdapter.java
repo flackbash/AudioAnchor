@@ -85,12 +85,7 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         ImageView thumbnailIV = view.findViewById(R.id.audio_file_item_thumbnail);
 
         // Set the audio status thumbnail to playing, finished, paused or not started (=transparent)
-        boolean darkTheme = mPrefs.getBoolean(mContext.getString(R.string.settings_dark_key), Boolean.getBoolean(mContext.getString(R.string.settings_dark_default)));
-        if (darkTheme) {
-            thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked_dark_theme);
-        } else {
-            thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked);
-        }
+        thumbnailIV.setBackgroundResource(R.drawable.ic_unchecked);
         if (isCurrentItemActive(audioID)) {
             thumbnailIV.setImageResource(R.drawable.ic_playing);
         } else if (audioFile.getCompletedTime() >= audioFile.getTime() && audioFile.getTime() != 0) {

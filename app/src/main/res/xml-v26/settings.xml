@@ -69,11 +69,12 @@
             android:key="@string/settings_display_cover_below_track_data_key"
             android:title="@string/settings_display_cover_below_track_data_label"
             android:singleLineTitle="false" />
-        <SwitchPreference
-            android:defaultValue="@string/settings_dark_default"
+        <ListPreference
+            android:defaultValue="@string/settings_dark_theme_system_value"
             android:key="@string/settings_dark_key"
             android:title="@string/settings_dark_label"
-            android:singleLineTitle="false" />
+            android:entries="@array/dark_theme_label_array"
+            android:entryValues="@array/dark_theme_value_array"/>
         <SwitchPreference
             android:defaultValue="@string/settings_show_hidden_default"
             android:key="@string/settings_show_hidden_key"
