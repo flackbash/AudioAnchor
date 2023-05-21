@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_name" translatable="false">AudioAnchor</string>
 
     <!-- SharedPreferences Strings -->
     <string name="preference_filename" translatable="false">storage_directory</string>
