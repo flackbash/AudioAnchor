@@ -75,6 +75,9 @@
     <string name="settings_title_from_metadata_label">Obtener el título de la pista a partir de los metadatos</string>
     <string name="settings_display_cover_below_track_data_label">Mostrar la imagen de portada bajo la información de la pista</string>
     <string name="settings_dark_label">Tema oscuro</string>
+    <string name="settings_dark_theme_system_label">Seguir el tema del sistema</string>
+    <string name="settings_dark_theme_false_label">Tema claro</string>
+    <string name="settings_dark_theme_true_label">Tema oscuro</string>
     <string name="settings_autorewind_label">Tiempo de autoretroceso</string>
     <string name="settings_immediate_playback_label">Iniciar la reproducción después de seleccionar el elemento</string>
     <string name="settings_duck_audio_label">Atenuar el audio cuando se interrumpe la reproducción</string>
@@ -133,8 +136,8 @@
     <string name="about_report_bugs">Este es también el lugar para informar de errores, hacer una contribución o dejar una estrella si te gusta la aplicación.</string>
     <string name="about_donations">Si le gusta la aplicación y desea hacer una donación, puede hacerlo a través de</string>
     <string name="about_donations_thanks">Gracias :)</string>
-    <string name="add_sub_dir">Añadir directorio que contiene archivos de audio</string>
-    <string name="add_parent_dir">Añadir directorio con subdirectorios que contengan archivos de audio</string>
+    <string name="add_sub_dir">Añadir directorio que\ncontiene archivos de audio</string>
+    <string name="add_parent_dir">Añadir directorio con\nsubdirectorios que\ncontengan archivos de audio</string>
     <string name="add_directory">Puede seleccionar un único directorio que contenga archivos de audio o un directorio principal que contenga varios directorios con archivos de audio.</string>
 
     <!-- Dialog strings -->
