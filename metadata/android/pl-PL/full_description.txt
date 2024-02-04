@@ -1,0 +1,19 @@
+AudioAnchor oferuje przejrzysty i intuicyjny interfejs do słuchania plików audio, jednocześnie śledząc postępy w słuchaniu.
+
+<b>Dodatkowe funkcje obejmują:</b>
+• ustaw zakładki
+• dostosuj prędkość odtwarzania
+• eksportuj i importuj swoje postępy słuchania jako bazę danych sql
+• wyłącznik czasowy
+• sterowanie multimediami na ekranie blokady
+
+<b>Wykorzystanie</b>
+Zacznij od dodania katalogów do swojej biblioteki. Dodając nowy katalog masz dwie opcje:
+• Możesz dodać katalog zawierający pliki audio
+• Możesz dodać katalog zawierający podkatalogi posiadające pliki audio
+
+Na przykład możesz mieć katalog <i>Godzina historii podcastu</i>, który zawiera pliki audio. Dodaj ten katalog do swojej biblioteki, korzystając z opcji <i>Dodaj katalog zawierający pliki audio</i>.
+Dodatkowo możesz mieć katalog <i>Audiobooki</i>, który zawiera podkatalogi takie jak <i>Hobbit</i> lub <i>Harry Potter II</i>, z których każdy zawiera jeden lub kilka plików audio. Możesz dodać ten katalog do swojej biblioteki za pomocą opcji <i>Dodaj katalog z podkatalogami zawierającymi pliki audio</i>.
+Zapobiega to konieczności dodawania książek audio pojedyńczo.
+
+Dodawaj obrazy okładek do podkatalogów, aby mieć ładnie wyglądającą aplikację – tak, jak na zrzutach ekranu.
