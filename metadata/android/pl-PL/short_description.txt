@@ -1,0 +1,1 @@
+Odtwarzacz audio, który śledzi postęp w słuchaniu książek audio i podcastów
