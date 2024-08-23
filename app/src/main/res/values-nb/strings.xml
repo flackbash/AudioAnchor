@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="channel_name">Vis mediakontroller</string>
+    <string name="channel_description">Varslingskanal for visning av mediakontroller.</string>
+    <string name="button_pause">Pause</string>
+    <string name="button_play">Spill av</string>
+    <string name="button_backward">Bakover</string>
+    <string name="button_forward">Framover</string>
+    <string name="button_bookmark">Bokmerke</string>
+
+    <!-- Toast messages -->
+    <string name="no_albums">Det er tomt her. Kom i gang ved å legge til en mappe i biblioteket ditt.</string>
+    <string name="no_directories">Ingen mapper er lagt til ennå.</string>
+    <string name="no_audio_files">Ingen lydfiler funnet i dette albumet.</string>
+    <string name="play_error">Den valgte lydfilen kan ikke spilles av. Kanskje filen ikke finnes lenger.</string>
+    <string name="permission_denied">Nødvendig tillatelse ble ikke gitt. Avslutt AudioAnchor.</string>
+    <string name="write_permission_denied">Nødvendig tillatelse ble ikke gitt. Kan ikke skrive til lagringsplass.</string>
+    <string name="time_format_error">Angi et gyldig tidspunkt i formatet tt:mm:ss.</string>
+    <string name="import_success">Importert :)</string>
+    <string name="import_fail">Noe gikk galt. Importeringen mislyktes.</string>
+    <string name="export_success">Eksporterte database til %s.</string>
+    <string name="export_fail">Noe gikk galt. Eksporteringen mislyktes.</string>
+    <string name="synchronize_success">Synkronisert biblioteket.</string>
+    <string name="audio_file_error">Det er et problem med lydfilen \"%s\".</string>
+    <string name="empty_title_error">Angi en tittel på bokmerket.</string>
+    <string name="jumped_to_bookmark">Hoppet til bokmerket \"%s\" på %s.</string>
+    <string name="bookmark_deleted">Bokmerke slettet.</string>
+    <string name="bookmark_added_toast">La til bokmerke \"%s\" på %s.</string>
+    <plurals name="tracks_deleted">
+        <item quantity="one">%d spor slettet.</item>
+        <item quantity="other">%d spor slettet.</item>
+    </plurals>
+    <plurals name="tracks_removed_from_db">
+        <item quantity="one">Fjernet %d spor fra biblioteket.</item>
+        <item quantity="other">Fjernet %d spor fra biblioteket.</item>
+    </plurals>
+    <plurals name="quant_albums">
+        <item quantity="one">%d album</item>
+        <item quantity="other">%d album</item>
+    </plurals>
+    <plurals name="quant_tracks">
+        <item quantity="one">%d spor</item>
+        <item quantity="other">%d spor</item>
+    </plurals>
+    <!-- First %s = "x albums" (quant_albums), second %s = "x tracks" (quant_tracks) -->
+    <string name="album_and_tracks_deleted">Slettet %s og %s.</string>
+    <plurals name="albums_removed_from_db">
+        <item quantity="one">Fjernet %d album fra biblioteket.</item>
+        <item quantity="other">Fjernet %d album fra biblioteket.</item>
+    </plurals>
+    <plurals name="directories_removed_from_db">
+        <item quantity="one">Fjernet %d mappe fra biblioteket.</item>
+        <item quantity="other">Fjernet %d mapper fra biblioteket.</item>
+    </plurals>
+    <string name="cannot_mark_as_not_started">Kan ikke markere gjeldende spor som ikke startet.</string>
+    <string name="cannot_mark_as_completed">Kan ikke markere gjeldende spor som fullført.</string>
+    <string name="path">Bane: %s</string>
+    <string name="directory_exists">Den valgte mappen finnes allerede i biblioteket: %s.</string>
+    <string name="parent_directory_exists">Du kan ikke legge til under­mapper til mapper som allerede finnes i biblioteket:\n%s\n%s.</string>
+    <string name="sub_directory_exists">Du kan ikke legge til overordnede mapper til mapper som allerede finnes i biblioteket:\n%s\n%s.</string>
+    <string name="illegal_speed">Den gjeldende filen kan ikke spilles av med hastigheten %.1fx. Velg en annen verdi.</string>
+
+
+    <!-- Settings strings -->
+    <string name="settings_autoplay_label">Auto-avspilling</string>
+    <string name="settings_autoplay_restart_label">Spill av spor på nytt fra begynnelsen når du spiller av neste/forrige spor</string>
+    <string name="settings_progress_percentage_label">Vis framdrift i prosent</string>
+    <string name="settings_keep_deleted_label">Behold framdrift til slettede filer i biblioteket</string>
+    <string name="settings_cover_from_metadata_label">Hent omslags­bilde fra metadata</string>
+    <string name="settings_sleep_timer_category">Sove-timer</string>
+    <string name="settings_sleep_fadeout_label">Uttoningstid (sekund)</string>
+    <string name="settings_shake_label">Rist for å nullstille sove­-timer</string>
+    <string name="settings_shake_sensitivity_label">Ristefølsomhet</string>
+    <string name="settings_vibrate_shake_reset_label">Vibrer ved nullstilling fra risting</string>
+    <string name="settings_continue_until_end_label">Fortsett å spille til slutten av gjeldende spor</string>
+    <string name="settings_title_from_metadata_label">Hent sportittel fra metadata</string>
+    <string name="settings_display_cover_below_track_data_label">Vis omslags­bilde under sporinformasjonen</string>
+    <string name="settings_dark_label">Mørkt tema</string>
+    <string name="settings_dark_theme_system_label">Følg systemtema</string>
+    <string name="settings_dark_theme_false_label">Lyst tema</string>
+    <string name="settings_dark_theme_true_label">Mørkt tema</string>
+    <string name="settings_autorewind_label">Automatisk tilbakespoling (sekund)</string>
+    <string name="settings_immediate_playback_label">Start avspilling med en gang etter sporvalg</string>
+    <string name="settings_duck_audio_label">Senk lydstyrken når avspillingen avbrytes</string>
+    <string name="settings_show_hidden_label">Vis skjulte filer</string>
+    <string name="settings_display_category">Visning</string>
+    <string name="settings_playback_category">Avspilling</string>
+    <string name="settings_bookmarks_category">Bokmerker</string>
+    <string name="settings_miscellaneous_category">Diverse</string>
+    <string name="settings_sort_order_by_title_label">Etter tittel</string>
+    <string name="settings_sort_order_by_directory_label">Etter mappe</string>
+    <string name="settings_sort_order_label">Sorteringsrekkefølge for album</string>
+    <string name="settings_add_last_play_position_bookmark_label">Legg til og oppdater bokmerker for siste og nest siste avspillingsposisjon når du trykker på avspillingsknappen</string>
+    <string name="settings_cover_on_lockscreen_label">Vis omslags­bilde på låseskjermen</string>
+    <string name="settings_quick_bookmark_label">Legg til bokmerke med ett trykk på bokmerkeikonet</string>
+    <string name="settings_skip_intervals_category">Hoppintervaller</string>
+    <string name="settings_forward_button_1">Framoverknapp 1</string>
+    <string name="settings_forward_button_2">Framoverknapp 2</string>
+    <string name="settings_backward_button_1">Bakoverknapp 1</string>
+    <string name="settings_backward_button_2">Bakoverknapp 2</string>
+    <string name="settings_notification_backward_button">Bakoverknapp for varsling</string>
+    <string name="settings_notification_forward_button">Framoverknapp for varsling</string>
+    <string name="settings_skip_interval_msg">Hoppintervall for %s</string>
+
+    <!-- Layout Texts -->
+    <string name="title">Tittel</string>
+    <string name="album">Album</string>
+    <string name="choose_directory">Legg til mappe</string>
+    <string name="settings">Innstillinger</string>
+    <string name="time_completed_percent">%d %% fullført</string>
+    <string name="sleep_timer">Sove-timer</string>
+    <string name="go_to">Gå til</string>
+    <string name="set_bookmark">Sett bokmerke</string>
+    <string name="edit_bookmark">Rediger bokmerke</string>
+    <string name="about">Om</string>
+    <string name="export_db">Eksporter database</string>
+    <string name="import_db">Importer database</string>
+    <string name="synchronize">Synkroniser</string>
+    <string name="set_bookmark_name">Angi navnet på bokmerket</string>
+    <string name="set_bookmark_at">Sett bokmerketid</string>
+    <string name="no_bookmarks">Det er ingen bokmerker for denne lydfilen ennå.</string>
+    <string name="bookmarks">Bokmerker</string>
+    <string name="untitled_bookmark">Uten tittel</string>
+    <string name="delete_from_device">Slett fra enheten</string>
+    <string name="remove_from_db">Fjern fra biblioteket</string>
+    <string name="remove_from_library">Fjern fra biblioteket</string>
+    <string name="mark_as_not_started">Merk som ikke startet</string>
+    <string name="mark_as_completed">Merk som fullført</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d valgt</item>
+        <item quantity="other">%d valgte</item>
+    </plurals>
+    <string name="mark_all_as_not_started">Merk alle spor som ikke begynt</string>
+    <string name="mark_all_as_completed">Merk alle spor som fullført</string>
+    <string name="playback_speed">Avspillingshastighet</string>
+    <string name="about_contributors">For en liste over bidragsytere besøk</string>
+    <string name="about_report_bugs">Dette er også stedet for å rapportere feil, bidra selv eller gi appen en karakter.</string>
+    <string name="about_donations">Hvis du liker appen og ønsker å gi en donasjon, kan du gjøre det via</string>
+    <string name="about_donations_thanks">Takk! :)</string>
+    <string name="add_sub_dir">Legg til mappe som\ninneholder lydfiler</string>
+    <string name="add_parent_dir">Legg til mappe med\nunder­mapper som\ninneholder lydfiler</string>
+    <string name="add_directory">Du kan velge en enkelt mappe som inneholder lydfiler eller en overordnet mappe som inneholder flere mapper med lydfiler.</string>
+
+    <!-- Dialog strings -->
+    <string name="dialog_msg_select_dir">Velg mappe</string>
+    <string name="dialog_msg_sleep_timer">Angi antall minutter spilleren skal fortsette å spille</string>
+    <string name="dialog_msg_ok">OK</string>
+    <string name="dialog_msg_cancel">Avbryt</string>
+    <string name="dialog_msg_close">Lukk</string>
+    <string name="dialog_msg_delete">Slett</string>
+    <string name="dialog_msg_goto">Angi tidspunktet du vil hoppe til</string>
+    <plurals name="dialog_msg_delete_album">
+        <item quantity="one">Er du sikker på at du vil slette den valgte mappen og innholdet i den?</item>
+        <item quantity="other">Er du sikker på at du vil slette de valgte mappene og innholdet i dem?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_album_from_db">
+        <item quantity="one">Er du sikker på at du vil fjerne det valgte albumet og innholdet i det fra biblioteket? Denne handlingen blir kun utført for filer som ikke lenger finnes i filsystemet.</item>
+        <item quantity="other">Er du sikker på at du vil fjerne de valgte albumene og innholdet i dem fra biblioteket? Denne handlingen blir kun utført for filer som ikke lenger finnes i filsystemet.</item>
+    </plurals>
+    <plurals name="dialog_msg_delete_audio">
+        <item quantity="one">Er du sikker på at du vil slette det valgte sporet?</item>
+        <item quantity="other">Er du sikker på at du vil slette de valgte sporene?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_audio_from_db">
+        <item quantity="one">Er du sikker på at du vil fjerne det valgte sporet fra biblioteket? Denne handlingen blir kun utført for filer som ikke lenger finnes i filsystemet.</item>
+        <item quantity="other">Er du sikker på at du vil fjerne de valgte sporene fra biblioteket? Denne handlingen blir kun utført for filer som ikke lenger finnes i filsystemet.</item>
+    </plurals>
+    <string name="dialog_msg_delete_bookmark">Slette dette bokmerket?</string>
+    <string name="dialog_msg_remove_directory_from_db">Er du sikker på at du vil fjerne den valgte mappen fra biblioteket? Dette vil også fjerne mappens album, lydfiler og bokmerker fra biblioteket.</string>
+
+    <string name="bookmark_second_to_last_play_position">&lt;nest siste avspillingsposisjon&gt;</string>
+    <string name="bookmark_last_play_position">&lt;siste avspillingsposisjon&gt;</string>
+
+</resources>
