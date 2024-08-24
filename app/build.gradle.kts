@@ -36,6 +36,7 @@ android {
             excludes += "/META-INF/*"
         }
     }
+    namespace = "com.prangesoftwaresolutions.audioanchor"
 }
 
 dependencies {
