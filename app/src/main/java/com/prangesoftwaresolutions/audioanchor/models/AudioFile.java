@@ -10,6 +10,7 @@ import android.net.Uri;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -93,6 +94,8 @@ public class AudioFile implements Serializable {
             metaRetriever.release();
         } catch (java.lang.RuntimeException e) {
             mTime = 0;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
