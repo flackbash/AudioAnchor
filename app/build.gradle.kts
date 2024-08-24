@@ -8,8 +8,8 @@ android {
         applicationId = "com.prangesoftwaresolutions.audioanchor"
         minSdk = 21
         targetSdk = 29
-        versionCode = 29
-        versionName = "2.3.3"
+        versionCode = 30
+        versionName = "2.3.4"
     }
     buildTypes {
         release {
