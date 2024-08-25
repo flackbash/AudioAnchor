@@ -70,6 +70,9 @@
   <string name="settings_title_from_metadata_label">Hent sportittel frå fil-metadata</string>
   <string name="settings_display_cover_below_track_data_label">Vis omslags­biletet under sporinformasjonen</string>
   <string name="settings_dark_label">Mørkt tema</string>
+  <string name="settings_dark_theme_system_label">Følg systemtemaet</string>
+  <string name="settings_dark_theme_false_label">Lyst tema</string>
+  <string name="settings_dark_theme_true_label">Mørkt tema</string>
   <string name="settings_autorewind_label">Automatisk tilbakespoling (sekund)</string>
   <string name="settings_immediate_playback_label">Start avspeling rett etter sporval</string>
   <string name="settings_duck_audio_label">Senk lydstyrken ved avbrot</string>
