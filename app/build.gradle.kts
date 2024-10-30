@@ -41,7 +41,7 @@ android {
 dependencies {
 // AndroidX
     implementation("androidx.annotation:annotation:1.3.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.3")
     implementation("androidx.core:core:1.7.0")
     implementation("androidx.media:media:1.7.0")
