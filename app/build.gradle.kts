@@ -43,7 +43,7 @@ dependencies {
     implementation("androidx.annotation:annotation:1.3.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.core:core:1.7.0")
+    implementation("androidx.core:core:1.13.1")
     implementation("androidx.media:media:1.7.0")
     implementation("androidx.preference:preference:1.2.1")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
