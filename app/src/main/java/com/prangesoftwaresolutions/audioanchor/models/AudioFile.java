@@ -10,6 +10,7 @@ import android.net.Uri;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -91,7 +92,7 @@ public class AudioFile implements Serializable {
             String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             mTime = Integer.parseInt(duration);
             metaRetriever.release();
-        } catch (java.lang.RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             mTime = 0;
         }
     }
