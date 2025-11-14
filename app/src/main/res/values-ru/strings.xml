@@ -5,6 +5,10 @@
     <string name="button_play">Воспроизвести</string>
     <string name="button_backward">Назад</string>
     <string name="button_forward">Вперед</string>
+	<string name="button_bookmark">Закладка</string>
+    <string name="volume_label">Громкость: %d%%</string>
+    <string name="volume_up">Увеличить громкость</string>
+    <string name="volume_down">Уменьшить громкость</string>
 
     <!-- Toast messages -->
     <string name="no_albums">Пусто. Добавьте папку в вашу библиотеку.</string>
@@ -23,12 +27,41 @@
     <string name="empty_title_error">Введите название закладки.</string>
     <string name="jumped_to_bookmark">Переход к закладке \"%s\" на %s.</string>
     <string name="bookmark_deleted">Закладка удалена.</string>
+	<string name="bookmark_added_toast">Добавлена закладка \"%s\" на %s.</string>
+	<plurals name="tracks_deleted">
+		<item quantity="one">Трек %d удалён.</item>
+		<item quantity="other">Треков удалено: %d.</item>
+	</plurals>
+	<plurals name="tracks_removed_from_db">
+		<item quantity="one">Из библиотеки удалён %d трек.</item>
+		<item quantity="other">Из библиотеки удалено треков: %d.</item>
+	</plurals>
+	<plurals name="quant_albums">
+		<item quantity="one">Альбом %d</item>
+		<item quantity="other">Альбомов: %d</item>
+	</plurals>
+	<plurals name="quant_tracks">
+		<item quantity="one">Трек %d</item>
+		<item quantity="other">Треков %d</item>
+	</plurals>
+    <!-- First %s = "x albums" (quant_albums), second %s = "x tracks" (quant_tracks) -->
+    <string name="album_and_tracks_deleted">Deleted %s and %s.</string>
+    <plurals name="albums_removed_from_db">
+        <item quantity="one">Удалён %d альбом из вашей библиотеки.</item>
+        <item quantity="other">Удалёно альбом из вашей библиотеки: %d.</item>
+    </plurals>
+    <plurals name="directories_removed_from_db">
+        <item quantity="one">Удалён %d каталог из вашей библиотеки.</item>
+        <item quantity="other">Удалёно каталогов из вашей библиотеки: %d.</item>
+    </plurals>
     <string name="cannot_mark_as_not_started">Не удалось отметить проигрывемый эпизод как неначатый.</string>
     <string name="cannot_mark_as_completed">Не удалось отметить проигрывемый эпизод как прослушанный.</string>
     <string name="path">Путь: %s</string>
     <string name="directory_exists">Выбранная папка уже существует в вашей библиотеке: %s.</string>
     <string name="parent_directory_exists">Нельзя добавлять подпапки уже существующих каталогов вашей библиотеки:\n%s\n%s.</string>
     <string name="sub_directory_exists">Нельзя добавлять родительльские каталоги уже существующих папок вашей библиотеки:\n%s\n%s.</string>
+    <string name="illegal_speed">Текущий файл не может воспроизводиться на скорости %.1fx. Пожалуйста, выберите другое значение.</string>
+
 
     <!-- Settings strings -->
     <string name="settings_autoplay_label">Автоматическое воспроизведение</string>
@@ -43,16 +76,33 @@
     <string name="settings_vibrate_shake_reset_label">Вибрировать при сбросе таймера встряхиванием</string>
     <string name="settings_continue_until_end_label">Воспроизводить текущий эпизод до конца</string>
     <string name="settings_title_from_metadata_label">Получить название эпизода из метаданных файла</string>
-    <string name="settings_dark_label">Темная тема</string>
+	<string name="settings_display_cover_below_track_data_label">Отображать обложку под информацией о треке</string>
+    <string name="settings_dark_label">Тёмная тема</string>
+    <string name="settings_dark_theme_system_label">Использовать системную тему</string>
+    <string name="settings_dark_theme_false_label">Светлая тема</string>
+    <string name="settings_dark_theme_true_label">Тёмная тема</string>
     <string name="settings_autorewind_label">Время автоперемотки назад</string>
     <string name="settings_immediate_playback_label">Начать воспроизведение сразу после выбора эпизода</string>
+    <string name="settings_duck_audio_label">Приглушать звук при прерывании воспроизведения</string>
     <string name="settings_show_hidden_label">Показывать скрытые файлы</string>
     <string name="settings_display_category">Внешний вид</string>
     <string name="settings_playback_category">Воспроизведение</string>
+    <string name="settings_bookmarks_category">Закладки</string>
     <string name="settings_miscellaneous_category">Прочее</string>
     <string name="settings_sort_order_by_title_label">По названию</string>
     <string name="settings_sort_order_by_directory_label">По папке</string>
     <string name="settings_sort_order_label">Порядок сортировки альбомов</string>
+    <string name="settings_add_last_play_position_bookmark_label">Добавлять и обновлять закладки последней и предпоследней позиции при каждом нажатии воспроизведения</string>
+    <string name="settings_cover_on_lockscreen_label">Отображать обложку на экране блокировки</string>
+    <string name="settings_quick_bookmark_label">Добавлять закладку по одному нажатию на значок закладки</string>
+	<string name="settings_skip_intervals_category">Интервалы пропуска</string>
+    <string name="settings_forward_button_1">Перемотка вперёд №1</string>
+    <string name="settings_forward_button_2">Перемотка вперёд №2</string>
+    <string name="settings_backward_button_1">Перемотка назад №1</string>
+    <string name="settings_backward_button_2">Перемотка назад №2</string>
+    <string name="settings_notification_backward_button">Перемотка назад в уведомлении</string>
+    <string name="settings_notification_forward_button">Перемотка вперёд в уведомлении</string>
+	<string name="settings_skip_interval_msg">Интервал пропуска для %s</string>
 
     <!-- Layout Texts -->
     <string name="title">Название</string>
@@ -72,17 +122,24 @@
     <string name="set_bookmark_at">Поставить закладку на</string>
     <string name="no_bookmarks">Пока еще нет закладок в этой аудиокниге.</string>
     <string name="bookmarks">Закладки</string>
+	<string name="untitled_bookmark">Без названия</string>
     <string name="delete_from_device">Удалить из устройства</string>
     <string name="remove_from_db">Удалить из базы данных</string>
     <string name="remove_from_library">Удалить из библиотеки</string>
     <string name="mark_as_not_started">Отметить как неначатый</string>
     <string name="mark_as_completed">Отметить как прослушанный</string>
+    <plurals name="items_selected">
+        <item quantity="one">Выделен: %d</item>
+        <item quantity="other">Выделено: %d</item>
+    </plurals>
     <string name="mark_all_as_not_started">Отметить все эпизоды как неначатые</string>
     <string name="mark_all_as_completed">Отметить все эпизоды как прослушанные</string>
     <string name="playback_speed">Скорость воспроизведения</string>
     <string name="about_contributors">Список участников можно найти по ссылке</string>
     <string name="about_report_bugs">Там же там можно сообщить об ошибке, внести свой вклад в развитие или поставить звезду, если приложение понравилось.</string>
-    <string name="add_sub_dir">Добавить папку\nс аудиофайлами</string>
+    <string name="about_donations">Если вам нравится приложение и вы хотите сделать пожертвование, вы можете сделать это через</string>
+    <string name="about_donations_thanks">Спасибо :)</string>
+	<string name="add_sub_dir">Добавить папку\nс аудиофайлами</string>
     <string name="add_parent_dir">Добаавить папку\nс подпапками \nаудиофайлов</string>
     <string name="add_directory">Вы можете выбрать одну папку с аудиофайлами или родительский каталог, содержащий несколько папок с аудиофайлами.</string>
 
@@ -94,6 +151,25 @@
     <string name="dialog_msg_close">Закрыть</string>
     <string name="dialog_msg_delete">Удалить</string>
     <string name="dialog_msg_goto">Введите время, на которое хотите перейти</string>
+    <plurals name="dialog_msg_delete_album">
+        <item quantity="one">Вы уверены, что хотите удалить выбранный каталог и его содержимое?</item>
+        <item quantity="other">Вы уверены, что хотите удалить выбранные каталоги и их содержимое?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_album_from_db">
+        <item quantity="one">Вы уверены, что хотите удалить выбранный альбом и его содержимое из вашей библиотеки? Эта операция будет выполнена только для файлов, которых больше нет в файловой системе.</item>
+        <item quantity="other">Вы уверены, что хотите удалить выбранные альбомы и их содержимое из вашей библиотеки? Эта операция будет выполнена только для файлов, которых больше нет в файловой системе.</item>
+    </plurals>
+    <plurals name="dialog_msg_delete_audio">
+        <item quantity="one">Вы уверены, что хотите удалить выбранный трек?</item>
+        <item quantity="other">Вы уверены, что хотите удалить выбранные треки?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_audio_from_db">
+        <item quantity="one">Вы уверены, что хотите удалить выбранный трек из библиотеки? Эта операция будет выполнена только для файлов, которых больше нет в файловой системе.</item>
+        <item quantity="other">Вы уверены, что хотите удалить выбранные треки из библиотеки? Эта операция будет выполнена только для файлов, которых больше нет в файловой системе.</item>
+    </plurals>
     <string name="dialog_msg_delete_bookmark">Удалить эту закладку?</string>
     <string name="dialog_msg_remove_directory_from_db">Вы уверены, что хотите удалить выбранную папку из вашей библиотеки? Это также удалит альбомы, аудиофайлы и закладки из вашей библиотеки.</string>
+
+    <string name="bookmark_second_to_last_play_position">&lt;предпоследняя позиция воспроизведения&gt;</string>
+    <string name="bookmark_last_play_position">&lt;последняя позиция воспроизведения&gt;</string>
 </resources>
