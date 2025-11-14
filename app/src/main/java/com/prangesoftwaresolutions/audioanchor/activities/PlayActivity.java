@@ -53,6 +53,8 @@ import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
+import android.widget.ImageButton;
+
 
 import java.util.ArrayList;
 
@@ -113,6 +115,11 @@ public class PlayActivity extends AppCompatActivity {
 
     // Shared preferences
     SharedPreferences mSharedPreferences;
+
+    // Volume
+    private int mCurrentVolumePercent = 100;
+    private final int VOLUME_STEP_PERCENT = 5; // Volume control step
+    private TextView mVolumeText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -271,6 +278,31 @@ public class PlayActivity extends AppCompatActivity {
             params.addRule(RelativeLayout.BELOW, mAlbumTV.getId());
             mCoverIV.setLayoutParams(params);
         }
+
+        // Volume
+        ImageButton mVolDownIV = findViewById(R.id.volume_down);
+        ImageButton mVolUpIV = findViewById(R.id.volume_up);
+        mVolumeText = findViewById(R.id.volume_text);
+        mVolumeText.setText(getString(R.string.volume_label, mCurrentVolumePercent));
+
+        View.OnClickListener volumeClickListener = v -> {
+            if (mPlayer == null) return;
+
+            if (v.getId() == R.id.volume_down) {
+                mCurrentVolumePercent = Math.max(0, mCurrentVolumePercent - VOLUME_STEP_PERCENT);
+            } else if (v.getId() == R.id.volume_up) {
+                mCurrentVolumePercent = Math.min(100, mCurrentVolumePercent + VOLUME_STEP_PERCENT);
+            }
+
+            mPlayer.setVolume(mCurrentVolumePercent / 100f);
+            mPlayer.setCurrentVolume(mCurrentVolumePercent);
+
+            mVolumeText.setText(getString(R.string.volume_label, mCurrentVolumePercent));
+        };
+
+        mVolDownIV.setOnClickListener(volumeClickListener);
+        mVolUpIV.setOnClickListener(volumeClickListener);
+
     }
 
     void initSkipButtons() {
@@ -443,6 +475,10 @@ public class PlayActivity extends AppCompatActivity {
             } else if (mSleepTimer != null) {
                 mPlayer.connectSleepTimer(mSleepTimer);
             }
+
+            // Volume
+            mCurrentVolumePercent = mPlayer.getCurrentVolume();
+            mVolumeText.setText(getString(R.string.volume_label, mCurrentVolumePercent));
         }
 
         @Override

@@ -136,6 +136,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     SensorManager mSensorManager;
     boolean mStopAtEndOfCurrentTrack = false;
 
+    // Volume variables
+    private int mCurrentVolume = 100;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -416,7 +419,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     play();
                     mIsPausedByTransientFocusLoss = false;
                 }
-                setVolume(1.0f);
+                setVolume(mCurrentVolume / 100f);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
                 // Lost focus for an unbounded amount of time: stop playback and release media player
@@ -440,6 +443,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 if (mMediaPlayer.isPlaying()) {
                     boolean duckAudio = mSharedPreferences.getBoolean(getString(R.string.settings_duck_audio_key), Boolean.getBoolean(getString(R.string.settings_duck_audio_default)));
                     if (duckAudio) {
+                        mCurrentVolume = 10;
                         setVolume(0.1f);
                     } else {
                         pauseDueToAudioInterruption();
@@ -950,6 +954,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         float deltaVolume = (float) (1.0 / totalSteps);
         float currVolume = (float) (1.0 - (step * deltaVolume));
         if (mMediaPlayer != null) {
+            mCurrentVolume = (int)(currVolume * 100);
             setVolume(currVolume);
         }
     }
@@ -1117,5 +1122,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             playbackstateBuilder.setState(state, mMediaPlayer.getCurrentPosition(), 0);
         }
         mediaSession.setPlaybackState(playbackstateBuilder.build());
+    }
+
+    // Volume
+    public int getCurrentVolume() {
+        return mCurrentVolume;
+    }
+    public void setCurrentVolume(int value) {
+        mCurrentVolume = value;
     }
 }
