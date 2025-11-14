@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#FF9800</color>
-    <color name="colorPrimaryDark">#F57C00</color>
-    <color name="colorPrimaryBright">#FFCC80</color>
-    <color name="colorAccent">#FF1744</color>
+    <color name="colorPrimary">#34495e</color>
+    <color name="colorPrimaryDark">#2d4052</color>
+    <color name="colorPrimaryBright">#496582</color>
+    <color name="colorAccent">#b42b29</color>
 
     <color name="colorBackgroundLight">#44B8BCC7</color>
     <color name="colorBackgroundLightNoTrans">#E3E4E9</color>
@@ -14,5 +14,5 @@
     <color name="colorBackgroundMediumNoTrans">#5b5c5e</color>
 
     <color name="colorDeletableIcon">#E3E4E9</color>
-    <color name="colorPlayActivityHeaderBG">#BB000000</color>
+    <color name="colorPlayActivityHeaderBG">#161c20</color>
 </resources>
