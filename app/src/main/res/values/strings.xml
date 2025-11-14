@@ -6,6 +6,9 @@
     <string name="button_backward">Backward</string>
     <string name="button_forward">Forward</string>
     <string name="button_bookmark">Bookmark</string>
+    <string name="volume_label">Volume: %d%%</string>
+    <string name="volume_up">Volume up</string>
+    <string name="volume_down">Volume down</string>
 
     <!-- Toast messages -->
     <string name="no_albums">It\'s a bit empty here. Start by adding a directory to your library.</string>

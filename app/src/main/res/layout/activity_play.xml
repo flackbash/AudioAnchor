@@ -46,6 +46,52 @@
         android:orientation="vertical"
         android:paddingBottom="@dimen/small_margin"
         android:paddingTop="@dimen/small_margin">
+		
+		<LinearLayout
+			android:id="@+id/volume_controls"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:gravity="center_vertical|center_horizontal"
+			app:layout_constraintTop_toTopOf="parent"
+			android:layout_marginBottom="@dimen/small_margin"
+			android:background="@android:color/transparent">
+
+			<ImageButton
+				android:id="@+id/volume_down"
+				android:layout_width="@dimen/skip_button_height"
+				android:layout_height="@dimen/skip_button_height"
+				android:src="@drawable/ic_volume_down_selector"
+				android:background="@android:color/transparent"
+				android:scaleType="fitCenter"
+				android:contentDescription="@string/volume_down"/>
+
+			<Space
+				android:layout_width="@dimen/medium_margin"
+				android:layout_height="wrap_content" />
+
+			<TextView
+				android:id="@+id/volume_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/volume_label"
+				android:textSize="@dimen/medium_font_size"
+				android:paddingStart="@dimen/small_margin"
+				android:paddingEnd="@dimen/small_margin"/>
+
+			<Space
+				android:layout_width="@dimen/medium_margin"
+				android:layout_height="wrap_content" />
+
+			<ImageButton
+				android:id="@+id/volume_up"
+				android:layout_width="@dimen/skip_button_height"
+				android:layout_height="@dimen/skip_button_height"
+				android:src="@drawable/ic_volume_up_selector"
+				android:background="@android:color/transparent"
+				android:scaleType="fitCenter"
+				android:contentDescription="@string/volume_up"/>
+		</LinearLayout>
 
         <RelativeLayout
             android:id="@+id/play_controls_layout"
