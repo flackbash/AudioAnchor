@@ -1,5 +1,8 @@
 package com.prangesoftwaresolutions.audioanchor.services;
 
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -14,6 +17,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.hardware.SensorManager;
 import android.media.AudioAttributes;
@@ -26,6 +30,8 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -86,6 +92,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public static final String BROADCAST_REMOVE_NOTIFICATION = "com.prangesoftwaresolutions.audioanchor.REMOVE_NOTIFICATION";
     public static final String BROADCAST_UNBIND_CURRENT_SERVICE = "com.prangesoftwaresolutions.audioanchor.UNBIND_CURRENT_SERVICE";
     public static final String BROADCAST_RESET = "com.prangesoftwaresolutions.audioanchor.RESET";
+
+    public static final String LOG_TAG = MediaPlayerService.class.getSimpleName();
 
     private MediaPlayer mMediaPlayer;
 
@@ -531,37 +539,41 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private void callStateListener() {
         // Get the telephony manager
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        // Starting listening for PhoneState changes
-        phoneStateListener = new PhoneStateListener() {
-            @Override
-            public void onCallStateChanged(int state, String incomingNumber) {
-                switch (state) {
-                    // If at least one call exists or the phone is ringing pause the MediaPlayer
-                    case TelephonyManager.CALL_STATE_OFFHOOK:
-                    case TelephonyManager.CALL_STATE_RINGING:
-                        if (mMediaPlayer != null && !ongoingCall) {
-                            resumeAfterCall = mMediaPlayer.isPlaying();
-                            pause();
-                            ongoingCall = true;
-                        }
-                        break;
-                    case TelephonyManager.CALL_STATE_IDLE:
-                        // Phone idle. Start playing.
-                        if (mMediaPlayer != null) {
-                            if (ongoingCall) {
-                                ongoingCall = false;
-                                if (resumeAfterCall) {
-                                    play();
+        // Register the listener with the telephony manager. Listen for changes to the device call state.
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+            // Starting listening for PhoneState changes
+            phoneStateListener = new PhoneStateListener() {
+                @Override
+                public void onCallStateChanged(int state, String incomingNumber) {
+                    switch (state) {
+                        // If at least one call exists or the phone is ringing pause the MediaPlayer
+                        case TelephonyManager.CALL_STATE_OFFHOOK:
+                        case TelephonyManager.CALL_STATE_RINGING:
+                            if (mMediaPlayer != null && !ongoingCall) {
+                                resumeAfterCall = mMediaPlayer.isPlaying();
+                                pause();
+                                ongoingCall = true;
+                            }
+                            break;
+                        case TelephonyManager.CALL_STATE_IDLE:
+                            // Phone idle. Start playing.
+                            if (mMediaPlayer != null) {
+                                if (ongoingCall) {
+                                    ongoingCall = false;
+                                    if (resumeAfterCall) {
+                                        play();
+                                    }
                                 }
                             }
-                        }
-                        resumeAfterCall = false;
-                        break;
+                            resumeAfterCall = false;
+                            break;
+                    }
                 }
-            }
-        };
-        // Register the listener with the telephony manager. Listen for changes to the device call state.
-        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+            };
+            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        } else {
+            Log.w(LOG_TAG, "READ_PHONE_STATE permission not granted; cannot listen to phone state changes");
+        }
     }
 
     /*
@@ -570,16 +582,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private void initMediaSession() {
         if (mediaSessionManager != null) return;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
-        }
+        mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
 
         ComponentName mediaButtonReceiverComponentName = new ComponentName(getApplicationContext(), MediaButtonIntentReceiver.class);
 
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setComponent(mediaButtonReceiverComponentName);
 
-        PendingIntent mediaButtonReceiverPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, mediaButtonIntent, 0);
+        PendingIntent mediaButtonReceiverPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, mediaButtonIntent, PendingIntent.FLAG_IMMUTABLE);
 
         // Create a new MediaSession
         mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioAnchor", mediaButtonReceiverComponentName, mediaButtonReceiverPendingIntent);
@@ -697,12 +707,17 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Set up intent to start PlayActivity when the notification is clicked
         Intent startActivityIntent = new Intent(this, PlayActivity.class);
         startActivityIntent.putExtra(getString(R.string.curr_audio_id), mActiveAudio.getID());
-        PendingIntent launchIntent = PendingIntent.getActivity(this, 0,
-                startActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent launchIntent = PendingIntent.getActivity(this,
+                0,
+                startActivityIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         // Set up intent to stop service when notification is removed
         Intent intent = new Intent(BROADCAST_REMOVE_NOTIFICATION);
-        PendingIntent deleteIntent = PendingIntent.getBroadcast(this.getApplicationContext(), 0, intent, 0);
+        PendingIntent deleteIntent = PendingIntent.getBroadcast(this.getApplicationContext(),
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE);
 
         // Create a new notification
         mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -738,8 +753,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         Notification notification = mNotificationBuilder.build();
         if (isPlaying()) {
-            startForeground(NOTIFICATION_ID, notification);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+            } else {
+                startForeground(NOTIFICATION_ID, notification);
+            }
         } else {
+            // update or post a normal notification when not playing
             mNotificationManager.notify(NOTIFICATION_ID, notification);
         }
     }
@@ -750,23 +770,23 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             case 0:
                 // Play
                 playbackActionIntent.setAction(ACTION_PLAY);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, 0);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
             case 1:
                 // Pause
                 playbackActionIntent.setAction(ACTION_PAUSE);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, 0);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
             case 2:
                 // Skip forward
                 playbackActionIntent.setAction(ACTION_FORWARD);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, 0);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
             case 3:
                 // Skip backward
                 playbackActionIntent.setAction(ACTION_BACKWARD);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, 0);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
             case 4:
                 // Set bookmark
                 playbackActionIntent.setAction(ACTION_BOOKMARK);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, 0);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
             default:
                 break;
         }

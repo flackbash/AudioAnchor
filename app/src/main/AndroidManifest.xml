@@ -73,7 +73,10 @@
                 android:value="com.prangesoftwaresolutions.audioanchor.activities.MainActivity" />
         </activity>
 
-        <service android:name=".services.MediaPlayerService" />
+        <service android:name=".services.MediaPlayerService"
+            android:exported="false"
+            android:enabled="true"
+            android:foregroundServiceType="mediaPlayback"/>
 
         <receiver android:name=".receivers.MediaButtonIntentReceiver"
             android:exported="true">
