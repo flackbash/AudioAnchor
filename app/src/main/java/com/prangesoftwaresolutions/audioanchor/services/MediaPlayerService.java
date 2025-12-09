@@ -712,13 +712,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 startActivityIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // Set up intent to stop service when notification is removed
-        Intent intent = new Intent(BROADCAST_REMOVE_NOTIFICATION);
-        PendingIntent deleteIntent = PendingIntent.getBroadcast(this.getApplicationContext(),
-                0,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE);
-
         // Create a new notification
         mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 // Hide the timestamp
@@ -739,8 +732,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .setContentTitle(audioTitle)
                 // Set the intent for the activity that is launched on click
                 .setContentIntent(launchIntent)
-                // Set intent that is launched on delete notificaiton
-                .setDeleteIntent(deleteIntent)
                 // Set the visibility for the lock screen
                 .setVisibility(VISIBILITY_PUBLIC)
                 // Make notification non-removable if the track is currently playing
@@ -751,42 +742,50 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .addAction(playPauseImageResource, playPauseTitle, playPauseAction)
                 .addAction(skipForwardImageResource, getString(R.string.button_forward), playbackAction(2));
 
-        Notification notification = mNotificationBuilder.build();
-        if (isPlaying()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-            } else {
-                startForeground(NOTIFICATION_ID, notification);
-            }
-        } else {
-            // update or post a normal notification when not playing
-            mNotificationManager.notify(NOTIFICATION_ID, notification);
+        // Set intent that is launched on delete notification for Android version < 13
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            // Set up intent to stop service when notification is removed
+            Intent intent = new Intent(BROADCAST_REMOVE_NOTIFICATION);
+            PendingIntent deleteIntent = PendingIntent.getBroadcast(this.getApplicationContext(),
+                    0,
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE);
+            mNotificationBuilder.setDeleteIntent(deleteIntent);
         }
+
+        Notification notification = mNotificationBuilder.build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        } else {
+            startForeground(NOTIFICATION_ID, notification);
+        }
+        mNotificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     private PendingIntent playbackAction(int actionNumber) {
         Intent playbackActionIntent = new Intent(this, MediaPlayerService.class);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
         switch (actionNumber) {
             case 0:
                 // Play
                 playbackActionIntent.setAction(ACTION_PLAY);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, flags);
             case 1:
                 // Pause
                 playbackActionIntent.setAction(ACTION_PAUSE);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, flags);
             case 2:
                 // Skip forward
                 playbackActionIntent.setAction(ACTION_FORWARD);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, flags);
             case 3:
                 // Skip backward
                 playbackActionIntent.setAction(ACTION_BACKWARD);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, flags);
             case 4:
                 // Set bookmark
                 playbackActionIntent.setAction(ACTION_BOOKMARK);
-                return PendingIntent.getService(this, actionNumber, playbackActionIntent, PendingIntent.FLAG_IMMUTABLE);
+                return PendingIntent.getService(this, actionNumber, playbackActionIntent, flags);
             default:
                 break;
         }
@@ -894,7 +893,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
             buildNotification();
         }
-        stopForeground(false);
+        // stopForeground(false);
     }
 
     /*
