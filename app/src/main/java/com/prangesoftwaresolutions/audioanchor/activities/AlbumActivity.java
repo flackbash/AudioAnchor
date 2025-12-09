@@ -100,6 +100,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     // Synchronizer
     private Synchronizer mSynchronizer;
 
+    static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE = 1;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.setActivityTheme(this);
@@ -214,7 +217,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                             // This is necessary because requesting permission destroys action mode
                             // such that selected tracks are cleared
                             mTmpSelectedTracks = new ArrayList<>(mSelectedTracks);
-                            ActivityCompat.requestPermissions(AlbumActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE);
+                            ActivityCompat.requestPermissions(AlbumActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE);
                         } else {
                             deleteSelectedTracksWithConfirmation();
                         }
@@ -282,7 +285,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         // This needs to be a receiver for global broadcasts, as the deleteIntent is broadcast by
         // Android's notification framework
-        registerReceiver(mRemoveNotificationReceiver, new IntentFilter(MediaPlayerService.BROADCAST_REMOVE_NOTIFICATION));
+        IntentFilter removeNotificationIntentFilter =  new IntentFilter(MediaPlayerService.BROADCAST_REMOVE_NOTIFICATION);
+        ContextCompat.registerReceiver(this, mRemoveNotificationReceiver, removeNotificationIntentFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     @Override
@@ -404,7 +408,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case MainActivity.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE: {
+            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     // Permission was not granted

@@ -22,6 +22,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PersistableBundle;
+
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -260,7 +262,8 @@ public class PlayActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(mNewAudioFileReceiver, new IntentFilter(MediaPlayerService.SERVICE_NEW_AUDIO));
         // This needs to be a receiver for global broadcasts, as the deleteIntent is broadcast by
         // Android's notification framework
-        registerReceiver(mRemoveNotificationReceiver, new IntentFilter(MediaPlayerService.BROADCAST_REMOVE_NOTIFICATION));
+        IntentFilter removeNotificationIntentFilter = new IntentFilter(MediaPlayerService.BROADCAST_REMOVE_NOTIFICATION);
+        ContextCompat.registerReceiver(this, mRemoveNotificationReceiver, removeNotificationIntentFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
 
         boolean immediatePlayback = mSharedPreferences.getBoolean(getString(R.string.settings_immediate_playback_key), Boolean.getBoolean(getString(R.string.settings_immediate_playback_default)));
         if (immediatePlayback) playAudio();

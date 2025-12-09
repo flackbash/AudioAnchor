@@ -33,7 +33,6 @@ import android.os.IBinder;
 
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -162,7 +161,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Register BroadcastReceivers for broadcasts from PlayActivity
         mBroadcaster.registerReceiver(mPlayAudioReceiver, new IntentFilter(PlayActivity.BROADCAST_PLAY_AUDIO));
         mBroadcaster.registerReceiver(mPauseAudioReceiver, new IntentFilter(PlayActivity.BROADCAST_PAUSE_AUDIO));
-        registerReceiver(mRemoveNotificationReceiver, new IntentFilter(BROADCAST_REMOVE_NOTIFICATION));
+        IntentFilter removeNotificationIntentFilter = new IntentFilter(BROADCAST_REMOVE_NOTIFICATION);
+        ContextCompat.registerReceiver(this, mRemoveNotificationReceiver, removeNotificationIntentFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
 
         // Notification manager
          mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -276,7 +276,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private AudioAttributes createAudioAttributes() {
         return new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -348,7 +347,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
             // Send broadcast that the notification was removed
             // The MediaPlayerService receiver will then also stop the service by calling stopSelf()
-            sendBroadcast(new Intent(BROADCAST_REMOVE_NOTIFICATION));
+            sendBroadcast(new Intent(BROADCAST_REMOVE_NOTIFICATION).setPackage(getPackageName()));
 
             mLockManager.releaseWakeLock();
         }

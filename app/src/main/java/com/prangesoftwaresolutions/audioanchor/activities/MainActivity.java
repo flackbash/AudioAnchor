@@ -14,19 +14,22 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -38,7 +41,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.prangesoftwaresolutions.audioanchor.dialogs.FileDialog;
 import com.prangesoftwaresolutions.audioanchor.helpers.Migrator;
 import com.prangesoftwaresolutions.audioanchor.listeners.PlayStatusChangeListener;
 import com.prangesoftwaresolutions.audioanchor.listeners.SynchronizationStateListener;
@@ -56,6 +58,8 @@ import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 import java.io.File;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, PlayStatusChangeListener, SynchronizationStateListener {
@@ -80,9 +84,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     ArrayList<AudioFile> mTmpAlbumAudioFiles;
 
     // Permission request
-    private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0;
-    static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE = 1;
-    static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_EXPORT = 2;
+    private ActivityResultLauncher<String[]> mRequestPermissionsLauncher;
 
     // MediaPlayerService variables
     private MediaPlayerService mPlayer;
@@ -238,12 +240,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        // Check if app has the necessary permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
-        } else {
-            mListView.setAdapter(mCursorAdapter);
-        }
+        // Check if app has the necessary permissions. If not, request them.
+        // If read permission is not granted, the app cannot function properly and is closed.
+        // TODO: Handle limited access. Right now, the app can crash if only limited access is granted.
+        mRequestPermissionsLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                this::handlePermissionsResult
+        );
+        checkAndRequestPermissions();
+
+        mListView.setAdapter(mCursorAdapter);
 
         // Bind to MediaPlayerService if it has been started by the PlayActivity
         bindToServiceIfRunning();
@@ -259,7 +265,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // This needs to be a receiver for global broadcasts, as the deleteIntent is broadcast by
         // Android's notification framework
-        registerReceiver(mRemoveNotificationReceiver, new IntentFilter(MediaPlayerService.BROADCAST_REMOVE_NOTIFICATION));
+        IntentFilter removeNotificationIntentFilter =  new IntentFilter(MediaPlayerService.BROADCAST_REMOVE_NOTIFICATION);
+        ContextCompat.registerReceiver(this, mRemoveNotificationReceiver, removeNotificationIntentFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
 
         // Extract version code and version name of the app
         PackageInfo pInfo = null;
@@ -380,45 +387,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case PERMISSION_REQUEST_READ_EXTERNAL_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    // Permission was not granted
-                    Toast.makeText(getApplicationContext(), R.string.permission_denied, Toast.LENGTH_LONG).show();
-                    finish();
-                } else {
-                    mListView.setAdapter(mCursorAdapter);
-                }
-                break;
-            }
-            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_EXPORT: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    // Permission was not granted
-                    Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
-                } else {
-                    showExportDirectorySelector();
-                }
-                break;
-            }
-            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    // Permission was not granted
-                    Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
-                } else {
-                    mSelectedAlbums = mTmpSelectedAlbums;
-                    deleteSelectedAlbumWithConfirmation(mTmpAlbumAudioFiles);
-                }
-                break;
-            }
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
@@ -428,24 +396,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_choose_directory:
-                // Check if app has the necessary permissions
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
-                } else {
-                    Intent directoryIntent = new Intent(this, DirectoryActivity.class);
-                    startActivity(directoryIntent);
-                }
+                Intent directoryIntent = new Intent(this, DirectoryActivity.class);
+                startActivity(directoryIntent);
                 return true;
             case R.id.menu_export:
-                // Check if app has the necessary permissions
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_EXPORT);
-                } else {
-                    showExportDirectorySelector();
-                }
+                exportDatabase();
                 return true;
             case R.id.menu_import:
-                showImportFileSelector();
+                importDatabase();
                 return true;
             case R.id.menu_synchronize:
                 mSwipeRefreshLayout.setRefreshing(true);
@@ -596,31 +554,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     /*
-     * Show file selector where the user can select a directory to which to export the database
-     */
-    private void showExportDirectorySelector() {
-        // Let the user select a directory in which to save the database
-        File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-        FileDialog fileDialog = new FileDialog(this, baseDirectory, true, null, this);
-        fileDialog.addDirectoryListener(file -> mMigrator.exportDatabase(file));
-        fileDialog.showDialog();
-    }
-
-    /*
-     * Show file selector where the user can select a .db file from which to import a database
-     */
-    private void showImportFileSelector() {
-        File baseDirectory = Environment.getExternalStorageDirectory();
-        FileDialog fileDialog = new FileDialog(this, baseDirectory, false, ".db", this);
-        fileDialog.addFileListener(file -> {
-            mMigrator.importDatabase(file);
-            mSwipeRefreshLayout.setRefreshing(true);
-            mSynchronizer.updateDBTables();
-        });
-        fileDialog.showDialog();
-    }
-
-    /*
      * Show a confirmation dialog and let the user decide whether to delete the selected albums
      * and / or its tracks from the database
      */
@@ -723,5 +656,72 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    private void checkAndRequestPermissions() {
+        List<String> permissionsToRequest = new ArrayList<>();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES);
+            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO);
+            }
+        } else { // Android 12 and below
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+        }
+
+        if (!permissionsToRequest.isEmpty()) {
+            mRequestPermissionsLauncher.launch(permissionsToRequest.toArray(new String[0]));
+        }
+    }
+
+    private void handlePermissionsResult(@NonNull Map<String, Boolean> permissions) {
+        for (Map.Entry<String, Boolean> entry : permissions.entrySet()) {
+            String permission = entry.getKey();
+            boolean granted = entry.getValue();
+
+            if (!granted) {
+                Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_LONG).show();
+                finish();
+            }
+        }
+    }
+
+    private void exportDatabase() {
+        mMigrator.pickExportLocation(new Migrator.OnDatabaseExported() {
+            @Override
+            public void onExported() {
+                // TODO: R.string.export_success should be updated to include the export location
+                Toast.makeText(MainActivity.this, R.string.export_success, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(MainActivity.this, R.string.export_fail, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void importDatabase() {
+        mMigrator.pickImportFile(new Migrator.OnDatabaseImported() {
+            @Override
+            public void onImported() {
+                Toast.makeText(MainActivity.this, R.string.import_success, Toast.LENGTH_LONG).show();
+                mSwipeRefreshLayout.setRefreshing(true);
+                mSynchronizer.updateDBTables();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(MainActivity.this, R.string.import_fail, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId = "com.prangesoftwaresolutions.audioanchor"
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 35
         versionCode = 30
         versionName = "2.3.4"
     }
