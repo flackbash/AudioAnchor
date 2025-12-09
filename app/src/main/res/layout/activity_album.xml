@@ -1,86 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/album_info_cover"
-            android:layout_width="@dimen/album_info_height"
-            android:layout_height="@dimen/album_info_height"
-            android:src="@drawable/empty_cover_grey_blue" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/album_info_title"
+            <ImageView
+                android:id="@+id/album_info_cover"
+                android:layout_width="@dimen/album_info_height"
+                android:layout_height="@dimen/album_info_height"
+                android:src="@drawable/empty_cover_grey_blue" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/large_font_size"
-                android:padding="@dimen/small_margin"
-                android:text="@string/album"
-                android:layout_gravity="center_vertical"
-                android:ellipsize="marquee"
-                android:singleLine="true"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:focusable="true"
-                android:focusableInTouchMode="true" />
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/album_info_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/small_font_size"
-                android:padding="@dimen/small_margin"
-                android:text="00:00 / 00:00"
-                android:layout_gravity="center_vertical" />
+                <TextView
+                    android:id="@+id/album_info_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/large_font_size"
+                    android:padding="@dimen/small_margin"
+                    android:text="@string/album"
+                    android:layout_gravity="center_vertical"
+                    android:ellipsize="marquee"
+                    android:singleLine="true"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true" />
+
+                <TextView
+                    android:id="@+id/album_info_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/small_font_size"
+                    android:padding="@dimen/small_margin"
+                    android:text="00:00 / 00:00"
+                    android:layout_gravity="center_vertical" />
+            </LinearLayout>
         </LinearLayout>
+
+        <View
+            android:background="@color/colorBackgroundLight"
+            android:layout_width="match_parent"
+            android:layout_height="1dp" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".activities.AlbumActivity">
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swiperefresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ListView
+                    android:id="@+id/list_album"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+            <TextView
+                android:id="@+id/emptyList_album"
+                style="@style/EmptyListTextView" />
+
+            <ProgressBar
+                android:id="@+id/progressBar_album"
+                style="@style/EmptyListProgressBar" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/play_pause_fab"
+                style="@style/MediaControlFAB" />
+
+        </RelativeLayout>
+
     </LinearLayout>
 
-    <View
-        android:background="@color/colorBackgroundLight"
-        android:layout_width="match_parent"
-        android:layout_height="1dp" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".activities.AlbumActivity">
-
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swiperefresh"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ListView
-                android:id="@+id/list_album"
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-        <TextView
-            android:id="@+id/emptyList_album"
-            style="@style/EmptyListTextView" />
-
-        <ProgressBar
-            android:id="@+id/progressBar_album"
-            style="@style/EmptyListProgressBar" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/play_pause_fab"
-            style="@style/MediaControlFAB" />
-
-    </RelativeLayout>
-
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

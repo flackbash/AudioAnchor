@@ -9,6 +9,10 @@
         <item name="playActivityHeaderBG">@color/colorPlayActivityHeaderBG</item>
         <item name="android:activatedBackgroundIndicator">@drawable/list_item_activated_background</item>
         <item name="actionModeStyle">@style/LStyled.ActionMode</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="statusBarBackground">@color/colorPrimaryDark</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
     </style>
 
     <style name="LStyled.ActionMode" parent="@style/Widget.AppCompat.ActionMode">

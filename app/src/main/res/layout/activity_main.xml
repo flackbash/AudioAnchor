@@ -1,34 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".activities.MainActivity">
+    android:fitsSystemWindows="true">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swiperefresh"
+    <RelativeLayout
+        tools:context=".activities.MainActivity"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <ListView
-            android:id="@+id/list"
-            android:orientation="vertical"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swiperefresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            <ListView
+                android:id="@+id/list"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
-    <TextView
-        android:id="@+id/emptyList"
-        style="@style/EmptyListTextView" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="@style/EmptyListProgressBar" />
+        <TextView
+            android:id="@+id/emptyList"
+            style="@style/EmptyListTextView" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/play_pause_fab"
-        style="@style/MediaControlFAB"/>
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@style/EmptyListProgressBar" />
 
-</RelativeLayout>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/play_pause_fab"
+            style="@style/MediaControlFAB"/>
+
+    </RelativeLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

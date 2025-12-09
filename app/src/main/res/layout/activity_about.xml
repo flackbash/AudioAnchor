@@ -1,94 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center">
+    android:fitsSystemWindows="true">
 
-    <ImageView
-        android:layout_width="@dimen/about_icon_height"
-        android:layout_height="@dimen/about_icon_height"
-        android:layout_margin="@dimen/large_margin"
-        android:src="@drawable/audioanchor_icon" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
 
-    <TextView
-        android:id="@+id/about_text_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/big_font_size"
-        android:padding="@dimen/large_margin" />
+        <ImageView
+            android:layout_width="@dimen/about_icon_height"
+            android:layout_height="@dimen/about_icon_height"
+            android:layout_margin="@dimen/large_margin"
+            android:src="@drawable/audioanchor_icon" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/small_font_size"
-        android:paddingEnd="@dimen/large_margin"
-        android:paddingStart="@dimen/large_margin"
-        android:text="@string/about_contributors"
-        android:textAlignment="center"/>
+        <TextView
+            android:id="@+id/about_text_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/big_font_size"
+            android:padding="@dimen/large_margin" />
 
-    <TextView
-        android:autoLink="all"
-        android:textColorLink="@color/colorPrimaryDark"
-        android:linksClickable="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/small_font_size"
-        android:paddingEnd="@dimen/small_margin"
-        android:paddingStart="@dimen/small_margin"
-        android:paddingBottom="@dimen/small_margin"
-        android:text="@string/github_link"
-        android:textAlignment="center"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/small_font_size"
+            android:paddingEnd="@dimen/large_margin"
+            android:paddingStart="@dimen/large_margin"
+            android:text="@string/about_contributors"
+            android:textAlignment="center"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/small_font_size"
-        android:paddingEnd="@dimen/large_margin"
-        android:paddingStart="@dimen/large_margin"
-        android:text="@string/about_report_bugs"
-        android:textAlignment="center"/>
+        <TextView
+            android:autoLink="all"
+            android:textColorLink="@color/colorPrimaryDark"
+            android:linksClickable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/small_font_size"
+            android:paddingEnd="@dimen/small_margin"
+            android:paddingStart="@dimen/small_margin"
+            android:paddingBottom="@dimen/small_margin"
+            android:text="@string/github_link"
+            android:textAlignment="center"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColorLink="@color/colorPrimaryDark"
-        android:linksClickable="true"
-        android:textSize="@dimen/small_font_size"
-        android:paddingEnd="@dimen/large_margin"
-        android:paddingStart="@dimen/large_margin"
-        android:paddingTop="@dimen/large_margin"
-        android:text="@string/about_donations"
-        android:textAlignment="center"/>
-    <TextView
-        android:id="@+id/paypal_link_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColorLink="@color/colorPrimaryDark"
-        android:linksClickable="true"
-        android:textSize="@dimen/small_font_size"
-        android:paddingEnd="@dimen/small_margin"
-        android:paddingStart="@dimen/small_margin"
-        android:text="@string/paypal_link"
-        android:textAlignment="center"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColorLink="@color/colorPrimaryDark"
-        android:linksClickable="true"
-        android:textSize="@dimen/small_font_size"
-        android:paddingEnd="@dimen/large_margin"
-        android:paddingStart="@dimen/large_margin"
-        android:text="@string/about_donations_thanks"
-        android:textAlignment="center"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/small_font_size"
+            android:paddingEnd="@dimen/large_margin"
+            android:paddingStart="@dimen/large_margin"
+            android:text="@string/about_report_bugs"
+            android:textAlignment="center"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/small_font_size"
-        android:paddingTop="@dimen/large_margin"
-        android:paddingStart="@dimen/small_margin"
-        android:paddingEnd="@dimen/small_margin"
-        android:paddingBottom="@dimen/small_margin"
-        android:text="@string/copyright" />
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColorLink="@color/colorPrimaryDark"
+            android:linksClickable="true"
+            android:textSize="@dimen/small_font_size"
+            android:paddingEnd="@dimen/large_margin"
+            android:paddingStart="@dimen/large_margin"
+            android:paddingTop="@dimen/large_margin"
+            android:text="@string/about_donations"
+            android:textAlignment="center"/>
+        <TextView
+            android:id="@+id/paypal_link_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColorLink="@color/colorPrimaryDark"
+            android:linksClickable="true"
+            android:textSize="@dimen/small_font_size"
+            android:paddingEnd="@dimen/small_margin"
+            android:paddingStart="@dimen/small_margin"
+            android:text="@string/paypal_link"
+            android:textAlignment="center"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColorLink="@color/colorPrimaryDark"
+            android:linksClickable="true"
+            android:textSize="@dimen/small_font_size"
+            android:paddingEnd="@dimen/large_margin"
+            android:paddingStart="@dimen/large_margin"
+            android:text="@string/about_donations_thanks"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/small_font_size"
+            android:paddingTop="@dimen/large_margin"
+            android:paddingStart="@dimen/small_margin"
+            android:paddingEnd="@dimen/small_margin"
+            android:paddingBottom="@dimen/small_margin"
+            android:text="@string/copyright" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
