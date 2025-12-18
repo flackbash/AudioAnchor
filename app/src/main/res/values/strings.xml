@@ -17,7 +17,7 @@
     <string name="time_format_error">Please enter a valid time in the format hh:mm:ss.</string>
     <string name="import_success">Import successful :)</string>
     <string name="import_fail">Something went wrong. Import failed.</string>
-    <string name="export_success">Exported database to %s.</string>
+    <string name="export_success">Exported database</string>
     <string name="export_fail">Something went wrong. Export failed.</string>
     <string name="synchronize_success">Synchronized library.</string>
     <string name="audio_file_error">There is a problem with the audio file \"%s\".</string>

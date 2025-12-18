@@ -16,7 +16,7 @@
     <string name="time_format_error">Введите корректное значение времение в формате чч:мм:сс.</string>
     <string name="import_success">Импорт прошел успешно :)</string>
     <string name="import_fail">Что-то пошло не так. Импорт не удался.</string>
-    <string name="export_success">База данных экспортирована в %s.</string>
+    <string name="export_success">База данных экспортирована.</string>
     <string name="export_fail">Что-то пошло не так. Экспорт не удался.</string>
     <string name="synchronize_success">Библиотека синхронизирована.</string>
     <string name="audio_file_error">Возникла проблема с аудиофайлом \"%s\".</string>

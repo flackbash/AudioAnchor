@@ -16,7 +16,7 @@
     <string name="time_format_error">Por favor, digite um tempo válido no formato hh:mm:ss.</string>
     <string name="import_success">A importação obteve êxito :)</string>
     <string name="import_fail">Algo de errado ocorreu. A importação falhou.</string>
-    <string name="export_success">Banco de dados exportado para %s.</string>
+    <string name="export_success">Banco de dados exportado.</string>
     <string name="export_fail">Algo de errado ocorreu. A importação falhou.</string>
     <string name="synchronize_success">Biblioteca sincronizada.</string>
     <string name="audio_file_error">Há um problema com o arquivo de áudio \"%s\".</string>

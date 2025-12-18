@@ -16,7 +16,7 @@
     <string name="time_format_error">Prosím zadejte platný čas ve formátu hh:mm:ss.</string>
     <string name="import_success">Import úspěšný :)</string>
     <string name="import_fail">Něco se pokazilo. Import selhal.</string>
-    <string name="export_success">Databáze uložena do %s.</string>
+    <string name="export_success">Databáze uložena.</string>
     <string name="export_fail">Něco se pokazilo. Export selhal.</string>
     <string name="synchronize_success">Synchronizace dokončena.</string>
     <string name="audio_file_error">Problém se zvukovým souborem \"%s\".</string>

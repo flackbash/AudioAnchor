@@ -18,7 +18,7 @@
     <string name="time_format_error">Angi et gyldig tidspunkt i formatet tt:mm:ss.</string>
     <string name="import_success">Importert :)</string>
     <string name="import_fail">Noe gikk galt. Importeringen mislyktes.</string>
-    <string name="export_success">Eksporterte database til %s.</string>
+    <string name="export_success">Eksporterte database.</string>
     <string name="export_fail">Noe gikk galt. Eksporteringen mislyktes.</string>
     <string name="synchronize_success">Synkronisert biblioteket.</string>
     <string name="audio_file_error">Det er et problem med lydfilen \"%s\".</string>

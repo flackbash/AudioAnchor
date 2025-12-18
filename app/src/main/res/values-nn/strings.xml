@@ -16,7 +16,7 @@
   <string name="time_format_error">Skriv inn eit gyldig tidspunkt på formatet hh:mm:ss.</string>
   <string name="import_success">Databasen er no importert.</string>
   <string name="import_fail">Noko gjekk gale. Klarte ikkje importera databasen.</string>
-  <string name="export_success">Databasen vart eksportert til %s.</string>
+  <string name="export_success">Databasen vart eksportert.</string>
   <string name="export_fail">Noko gjekk gale. Klarte ikkje eksportera databasen.</string>
   <string name="synchronize_success">Biblioteket er no synkronisert.</string>
   <string name="audio_file_error">Det er noko gale med lydfila «%s».</string>

@@ -698,7 +698,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mMigrator.pickExportLocation(new Migrator.OnDatabaseExported() {
             @Override
             public void onExported() {
-                // TODO: R.string.export_success should be updated to include the export location
                 Toast.makeText(MainActivity.this, R.string.export_success, Toast.LENGTH_LONG).show();
             }
 

@@ -3,7 +3,6 @@ package com.prangesoftwaresolutions.audioanchor.helpers;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -22,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.FileChannel;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+
 
 public class Migrator {
     private final AppCompatActivity mActivity;
@@ -59,7 +55,6 @@ public class Migrator {
     }
 
     private void initActivityResultLaunchers() {
-
         // Export launcher
         exportDatabaseLauncher = mActivity.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -100,8 +95,8 @@ public class Migrator {
         this.exportCallback = callback;
 
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.setType("application/zip");
-        intent.putExtra(Intent.EXTRA_TITLE, mDatabaseName + ".zip");
+        intent.setType("application/octet-stream");
+        intent.putExtra(Intent.EXTRA_TITLE, mDatabaseName);
         exportDatabaseLauncher.launch(intent);
     }
 
@@ -112,125 +107,55 @@ public class Migrator {
         this.importCallback = callback;
 
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.setType("application/zip");
+        intent.setType("application/octet-stream");
         importDatabaseLauncher.launch(intent);
     }
 
-    /**
-     * Open the imported database.
-     */
-    public SQLiteDatabase openImportedDatabase() {
-        File dbDir = new File(mActivity.getFilesDir(), "databases");
-        File dbFile = new File(dbDir, mDatabaseName);
-        return SQLiteDatabase.openDatabase(
-                dbFile.getAbsolutePath(),
-                null,
-                SQLiteDatabase.OPEN_READWRITE
-        );
-    }
-
     private void exportDatabaseToUri(Uri uri) throws IOException {
-
         // Current database files
-        String currentDBPath = mActivity.openOrCreateDatabase(
-                mDatabaseName,
-                Context.MODE_PRIVATE,
-                null).getPath();
+        String currentDBPath = mActivity.getDatabasePath(mDatabaseName).getPath();
 
-        File currentDB = new File(currentDBPath);
-        File currentDBShm = new File(currentDBPath + "-shm");
-        File currentDBWal = new File(currentDBPath + "-wal");
-        File[] currentFiles = {currentDB, currentDBShm, currentDBWal};
-
-        try (OutputStream os = mActivity.getContentResolver().openOutputStream(uri);
-             ZipOutputStream zos = new ZipOutputStream(os)) {
-
-            for (File file : currentFiles) {
-                if (file.exists()) {
-                    addFileToZip(file, zos);
-                }
-            }
-        }
-    }
-
-    private void addFileToZip(File file, ZipOutputStream zos) throws IOException {
-        try (FileInputStream fis = new FileInputStream(file)) {
-            ZipEntry entry = new ZipEntry(file.getName());
-            zos.putNextEntry(entry);
+        // Copy the .db file to the Uri
+        try (InputStream is = new FileInputStream(currentDBPath);
+             OutputStream os = mActivity.getContentResolver().openOutputStream(uri)) {
 
             byte[] buffer = new byte[8192];
             int length;
-            while ((length = fis.read(buffer)) >= 0) {
-                zos.write(buffer, 0, length);
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
             }
-
-            zos.closeEntry();
+            os.flush();
         }
-    }
-
-    /**
-     * Unzips a database ZIP URI into a temporary folder and returns File objects
-     * for the database, WAL, and SHM files.
-     */
-    public File[] unzipDatabase(Uri zipUri, String databaseName) throws IOException {
-        File tempDir = new File(mActivity.getCacheDir(), "db_import_temp");
-        if (!tempDir.exists()) tempDir.mkdirs();
-
-        try (InputStream is = mActivity.getContentResolver().openInputStream(zipUri);
-             ZipInputStream zis = new ZipInputStream(is)) {
-
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                File outFile = new File(tempDir, entry.getName());
-
-                try (FileOutputStream fos = new FileOutputStream(outFile)) {
-                    byte[] buffer = new byte[8192];
-                    int len;
-                    while ((len = zis.read(buffer)) >= 0) {
-                        fos.write(buffer, 0, len);
-                    }
-                }
-
-                zis.closeEntry();
-            }
-        }
-
-        // Create File objects for db, shm, wal
-        File dbFile = new File(tempDir, databaseName);
-        File shmFile = new File(tempDir, databaseName + "-shm");
-        File walFile = new File(tempDir, databaseName + "-wal");
-
-        return new File[]{dbFile, shmFile, walFile};
     }
 
     private void importDatabaseFromUri(Uri uri) throws IOException {
-        // Unzip the database files to a temporary location
-        File[] importFiles = unzipDatabase(uri, mDatabaseName);
+        // Get path to your app's database file
+        File dbFile = mActivity.getDatabasePath(AnchorDbHelper.DATABASE_NAME);
 
-        SQLiteDatabase db = mActivity.openOrCreateDatabase(AnchorDbHelper.DATABASE_NAME, Context.MODE_PRIVATE, null);
-        String newDBPath = db.getPath();
-        db.close();
-
-        File newDBFile = new File(newDBPath);
-        File newDBShm = new File(newDBPath + "-shm");
-        File newDBWal = new File(newDBPath + "-wal");
-        File[] newFiles = {newDBFile, newDBShm, newDBWal};
-
-        int fileExists = 0;
-        for (int i = 0; i < importFiles.length; i++) {
-            if (importFiles[i].exists()) {
-                FileChannel src = new FileInputStream(importFiles[i]).getChannel();
-                FileChannel dst = new FileOutputStream(newFiles[i]).getChannel();
-                dst.transferFrom(src, 0, src.size());
-                src.close();
-                dst.close();
-
-                fileExists++;
-            } else {
-                newFiles[i].delete();
-            }
+        // Close the database if it's open
+        SQLiteDatabase db;
+        try {
+            db = SQLiteDatabase.openDatabase(dbFile.getPath(), null, SQLiteDatabase.OPEN_READWRITE);
+            db.close();
+        } catch (Exception e) {
+            // ignore if DB isn't open
         }
-        if (fileExists > 0) {
+
+        // Copy the .db file from the Uri to your database location
+        boolean importSuccessful = false;
+        try (InputStream is = mActivity.getContentResolver().openInputStream(uri);
+             OutputStream os = new FileOutputStream(dbFile)) {
+
+            byte[] buffer = new byte[8192];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
+            }
+            os.flush();
+            importSuccessful = true;
+        }
+
+        if (importSuccessful) {
             // Adjust album cover paths to contain only the cover file name to enable
             // import of dbs that were exported in a previous version with the full path names
             // Get the old cover path
