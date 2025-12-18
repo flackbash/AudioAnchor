@@ -19,7 +19,7 @@ Additional features include:
 ## Installation
 The best way is to install [F-Droid](https://f-droid.org/) on your Android device, search for AudioAnchor, and install the app from there. This way, AudioAnchor will automatically be kept up to date on your device.\
 Alternatively, you can download the latest apk from [F-Droid](https://f-droid.org/packages/com.prangesoftwaresolutions.audioanchor/) (or from [releases](https://github.com/flackbash/AudioAnchor/releases)) and execute it on your device.\
-The latest release runs on devices with Android API level 19 (Android 4.4 KitKat) and higher.
+The latest release runs on devices with Android API level 21 (Android 5.0 Lollipop) and higher.
 
 ## Usage
 Start off by adding directories to your library. When adding a new directory you have two options:
@@ -48,7 +48,7 @@ AudioAnchor asks for the following permissions:
 
 ## License
 
-    Copyright © 2018-2024 Natalie Prange
+    Copyright © 2018-2026 Natalie Prange
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
