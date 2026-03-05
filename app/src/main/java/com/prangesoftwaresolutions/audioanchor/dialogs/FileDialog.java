@@ -47,6 +47,7 @@ public class FileDialog {
 
     private final ListenerList<FileSelectedListener> fileListenerList = new ListenerList<>();
     private final ListenerList<DirectorySelectedListener> dirListenerList = new ListenerList<>();
+    private final ListenerList<DirectorySelectedListener> defaultDirListenerList = new ListenerList<>();
     private final Activity activity;
     private final boolean mSelectDirectory;
     private String fileEndsWith;
@@ -85,6 +86,10 @@ public class FileDialog {
             builder.setPositiveButton(R.string.dialog_msg_select_dir, (dialog1, which) -> {
                 Log.d(TAG, currentPath.getPath());
                 fireDirectorySelectedEvent(currentPath);
+            });
+            builder.setNeutralButton(R.string.dialog_msg_set_default_dir, (dialog1, which) -> {
+                Log.d(TAG, currentPath.getPath());
+                fireDefaultDirectorySelectedEvent(currentPath);
             });
         }
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog1, which) -> {
@@ -131,6 +136,14 @@ public class FileDialog {
         dirListenerList.remove(listener);
     }
 
+    public void addDefaultDirectoryListener(DirectorySelectedListener listener) {
+        defaultDirListenerList.add(listener);
+    }
+
+    public void removeDefaultDirectoryListener(DirectorySelectedListener listener) {
+        defaultDirListenerList.remove(listener);
+    }
+
     /**
      * Show file dialog
      */
@@ -144,6 +157,10 @@ public class FileDialog {
 
     private void fireDirectorySelectedEvent(final File directory) {
         dirListenerList.fireEvent(listener -> listener.directorySelected(directory));
+    }
+
+    private void fireDefaultDirectorySelectedEvent(final File directory) {
+        defaultDirListenerList.fireEvent(listener -> listener.directorySelected(directory));
     }
 
     private void loadFileList(File path) {

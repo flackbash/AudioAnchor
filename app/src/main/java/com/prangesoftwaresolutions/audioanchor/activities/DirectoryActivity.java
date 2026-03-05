@@ -4,6 +4,7 @@ import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
@@ -149,6 +150,12 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
             if (allowAddDirectory(newDirectory)) {
                 mSynchronizer.addDirectory(newDirectory);
             }
+        });
+        fileDialog.addDefaultDirectoryListener(directory -> {
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+            editor.putString(getString(R.string.settings_directory_picker_initial_path_key), directory.getAbsolutePath());
+            editor.apply();
+            fileDialog.showDialog();
         });
         fileDialog.showDialog();
     }
