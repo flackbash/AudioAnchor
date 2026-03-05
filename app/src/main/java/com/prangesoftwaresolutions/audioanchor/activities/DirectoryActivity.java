@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.preference.PreferenceManager;
 
 import com.nambimobile.widgets.efab.FabOption;
 import com.prangesoftwaresolutions.audioanchor.R;
@@ -135,7 +136,12 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
     }
 
     private void addDirectory(boolean isParentDirectory) {
-        File baseDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+        String baseDirectoryPref = PreferenceManager.getDefaultSharedPreferences(this).getString(
+                getString(R.string.settings_directory_picker_initial_path_key), getString(R.string.settings_directory_picker_initial_path_default));
+        File baseDirectory = baseDirectoryPref.isBlank()
+                ? Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+                : new File(baseDirectoryPref);
+
         FileDialog fileDialog = new FileDialog(this, baseDirectory, true, null, this);
         fileDialog.addDirectoryListener(directory -> {
             Directory.Type directoryType = isParentDirectory ? Directory.Type.PARENT_DIR : Directory.Type.SUB_DIR;

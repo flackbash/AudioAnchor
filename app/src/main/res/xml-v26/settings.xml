@@ -178,6 +178,13 @@
             android:key="@string/settings_keep_deleted_key"
             android:title="@string/settings_keep_deleted_label"
             android:singleLineTitle="false" />
+
+        <EditTextPreference
+            android:defaultValue="@string/settings_directory_picker_initial_path_default"
+            android:key="@string/settings_directory_picker_initial_path_key"
+            android:title="@string/settings_directory_picker_initial_path_label"
+            android:singleLine="true"
+            android:singleLineTitle="false"/>
     </PreferenceCategory>
 
 </PreferenceScreen>
