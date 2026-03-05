@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
+import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
@@ -57,9 +60,22 @@ public class FileDialog {
         this.activity = activity;
         setFileEndsWith(fileEndsWith);
         mSelectDirectory = selectDirectory;
+        mContext = context;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            StorageManager storageManager = (StorageManager) mContext.getSystemService(Context.STORAGE_SERVICE);
+            for (StorageVolume v: storageManager.getStorageVolumes()) {
+                File volumePath = v.getDirectory();
+                if (volumePath != null && volumePath.canRead()) {
+                    ensureReachabilityOfPath(volumePath);
+                }
+            }
+        } else {
+            ensureReachabilityOfPath(Environment.getExternalStorageDirectory());
+        }
+
         if (!initialPath.exists()) initialPath = Environment.getExternalStorageDirectory();
         loadFileList(initialPath);
-        mContext = context;
     }
 
     /**
@@ -216,6 +232,20 @@ public class FileDialog {
 
     private void setFileEndsWith(String fileEndsWith) {
         this.fileEndsWith = fileEndsWith != null ? fileEndsWith.toLowerCase() : null;
+    }
+
+    private void ensureReachabilityOfPath(File path) {
+        Log.i("FileDialog.java", "Ensure reachability of " + path);
+        String filename = path.getName();
+        File parent = path.getParentFile();
+        while (parent != null) {
+            HashSet<String> childDirs = childDirectories.get(parent.getAbsolutePath());
+            if (childDirs == null) childDirs = new HashSet<>();
+            childDirs.add(filename);
+            childDirectories.put(parent.getAbsolutePath(), childDirs);
+            filename = parent.getName();
+            parent = parent.getParentFile();
+        }
     }
 }
 
