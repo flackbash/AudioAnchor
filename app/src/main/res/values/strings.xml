@@ -100,7 +100,9 @@
     <string name="settings_notification_backward_button">Notification backward button</string>
     <string name="settings_notification_forward_button">Notification forward button</string>
     <string name="settings_skip_interval_msg">Skip interval for %s</string>
+    <string name="settings_manage_external_storage_label">Request \"All files access\"</string>
     <string name="settings_directory_picker_initial_path_label">Initial directory picker path</string>
+
 
     <!-- Layout Texts -->
     <string name="title">Title</string>
