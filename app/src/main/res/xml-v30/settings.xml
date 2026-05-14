@@ -185,6 +185,13 @@
             android:title="@string/settings_directory_picker_initial_path_label"
             android:singleLine="true"
             android:singleLineTitle="false"/>
+        <Preference
+            android:key="@string/settings_manage_external_storage_key"
+            android:title="@string/settings_manage_external_storage_label">
+            <intent
+                android:action="android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION"
+                android:data="@string/app_package_uri" />
+        </Preference>
     </PreferenceCategory>
 
 </PreferenceScreen>

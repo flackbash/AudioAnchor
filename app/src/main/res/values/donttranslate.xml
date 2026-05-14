@@ -73,6 +73,9 @@
     <string name="settings_notification_backward_button_key" translatable="false">notification_backward_button</string>
     <string name="settings_notification_forward_button_key" translatable="false">notification_forward_button</string>
     <string name="settings_skip_interval" translatable="false">%d s</string>
+    <string name="settings_manage_external_storage_key" translatable="false">manage_external_storage</string>
+    <string name="settings_directory_picker_initial_path_key" translatable="false">directory_picker_initial_path</string>
+    <string name="settings_directory_picker_initial_path_default" translatable="false" />
 
     <!-- Intent data Strings -->
     <string name="album_id" translatable="false">album_id</string>
