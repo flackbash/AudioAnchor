@@ -215,7 +215,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Handle Intent action from MediaSession.TransportControls
         handleIncomingActions(intent);
 
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override
@@ -711,6 +711,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 startActivityIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        // Set up intent to stop service when notification is removed
+        Intent intent = new Intent(this, MediaPlayerService.class);
+        intent.setAction(BROADCAST_REMOVE_NOTIFICATION);
+
+        PendingIntent deleteIntent = PendingIntent.getService(
+                this,
+                10, // Use a unique request code
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         // Create a new notification
         mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 // Hide the timestamp
@@ -739,18 +749,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .addAction(R.drawable.ic_media_bookmark, getString(R.string.button_bookmark), playbackAction(4))
                 .addAction(skipBackwardImageResource, getString(R.string.button_backward), playbackAction(3))
                 .addAction(playPauseImageResource, playPauseTitle, playPauseAction)
-                .addAction(skipForwardImageResource, getString(R.string.button_forward), playbackAction(2));
-
-        // Set intent that is launched on delete notification for Android version < 13
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            // Set up intent to stop service when notification is removed
-            Intent intent = new Intent(BROADCAST_REMOVE_NOTIFICATION);
-            PendingIntent deleteIntent = PendingIntent.getBroadcast(this.getApplicationContext(),
-                    0,
-                    intent,
-                    PendingIntent.FLAG_IMMUTABLE);
-            mNotificationBuilder.setDeleteIntent(deleteIntent);
-        }
+                .addAction(skipForwardImageResource, getString(R.string.button_forward), playbackAction(2))
+                .setDeleteIntent(deleteIntent);
 
         Notification notification = mNotificationBuilder.build();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -806,6 +806,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             play();
         } else if (actionString.equalsIgnoreCase(ACTION_PAUSE)) {
             pause();
+        } else if (actionString.equalsIgnoreCase(ACTION_STOP) || actionString.equalsIgnoreCase(BROADCAST_REMOVE_NOTIFICATION)) {
+            Log.e("MediaPlayerService", "Action Stop/Remove received via Intent");
+            stopForeground(true);
+            stopSelf();
         } else if (actionString.equalsIgnoreCase(ACTION_TOGGLE_PAUSE)) {
             if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
             else play();
@@ -815,7 +819,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 skipToNextAudioFile();
             } else {
                 forward(skipInterval);
-                setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                // Update the playback state to reflect the new position in the progress bar
+                int state = isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+                setMediaPlaybackState(state);
             }
         } else if (actionString.equalsIgnoreCase(ACTION_BACKWARD)) {
             int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_backward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
@@ -823,7 +829,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 skipToPreviousAudioFile();
             } else {
                 backward(skipInterval);
-                setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                // Update the playback state to reflect the new position in the progress bar
+                int state = isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+                setMediaPlaybackState(state);
             }
         } else if (actionString.equalsIgnoreCase(ACTION_BOOKMARK)) {
             setBookmark();
@@ -892,7 +900,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
             buildNotification();
         }
-        // stopForeground(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_DETACH);
+        } else {
+            stopForeground(false);
+        }
     }
 
     /*
@@ -920,7 +932,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean wasPlaying = mMediaPlayer != null && mMediaPlayer.isPlaying();
         updateAudioFileStatus();
         initNextAudioFile();
-        if (wasPlaying) play();
+        if (wasPlaying) {
+            play();
+        } else {
+            // Update the playback state to reflect the new position in the progress bar
+            setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+        }
     }
 
     /*
@@ -930,7 +947,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean wasPlaying = mMediaPlayer != null && mMediaPlayer.isPlaying();
         updateAudioFileStatus();
         initPreviousAudioFile();
-        if (wasPlaying) play();
+        if (wasPlaying) {
+            play();
+        } else {
+            // Update the playback state to reflect the new position in the progress bar
+            setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+        }
     }
 
     /*
@@ -1127,13 +1149,26 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             playbackSpeed = mMediaPlayer.getPlaybackParams().getSpeed();
         }
+
+        // Define all available actions including skip actions
+        long actions = PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY |
+                       PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
+                       PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
+
         if( state == PlaybackStateCompat.STATE_PLAYING ) {
-            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE);
+            playbackstateBuilder.setActions(actions);
             playbackstateBuilder.setState(state,mMediaPlayer.getCurrentPosition(), playbackSpeed);
         } else {
-            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY);
+            playbackstateBuilder.setActions(actions);
             playbackstateBuilder.setState(state, mMediaPlayer.getCurrentPosition(), 0);
         }
+
+        // Add custom actions for Android 16 compatibility
+        // These allow the notification actions to be properly routed to the service
+        playbackstateBuilder.addCustomAction(ACTION_BACKWARD, getString(R.string.button_backward), R.drawable.ic_notification_backward);
+        playbackstateBuilder.addCustomAction(ACTION_FORWARD, getString(R.string.button_forward), R.drawable.ic_notification_forward);
+        playbackstateBuilder.addCustomAction(ACTION_BOOKMARK, getString(R.string.button_bookmark), R.drawable.ic_media_bookmark);
+
         mediaSession.setPlaybackState(playbackstateBuilder.build());
     }
 }

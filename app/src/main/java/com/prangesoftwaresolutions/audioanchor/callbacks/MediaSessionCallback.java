@@ -32,11 +32,13 @@ public class MediaSessionCallback extends MediaSessionCompat.Callback {
     @Override
     public void onSkipToNext() {
         super.onSkipToNext();
+        mService.skipToNextAudioFile();
     }
 
     @Override
     public void onSkipToPrevious() {
         super.onSkipToPrevious();
+        mService.skipToPreviousAudioFile();
     }
 
     @Override
@@ -55,5 +57,14 @@ public class MediaSessionCallback extends MediaSessionCompat.Callback {
     @Override
     public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
         return MediaButtonIntentReceiver.handleIntent(mContext, mediaButtonEvent);
+    }
+
+    @Override
+    public void onCustomAction(String action, android.os.Bundle extras) {
+        super.onCustomAction(action, extras);
+        // Handle custom actions (forward, backward, bookmark)
+        Intent intent = new Intent(mService, MediaPlayerService.class);
+        intent.setAction(action);
+        mService.onStartCommand(intent, 0, 0);
     }
 }
