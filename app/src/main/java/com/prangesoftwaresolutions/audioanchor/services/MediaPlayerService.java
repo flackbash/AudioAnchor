@@ -158,6 +158,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private final ExecutorService mPlayerExecutor = Executors.newSingleThreadExecutor();
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
 
+    // How long to wait after onCompletion() before tearing down the just-finished track and
+    // loading the next one. Fixes https://github.com/praecipitator/AudioAnchor (interruptFix):
+    // calling MediaPlayer.reset() immediately on completion races the framework's own teardown
+    // of the finished track -- confirmed via logcat timestamps to both truncate its last audio
+    // and occasionally throw a spurious MediaPlayer error (what=-38) when the gap is ~20ms.
+    // 50ms consistently avoided both in testing.
+    private final int NEXT_TRACK_WAIT_TIME = 50;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -375,8 +383,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
 
         if (autoplay && !mStopAtEndOfCurrentTrack) {
-            if (!initNextAudioFile(true)) {
+            if (!haveNextAudioFile()) {
                 finishPlaybackAfterCompletion();
+            } else {
+                // play next after a bit
+                Handler handler = new Handler();
+                handler.postDelayed(() -> {
+                    if (!initNextAudioFile(true)) {
+                        finishPlaybackAfterCompletion();
+                    }
+                }, NEXT_TRACK_WAIT_TIME);
             }
         } else {
             if (mStopAtEndOfCurrentTrack) {
@@ -384,6 +400,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             }
             finishPlaybackAfterCompletion();
         }
+    }
+
+    public boolean haveNextAudioFile() {
+        return (mAudioIndex + 1 < mAudioIdQueue.size());
     }
 
     private void finishPlaybackAfterCompletion() {
