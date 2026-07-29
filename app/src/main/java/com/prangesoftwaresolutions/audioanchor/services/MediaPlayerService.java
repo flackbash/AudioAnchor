@@ -64,6 +64,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import static androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC;
+import android.os.Handler;
 
 
 /*
@@ -142,6 +143,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     SleepTimer mSleepTimer;
     SensorManager mSensorManager;
     boolean mStopAtEndOfCurrentTrack = false;
+
+    // Random stuff
+    private final int NEXT_TRACK_WAIT_TIME = 50;
 
     @Override
     public void onCreate() {
@@ -332,17 +336,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
 
         if (autoplay && !mStopAtEndOfCurrentTrack) {
-            playingNext = initNextAudioFile();
+            playingNext = haveNextAudioFile();
         } else if (mStopAtEndOfCurrentTrack) {
             terminateSleepTimer();
         }
 
         if (playingNext) {
-            play();
+            // play next after a bit
+            Handler handler = new Handler();
+            handler.postDelayed(this::playNextFile, NEXT_TRACK_WAIT_TIME);
         } else {
             // Notify the play activity that the playback was paused
             sendPlayStatusResult(MSG_STOP);
-
             removeNotification();
 
             // Send broadcast that the notification was removed
@@ -353,6 +358,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
+    public void playNextFile() {
+        if(!initNextAudioFile()) {
+            return;
+        }
+        play();
+    }
+
+    public boolean haveNextAudioFile() {
+        return (mAudioIndex + 1 < mAudioIdQueue.size());
+    }
     public boolean initNextAudioFile() {
         boolean autoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
         if (mAudioIndex + 1 < mAudioIdQueue.size()) {
