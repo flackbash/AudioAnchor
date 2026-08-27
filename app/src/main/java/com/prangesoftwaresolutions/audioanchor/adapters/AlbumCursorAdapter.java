@@ -117,6 +117,10 @@ public class AlbumCursorAdapter extends CursorAdapter {
         } else {
             deletableIV.setVisibility(View.GONE);
         }
+
+        // Show the pin indicator if the album is pinned
+        ImageView pinnedIV = view.findViewById(R.id.album_item_pinned_img);
+        pinnedIV.setVisibility(album.isPinned() ? View.VISIBLE : View.GONE);
     }
 
     private void setEmptyCoverImage(ImageView iv, int reqSize) {

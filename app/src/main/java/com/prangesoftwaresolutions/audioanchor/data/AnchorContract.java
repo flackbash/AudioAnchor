@@ -48,6 +48,7 @@ public class AnchorContract {
         static final String COLUMN_PATH = "path";
         public static final String COLUMN_TIME = "time";
         public static final String COLUMN_COMPLETED_TIME = "completed_time";
+        public static final String COLUMN_PINNED = "pinned";
     }
 
     // Class for the Album Table
@@ -72,6 +73,7 @@ public class AnchorContract {
         public static final String COLUMN_DIRECTORY = "directory";
         public static final String COLUMN_LAST_PLAYED = "last_played";
         public static final String COLUMN_LAST_PLAYED_TIMESTAMP = "last_played_timestamp";
+        public static final String COLUMN_PINNED = "pinned";
     }
 
     // Class for the Bookmark Table

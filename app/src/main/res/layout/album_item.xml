@@ -24,6 +24,7 @@
             android:id="@+id/audio_storage_item_title"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_toStartOf="@id/album_item_pinned_img"
             android:padding="@dimen/small_margin"
             android:text="@string/album"
             android:textSize="@dimen/big_font_size"
@@ -49,6 +50,17 @@
             android:layout_alignParentBottom="true"
             android:src="@drawable/ic_deletable"
             app:tint="?colorDeletableIcon"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/album_item_pinned_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:padding="@dimen/small_margin"
+            android:src="@drawable/ic_pin"
+            app:tint="?colorAccent"
             android:visibility="gone" />
     </RelativeLayout>
 

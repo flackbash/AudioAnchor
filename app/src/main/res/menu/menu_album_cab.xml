@@ -22,4 +22,14 @@
         android:title="@string/mark_as_completed"
         android:orderInCategory="103"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_pin"
+        android:title="@string/pin"
+        android:orderInCategory="104"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_unpin"
+        android:title="@string/unpin"
+        android:orderInCategory="105"
+        app:showAsAction="never"/>
 </menu>

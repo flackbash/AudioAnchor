@@ -205,6 +205,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         }
                         actionMode.finish();
                         return true;
+                    case R.id.menu_pin:
+                        for (long albumId : mSelectedAlbums) {
+                            DBAccessUtils.pinAlbum(MainActivity.this, albumId, true);
+                        }
+                        actionMode.finish();
+                        return true;
+                    case R.id.menu_unpin:
+                        for (long albumId : mSelectedAlbums) {
+                            DBAccessUtils.pinAlbum(MainActivity.this, albumId, false);
+                        }
+                        actionMode.finish();
+                        return true;
                     default:
                         return false;
                 }
@@ -317,6 +329,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
             sortOrder += titleTiebreaker;
         }
+        // Pinned albums always float to the top, regardless of the selected sort order.
+        sortOrder = AnchorContract.AlbumEntry.COLUMN_PINNED + " DESC, " + sortOrder;
         return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, Album.getColumns(), null, null, sortOrder);
     }
 

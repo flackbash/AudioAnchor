@@ -103,6 +103,11 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         } else {
             deletableIV.setVisibility(View.GONE);
         }
+
+        // Show the pin indicator if the track is pinned
+        ImageView pinnedIV = view.findViewById(R.id.audio_file_item_pinned_img);
+        boolean pinned = cursor.getInt(cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_PINNED)) != 0;
+        pinnedIV.setVisibility(pinned ? View.VISIBLE : View.GONE);
     }
 
     /*

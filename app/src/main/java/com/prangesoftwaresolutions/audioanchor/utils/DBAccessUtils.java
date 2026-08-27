@@ -167,4 +167,28 @@ public class DBAccessUtils {
         context.getContentResolver().update(uri, values, null, null);
         return true;
     }
+
+
+    /*
+     * Pin or unpin the album with the specified id so that it is always sorted to the top of
+     * the album list, regardless of the selected sort order
+     */
+    public static void pinAlbum(Context context, long albumId, boolean pinned) {
+        Uri uri = ContentUris.withAppendedId(AnchorContract.AlbumEntry.CONTENT_URI, albumId);
+        ContentValues values = new ContentValues();
+        values.put(AnchorContract.AlbumEntry.COLUMN_PINNED, pinned ? 1 : 0);
+        context.getContentResolver().update(uri, values, null, null);
+    }
+
+
+    /*
+     * Pin or unpin the track with the specified id so that it is always sorted to the top of
+     * its album's track list
+     */
+    public static void pinTrack(Context context, long trackId, boolean pinned) {
+        Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, trackId);
+        ContentValues values = new ContentValues();
+        values.put(AnchorContract.AudioEntry.COLUMN_PINNED, pinned ? 1 : 0);
+        context.getContentResolver().update(uri, values, null, null);
+    }
 }

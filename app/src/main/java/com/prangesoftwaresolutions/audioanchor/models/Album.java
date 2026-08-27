@@ -20,6 +20,7 @@ public class Album {
     private String mCoverPath;
     private long mLastPlayedID;
     private long mLastPlayedTimestamp = -1;
+    private boolean mPinned = false;
 
     private static final String[] mAlbumColumns = new String[]{
             AnchorContract.AlbumEntry._ID,
@@ -27,16 +28,18 @@ public class Album {
             AnchorContract.AlbumEntry.COLUMN_DIRECTORY,
             AnchorContract.AlbumEntry.COLUMN_COVER_PATH,
             AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED,
-            AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP
+            AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP,
+            AnchorContract.AlbumEntry.COLUMN_PINNED
     };
 
-    public Album(long id, String title, Directory directory, String coverPath, long lastPlayed, long lastPlayedTimestamp) {
+    public Album(long id, String title, Directory directory, String coverPath, long lastPlayed, long lastPlayedTimestamp, boolean pinned) {
         mID = id;
         mTitle = title;
         mDirectory = directory;
         mCoverPath = coverPath;
         mLastPlayedID = lastPlayed;
         mLastPlayedTimestamp = lastPlayedTimestamp;
+        mPinned = pinned;
     }
 
     public Album(String title, Directory directory, String coverPath) {
@@ -105,6 +108,14 @@ public class Album {
         return mLastPlayedTimestamp;
     }
 
+    public void setPinned(boolean pinned) {
+        mPinned = pinned;
+    }
+
+    public boolean isPinned() {
+        return mPinned;
+    }
+
     static public String[] getColumns() {
         return mAlbumColumns;
     }
@@ -169,6 +180,7 @@ public class Album {
         values.put(AnchorContract.AlbumEntry.COLUMN_COVER_PATH, mCoverPath);
         values.put(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED, mLastPlayedID);
         values.put(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP, mLastPlayedTimestamp);
+        values.put(AnchorContract.AlbumEntry.COLUMN_PINNED, mPinned ? 1 : 0);
         return values;
     }
 
@@ -239,6 +251,7 @@ public class Album {
         if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP))) {
             lastPlayedTimestamp = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP));
         }
-        return new Album(id, title, directory, coverPath, lastPlayed, lastPlayedTimestamp);
+        boolean pinned = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_PINNED)) != 0;
+        return new Album(id, title, directory, coverPath, lastPlayed, lastPlayedTimestamp, pinned);
     }
 }

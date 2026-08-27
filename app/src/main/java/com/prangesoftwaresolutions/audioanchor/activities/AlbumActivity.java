@@ -242,6 +242,18 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                         }
                         actionMode.finish();
                         return true;
+                    case R.id.menu_pin:
+                        for (long trackId : mSelectedTracks) {
+                            DBAccessUtils.pinTrack(AlbumActivity.this, trackId, true);
+                        }
+                        actionMode.finish();
+                        return true;
+                    case R.id.menu_unpin:
+                        for (long trackId : mSelectedTracks) {
+                            DBAccessUtils.pinTrack(AlbumActivity.this, trackId, false);
+                        }
+                        actionMode.finish();
+                        return true;
                     default:
                         return false;
                 }
@@ -331,11 +343,14 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         String[] projection = {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_PINNED,
         };
 
         String sel = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbum.getID())};
-        String sortOrder = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
+        // Pinned tracks always float to the top of the track list.
+        String sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_PINNED + " DESC, "
+                + "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
 
         return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
     }
