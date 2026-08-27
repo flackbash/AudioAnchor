@@ -21,7 +21,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.PersistableBundle;
 
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
@@ -115,6 +114,18 @@ public class PlayActivity extends AppCompatActivity {
 
     // Shared preferences
     SharedPreferences mSharedPreferences;
+
+    // Tracks whichever of the sleep timer / goto / bookmark dialogs is currently open, and its
+    // live EditText fields, so its in-progress input can be restored after a configuration
+    // change (e.g. screen rotation) destroys and recreates the activity instead of being
+    // silently discarded when the dialog's window is torn down.
+    private static final int DIALOG_NONE = 0;
+    private static final int DIALOG_SLEEP_TIMER = 1;
+    private static final int DIALOG_GOTO = 2;
+    private static final int DIALOG_BOOKMARK = 3;
+    private int mOpenDialogType = DIALOG_NONE;
+    private EditText[] mOpenDialogFields;
+    private Uri mOpenDialogBookmarkUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -411,15 +422,44 @@ public class PlayActivity extends AppCompatActivity {
 
 
     @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putBoolean("serviceStatus", serviceBound);
+
+        if (mOpenDialogType != DIALOG_NONE && mOpenDialogFields != null) {
+            outState.putInt("openDialogType", mOpenDialogType);
+            String[] values = new String[mOpenDialogFields.length];
+            for (int i = 0; i < mOpenDialogFields.length; i++) {
+                values[i] = mOpenDialogFields[i].getText().toString();
+            }
+            outState.putStringArray("openDialogValues", values);
+            if (mOpenDialogBookmarkUri != null) {
+                outState.putParcelable("openDialogBookmarkUri", mOpenDialogBookmarkUri);
+            }
+        }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         serviceBound = savedInstanceState.getBoolean("serviceStatus");
+
+        int dialogType = savedInstanceState.getInt("openDialogType", DIALOG_NONE);
+        if (dialogType != DIALOG_NONE) {
+            String[] values = savedInstanceState.getStringArray("openDialogValues");
+            switch (dialogType) {
+                case DIALOG_SLEEP_TIMER:
+                    showSleepTimerDialog(values);
+                    break;
+                case DIALOG_GOTO:
+                    showGoToDialog(values);
+                    break;
+                case DIALOG_BOOKMARK:
+                    Uri uri = savedInstanceState.getParcelable("openDialogBookmarkUri");
+                    showSetBookmarkDialog(uri, values);
+                    break;
+            }
+        }
     }
 
     // Binding this Client to the AudioPlayer Service
@@ -609,10 +649,14 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     void showSleepTimerDialog() {
+        showSleepTimerDialog(null);
+    }
+
+    void showSleepTimerDialog(String[] restoredValues) {
         // Setup Views
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_sleep_timer, null);
         final EditText setTime = dialogView.findViewById(R.id.sleep_timer_set_time);
-        setTime.setText(String.valueOf(mLastSleepTime));
+        setTime.setText(restoredValues != null ? restoredValues[0] : String.valueOf(mLastSleepTime));
         setTime.setSelection(setTime.getText().length());
         final Button quickButton0 = dialogView.findViewById(R.id.quick_button_0);
         final Button quickButton1 = dialogView.findViewById(R.id.quick_button_1);
@@ -664,6 +708,13 @@ public class PlayActivity extends AppCompatActivity {
         setQuickButtonClickListener(quickButton3, alertDialog);
         setQuickButtonClickListener(quickButton4, alertDialog);
 
+        mOpenDialogType = DIALOG_SLEEP_TIMER;
+        mOpenDialogFields = new EditText[]{setTime};
+        alertDialog.setOnDismissListener(dialog -> {
+            mOpenDialogType = DIALOG_NONE;
+            mOpenDialogFields = null;
+        });
+
         alertDialog.show();
     }
 
@@ -698,6 +749,10 @@ public class PlayActivity extends AppCompatActivity {
      * Show a dialog that let's the user specify a position to which to jump to
      */
     void showGoToDialog() {
+        showGoToDialog(null);
+    }
+
+    void showGoToDialog(String[] restoredValues) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_goto, null);
         builder.setView(dialogView);
@@ -706,11 +761,17 @@ public class PlayActivity extends AppCompatActivity {
         final EditText gotoMinutes = dialogView.findViewById(R.id.goto_minutes);
         final EditText gotoSeconds = dialogView.findViewById(R.id.goto_seconds);
 
-        int currPos = getAudioCompletedTime();
-        String[] currPosArr = Utils.formatTime(currPos, 3600000).split(":");
-        gotoHours.setText(currPosArr[0]);
-        gotoMinutes.setText(currPosArr[1]);
-        gotoSeconds.setText(currPosArr[2]);
+        if (restoredValues != null) {
+            gotoHours.setText(restoredValues[0]);
+            gotoMinutes.setText(restoredValues[1]);
+            gotoSeconds.setText(restoredValues[2]);
+        } else {
+            int currPos = getAudioCompletedTime();
+            String[] currPosArr = Utils.formatTime(currPos, 3600000).split(":");
+            gotoHours.setText(currPosArr[0]);
+            gotoMinutes.setText(currPosArr[1]);
+            gotoSeconds.setText(currPosArr[2]);
+        }
 
         builder.setTitle(R.string.go_to);
         builder.setMessage(R.string.dialog_msg_goto);
@@ -736,6 +797,14 @@ public class PlayActivity extends AppCompatActivity {
 
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
+
+        mOpenDialogType = DIALOG_GOTO;
+        mOpenDialogFields = new EditText[]{gotoHours, gotoMinutes, gotoSeconds};
+        alertDialog.setOnDismissListener(dialog -> {
+            mOpenDialogType = DIALOG_NONE;
+            mOpenDialogFields = null;
+        });
+
         alertDialog.show();
     }
 
@@ -759,6 +828,10 @@ public class PlayActivity extends AppCompatActivity {
      * is updated.
      */
     void showSetBookmarkDialog(final Uri uri) {
+        showSetBookmarkDialog(uri, null);
+    }
+
+    void showSetBookmarkDialog(final Uri uri, String[] restoredValues) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_bookmark, null);
         builder.setView(dialogView);
@@ -775,17 +848,24 @@ public class PlayActivity extends AppCompatActivity {
             builder.setTitle(R.string.edit_bookmark);
             // Get the bookmark
             bookmark = Bookmark.getBookmarkByID(this, bookmarkID);
-            bookmarkTitleET.setText(bookmark.getTitle());
+            bookmarkTitleET.setText(restoredValues != null ? restoredValues[0] : bookmark.getTitle());
         } else {
             builder.setTitle(R.string.set_bookmark);
             bookmark = new Bookmark("", getAudioCompletedTime(), mAudioFile.getID());
+            if (restoredValues != null) bookmarkTitleET.setText(restoredValues[0]);
         }
 
-        // Set the edit text views to the current or bookmark position
-        String[] currPosArr = Utils.formatTime(bookmark.getPosition(), 3600000).split(":");
-        gotoHours.setText(currPosArr[0]);
-        gotoMinutes.setText(currPosArr[1]);
-        gotoSeconds.setText(currPosArr[2]);
+        if (restoredValues != null) {
+            gotoHours.setText(restoredValues[1]);
+            gotoMinutes.setText(restoredValues[2]);
+            gotoSeconds.setText(restoredValues[3]);
+        } else {
+            // Set the edit text views to the current or bookmark position
+            String[] currPosArr = Utils.formatTime(bookmark.getPosition(), 3600000).split(":");
+            gotoHours.setText(currPosArr[0]);
+            gotoMinutes.setText(currPosArr[1]);
+            gotoSeconds.setText(currPosArr[2]);
+        }
 
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
             // User clicked the OK button so save the bookmark
@@ -839,6 +919,16 @@ public class PlayActivity extends AppCompatActivity {
 
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
+
+        mOpenDialogType = DIALOG_BOOKMARK;
+        mOpenDialogFields = new EditText[]{bookmarkTitleET, gotoHours, gotoMinutes, gotoSeconds};
+        mOpenDialogBookmarkUri = uri;
+        alertDialog.setOnDismissListener(dialog -> {
+            mOpenDialogType = DIALOG_NONE;
+            mOpenDialogFields = null;
+            mOpenDialogBookmarkUri = null;
+        });
+
         alertDialog.show();
     }
 

@@ -5,9 +5,13 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center">
 
@@ -98,5 +102,7 @@
             android:paddingBottom="@dimen/small_margin"
             android:text="@string/copyright" />
     </LinearLayout>
+
+    </ScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

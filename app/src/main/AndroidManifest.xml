@@ -30,15 +30,13 @@
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true">
         <activity
-            android:name=".activities.DirectoryActivity"
-            android:screenOrientation="portrait">
+            android:name=".activities.DirectoryActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.prangesoftwaresolutions.audioanchor.activities.MainActivity" />
         </activity>
         <activity
             android:name=".activities.MainActivity"
-            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -53,8 +51,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".activities.AlbumActivity"
-            android:screenOrientation="portrait">
+            android:name=".activities.AlbumActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.prangesoftwaresolutions.audioanchor.activities.MainActivity" />
@@ -62,15 +59,13 @@
         <activity
             android:name=".activities.PlayActivity"
             android:clearTaskOnLaunch="true"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait">
+            android:launchMode="singleTask">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.prangesoftwaresolutions.audioanchor.activities.AlbumActivity" />
         </activity>
         <activity
-            android:name=".activities.SettingsActivity"
-            android:screenOrientation="portrait">
+            android:name=".activities.SettingsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.prangesoftwaresolutions.audioanchor.activities.MainActivity" />
