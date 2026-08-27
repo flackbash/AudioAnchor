@@ -237,7 +237,12 @@ public class Album {
         return albums;
     }
 
-    private static Album getAlbumFromPositionedCursor(Context context, Cursor c) {
+    /*
+     * Build an Album from a cursor that is already positioned at a row containing (at least)
+     * the columns in getColumns(). Public so callers that already hold such a cursor (e.g. a
+     * ListView adapter) can build an Album without an extra redundant DB round trip.
+     */
+    public static Album getAlbumFromPositionedCursor(Context context, Cursor c) {
         long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
         String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE));
         long directoryId = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DIRECTORY));

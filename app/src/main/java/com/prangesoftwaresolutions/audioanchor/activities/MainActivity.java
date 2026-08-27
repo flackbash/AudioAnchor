@@ -331,7 +331,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         // Pinned albums always float to the top, regardless of the selected sort order.
         sortOrder = AnchorContract.AlbumEntry.COLUMN_PINNED + " DESC, " + sortOrder;
-        return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, Album.getColumns(), null, null, sortOrder);
+
+        // Compute each album's total/completed time as part of this single query (correlated
+        // subqueries over audio_files), instead of AlbumCursorAdapter issuing a separate
+        // per-row DB query for every visible row on every scroll -- that was a major source of
+        // scroll jank with many albums.
+        String[] baseColumns = Album.getColumns();
+        String[] projection = new String[baseColumns.length + 2];
+        System.arraycopy(baseColumns, 0, projection, 0, baseColumns.length);
+        projection[baseColumns.length] = "(SELECT IFNULL(SUM(" + AnchorContract.AudioEntry.COLUMN_TIME + "), 0) FROM "
+                + AnchorContract.AudioEntry.TABLE_NAME + " WHERE " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM
+                + " = " + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID + ") AS " + AlbumCursorAdapter.COLUMN_TOTAL_TIME;
+        projection[baseColumns.length + 1] = "(SELECT IFNULL(SUM(" + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME + "), 0) FROM "
+                + AnchorContract.AudioEntry.TABLE_NAME + " WHERE " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM
+                + " = " + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID + ") AS " + AlbumCursorAdapter.COLUMN_COMPLETED_TIME;
+
+        return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, null, null, sortOrder);
     }
 
     @Override
@@ -415,6 +430,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (mHandler != null) {
             mHandler.removeCallbacks(mRunnable);
         }
+
+        mCursorAdapter.shutdown();
 
         super.onDestroy();
     }
