@@ -293,11 +293,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String sortOrderPref = mSharedPreferences.getString(getString(R.string.settings_sort_order_key), getString(R.string.settings_sort_order_default));
-        String sortOrder = "";
-        if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_directory_value))) {
-            sortOrder += AnchorContract.AlbumEntry.COLUMN_DIRECTORY + " ASC, ";
+        // Tiebreaker used whenever albums compare equal on the primary sort key, so that
+        // e.g. not-started or completed albums keep a stable, predictable relative order.
+        String titleTiebreaker = "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
+        String sortOrder;
+        if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_progress_value))) {
+            // Correlated subquery computing each album's completion fraction (0 for albums
+            // with no tracks or zero total duration) from the audio_files table.
+            String progressExpr = "(SELECT CASE WHEN IFNULL(SUM(" + AnchorContract.AudioEntry.COLUMN_TIME + "), 0) = 0 THEN 0 "
+                    + "ELSE CAST(SUM(" + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME + ") AS REAL) / SUM(" + AnchorContract.AudioEntry.COLUMN_TIME + ") END "
+                    + "FROM " + AnchorContract.AudioEntry.TABLE_NAME
+                    + " WHERE " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM
+                    + " = " + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID + ")";
+            sortOrder = progressExpr + " ASC, " + titleTiebreaker;
+        } else {
+            sortOrder = "";
+            if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_directory_value))) {
+                sortOrder += AnchorContract.AlbumEntry.COLUMN_DIRECTORY + " ASC, ";
+            }
+            sortOrder += titleTiebreaker;
         }
-        sortOrder += "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
         return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, Album.getColumns(), null, null, sortOrder);
     }
 

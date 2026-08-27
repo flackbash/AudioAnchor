@@ -54,6 +54,7 @@
     <string name="settings_vibrate_shake_reset_default" translatable="false">true</string>
     <string name="settings_sort_order_by_title_value" translatable="false">sort_by_title</string>
     <string name="settings_sort_order_by_directory_value" translatable="false">sort_by_directory</string>
+    <string name="settings_sort_order_by_progress_value" translatable="false">sort_by_progress</string>
     <string name="settings_sort_order_key" translatable="false">settings_sort_order_album</string>
     <string name="settings_sort_order_default" translatable="false">@string/settings_sort_order_by_directory_value</string>
     <string name="settings_add_last_play_position_bookmark_key" translatable="false">settings_last_play_position_bookmark</string>

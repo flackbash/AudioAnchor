@@ -3,11 +3,13 @@
     <string-array name="sort_order_value_array">
         <item>@string/settings_sort_order_by_directory_value</item>
         <item>@string/settings_sort_order_by_title_value</item>
+        <item>@string/settings_sort_order_by_progress_value</item>
     </string-array>
 
     <string-array name="sort_order_label_array">
         <item>@string/settings_sort_order_by_directory_label</item>
         <item>@string/settings_sort_order_by_title_label</item>
+        <item>@string/settings_sort_order_by_progress_label</item>
     </string-array>
 
     <string-array name="dark_theme_value_array">

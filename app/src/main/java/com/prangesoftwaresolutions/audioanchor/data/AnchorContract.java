@@ -63,7 +63,7 @@ public class AnchorContract {
         static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ALBUM_DISTINCT;
 
-        static final String TABLE_NAME = "albums";
+        public static final String TABLE_NAME = "albums";
 
         // The Columns
         public static final String _ID = BaseColumns._ID;
