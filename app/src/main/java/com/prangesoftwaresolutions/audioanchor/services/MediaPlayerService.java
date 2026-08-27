@@ -82,7 +82,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     public static final String SERVICE_PLAY_STATUS_CHANGE = "com.prangesoftwaresolutions.audioanchor.SERVICE_PLAY_STATUS_CHANGE";
     public static final String SERVICE_MESSAGE_PLAY_STATUS = "com.prangesoftwaresolutions.audioanchor.SERVICE_MESSAGE_PLAYING";
-    public static final String SERVICE_NEW_AUDIO = "com.prangesoftwaresolutions.audioanchor.SERVICE_PLAY_STATUS_CHANGE";
+    public static final String SERVICE_NEW_AUDIO = "com.prangesoftwaresolutions.audioanchor.SERVICE_NEW_AUDIO";
     public static final String SERVICE_MESSAGE_NEW_AUDIO = "com.prangesoftwaresolutions.audioanchor.SERVICE_MESSAGE_NEW_AUDIO";
     public static final String MSG_PLAY = "com.prangesoftwaresolutions.audioanchor.SERVICE_PLAY";
     public static final String MSG_PAUSE = "com.prangesoftwaresolutions.audioanchor.SERVICE_PAUSE";
@@ -194,16 +194,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 } else {
                     stopForeground(true);
                     stopSelf();
+                    return START_STICKY;
                 }
             } catch (NullPointerException e) {
                 stopForeground(true);
                 stopSelf();
+                return START_STICKY;
             }
         }
 
         if (!requestAudioFocus()) {
             stopForeground(true);
             stopSelf();
+            return START_STICKY;
         }
 
         if (mediaSession == null) {
@@ -436,7 +439,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // is likely to resume
                 Log.e("MediaPlayerService", "Audiofocus loss transient");
 
-                if (mMediaPlayer.isPlaying()) {
+                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
                     pauseDueToAudioInterruption();
                 }
                 break;
@@ -444,7 +447,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
                 Log.e("MediaPlayerService", "Audiofocus loss can duck");
-                if (mMediaPlayer.isPlaying()) {
+                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
                     boolean duckAudio = mSharedPreferences.getBoolean(getString(R.string.settings_duck_audio_key), Boolean.getBoolean(getString(R.string.settings_duck_audio_default)));
                     if (duckAudio) {
                         setVolume(0.1f);

@@ -166,7 +166,6 @@ public class Migrator {
                     proj, null, null, null);
             if (c != null) {
                 if (c.getCount() > 0) {
-                    c.moveToFirst();
                     while (c.moveToNext()) {
                         String oldCoverPath = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
                         int id = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
