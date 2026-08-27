@@ -22,7 +22,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "audio_anchor.db";
 
     // Database version. Must be incremented when the database schema is changed.
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     private static AnchorDbHelper mInstance = null;
     private final Context mContext;
@@ -49,6 +49,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 + AnchorContract.AlbumEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + AnchorContract.AlbumEntry.COLUMN_DIRECTORY + " INTEGER, "
                 + AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED + " INTEGER, "
+                + AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " INTEGER, "
                 + AnchorContract.AlbumEntry.COLUMN_COVER_PATH + " TEXT);";
 
         // Create a String that contains the SQL statement to create the bookmark table
@@ -80,6 +81,19 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                     + AnchorContract.BookmarkEntry.COLUMN_POSITION + " INTEGER, "
                     + AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + " INTEGER);";
             db.execSQL(SQL_CREATE_BOOKMARK_TABLE);
+        }
+        // NOTE: this block must run before the "i < 3" block below, even though it upgrades to
+        // a later schema version. The "i < 3" block populates album rows via getAllAlbums()
+        // and album.getContentValues(), both of which reference every column in
+        // Album.getColumns()/getContentValues() -- including last_played_timestamp. If that
+        // column were added after those calls run, they would fail with
+        // "no such column: last_played_timestamp" on databases upgrading from version 1 or 2.
+        if (i < 4) {
+            // Add last_played_timestamp column to album table. Existing rows get NULL (i.e.
+            // "never played"), since no per-album play timestamp was ever recorded before this
+            // version -- there is nothing to backfill it with. No existing data is touched or lost.
+            String SQL_ADD_LAST_PLAYED_TIMESTAMP_COLUMN = "ALTER TABLE " + AnchorContract.AlbumEntry.TABLE_NAME + " ADD COLUMN " + AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " INTEGER";
+            db.execSQL(SQL_ADD_LAST_PLAYED_TIMESTAMP_COLUMN);
         }
         if (i < 3) {
             // Create directory table
@@ -148,7 +162,11 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
             if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {
                 lastPlayed = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED));
             }
-            Album album = new Album(id, title, directory, coverPath, lastPlayed);
+            long lastPlayedTimestamp = -1;
+            if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP))) {
+                lastPlayedTimestamp = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP));
+            }
+            Album album = new Album(id, title, directory, coverPath, lastPlayed, lastPlayedTimestamp);
             albums.add(album);
         }
         c.close();

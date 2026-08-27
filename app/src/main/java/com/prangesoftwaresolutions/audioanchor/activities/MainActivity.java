@@ -306,6 +306,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     + " WHERE " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM
                     + " = " + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID + ")";
             sortOrder = progressExpr + " ASC, " + titleTiebreaker;
+        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_last_played_value))) {
+            // Most recently played first. Albums that were never played have a NULL
+            // last_played_timestamp, which SQLite already sorts last in a DESC ordering.
+            sortOrder = AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " DESC, " + titleTiebreaker;
         } else {
             sortOrder = "";
             if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_directory_value))) {

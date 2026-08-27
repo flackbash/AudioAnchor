@@ -71,6 +71,7 @@ public class AnchorContract {
         public static final String COLUMN_COVER_PATH = "cover_path";
         public static final String COLUMN_DIRECTORY = "directory";
         public static final String COLUMN_LAST_PLAYED = "last_played";
+        public static final String COLUMN_LAST_PLAYED_TIMESTAMP = "last_played_timestamp";
     }
 
     // Class for the Bookmark Table

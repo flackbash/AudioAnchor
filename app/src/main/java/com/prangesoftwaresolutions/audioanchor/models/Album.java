@@ -19,21 +19,24 @@ public class Album {
     private Directory mDirectory;
     private String mCoverPath;
     private long mLastPlayedID;
+    private long mLastPlayedTimestamp = -1;
 
     private static final String[] mAlbumColumns = new String[]{
             AnchorContract.AlbumEntry._ID,
             AnchorContract.AlbumEntry.COLUMN_TITLE,
             AnchorContract.AlbumEntry.COLUMN_DIRECTORY,
             AnchorContract.AlbumEntry.COLUMN_COVER_PATH,
-            AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED
+            AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED,
+            AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP
     };
 
-    public Album(long id, String title, Directory directory, String coverPath, long lastPlayed) {
+    public Album(long id, String title, Directory directory, String coverPath, long lastPlayed, long lastPlayedTimestamp) {
         mID = id;
         mTitle = title;
         mDirectory = directory;
         mCoverPath = coverPath;
         mLastPlayedID = lastPlayed;
+        mLastPlayedTimestamp = lastPlayedTimestamp;
     }
 
     public Album(String title, Directory directory, String coverPath) {
@@ -92,6 +95,14 @@ public class Album {
 
     public long getLastPlayedID() {
         return mLastPlayedID;
+    }
+
+    public void setLastPlayedTimestamp(long timestamp) {
+        mLastPlayedTimestamp = timestamp;
+    }
+
+    public long getLastPlayedTimestamp() {
+        return mLastPlayedTimestamp;
     }
 
     static public String[] getColumns() {
@@ -157,6 +168,7 @@ public class Album {
         values.put(AnchorContract.AlbumEntry.COLUMN_DIRECTORY, mDirectory.getID());
         values.put(AnchorContract.AlbumEntry.COLUMN_COVER_PATH, mCoverPath);
         values.put(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED, mLastPlayedID);
+        values.put(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP, mLastPlayedTimestamp);
         return values;
     }
 
@@ -223,6 +235,10 @@ public class Album {
         if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {
             lastPlayed = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED));
         }
-        return new Album(id, title, directory, coverPath, lastPlayed);
+        long lastPlayedTimestamp = -1;
+        if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP))) {
+            lastPlayedTimestamp = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP));
+        }
+        return new Album(id, title, directory, coverPath, lastPlayed, lastPlayedTimestamp);
     }
 }

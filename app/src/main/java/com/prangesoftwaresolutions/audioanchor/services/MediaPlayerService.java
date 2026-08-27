@@ -1059,6 +1059,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     void updateLastPlayedAudio() {
         Album album = mActiveAudio.getAlbum();
         album.setLastPlayedID(mActiveAudio.getID());
+        album.setLastPlayedTimestamp(System.currentTimeMillis());
         album.updateInDB(this);
     }
 
