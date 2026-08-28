@@ -21,6 +21,7 @@ public class Album {
     private long mLastPlayedID;
     private long mLastPlayedTimestamp = -1;
     private boolean mPinned = false;
+    private long mDateAdded = -1;
 
     private static final String[] mAlbumColumns = new String[]{
             AnchorContract.AlbumEntry._ID,
@@ -29,10 +30,11 @@ public class Album {
             AnchorContract.AlbumEntry.COLUMN_COVER_PATH,
             AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED,
             AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP,
-            AnchorContract.AlbumEntry.COLUMN_PINNED
+            AnchorContract.AlbumEntry.COLUMN_PINNED,
+            AnchorContract.AlbumEntry.COLUMN_DATE_ADDED
     };
 
-    public Album(long id, String title, Directory directory, String coverPath, long lastPlayed, long lastPlayedTimestamp, boolean pinned) {
+    public Album(long id, String title, Directory directory, String coverPath, long lastPlayed, long lastPlayedTimestamp, boolean pinned, long dateAdded) {
         mID = id;
         mTitle = title;
         mDirectory = directory;
@@ -40,18 +42,21 @@ public class Album {
         mLastPlayedID = lastPlayed;
         mLastPlayedTimestamp = lastPlayedTimestamp;
         mPinned = pinned;
+        mDateAdded = dateAdded;
     }
 
     public Album(String title, Directory directory, String coverPath) {
         mTitle = title;
         mDirectory = directory;
         mCoverPath = coverPath;
+        mDateAdded = System.currentTimeMillis();
     }
 
     public Album(String title, Directory directory) {
         mTitle = title;
         mDirectory = directory;
         updateAlbumCover();
+        mDateAdded = System.currentTimeMillis();
     }
 
     public long getID() {
@@ -114,6 +119,10 @@ public class Album {
 
     public boolean isPinned() {
         return mPinned;
+    }
+
+    public long getDateAdded() {
+        return mDateAdded;
     }
 
     static public String[] getColumns() {
@@ -181,6 +190,17 @@ public class Album {
         values.put(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED, mLastPlayedID);
         values.put(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP, mLastPlayedTimestamp);
         values.put(AnchorContract.AlbumEntry.COLUMN_PINNED, mPinned ? 1 : 0);
+        // mDateAdded is -1 both for a freshly-constructed "new album" (never true here, that
+        // case always sets a real timestamp -- see constructors) and for an album rehydrated
+        // from a pre-existing DB row whose date_added is NULL (unknown). Writing -1 in that
+        // second case would permanently replace the correct "unknown" NULL with a wrong, very-
+        // old-looking real value the next time this album is re-saved (e.g. Synchronizer calling
+        // updateInDB() after a cover art change) -- so preserve NULL explicitly instead.
+        if (mDateAdded == -1) {
+            values.putNull(AnchorContract.AlbumEntry.COLUMN_DATE_ADDED);
+        } else {
+            values.put(AnchorContract.AlbumEntry.COLUMN_DATE_ADDED, mDateAdded);
+        }
         return values;
     }
 
@@ -276,6 +296,10 @@ public class Album {
             lastPlayedTimestamp = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP));
         }
         boolean pinned = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_PINNED)) != 0;
-        return new Album(id, title, directory, coverPath, lastPlayed, lastPlayedTimestamp, pinned);
+        long dateAdded = -1;
+        if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DATE_ADDED))) {
+            dateAdded = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DATE_ADDED));
+        }
+        return new Album(id, title, directory, coverPath, lastPlayed, lastPlayedTimestamp, pinned, dateAdded);
     }
 }

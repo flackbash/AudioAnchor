@@ -336,6 +336,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             // Most recently played first. Albums that were never played have a NULL
             // last_played_timestamp, which SQLite already sorts last in a DESC ordering.
             sortOrder = AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " DESC, " + titleTiebreaker;
+        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_date_added_newest_value))) {
+            // Most recently added first. Albums that predate this feature have a NULL
+            // date_added, which SQLite already sorts last in a DESC ordering.
+            sortOrder = AnchorContract.AlbumEntry.COLUMN_DATE_ADDED + " DESC, " + titleTiebreaker;
+        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_date_added_oldest_value))) {
+            // Least recently added first. NULL date_added sorts first in an ASC ordering here,
+            // i.e. albums that predate this feature are treated as the oldest -- a reasonable
+            // default since they really were already in the library before it was tracked.
+            sortOrder = AnchorContract.AlbumEntry.COLUMN_DATE_ADDED + " ASC, " + titleTiebreaker;
         } else {
             sortOrder = "";
             if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_directory_value))) {

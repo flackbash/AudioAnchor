@@ -1057,10 +1057,22 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * Update the last played column of the album table
      */
     void updateLastPlayedAudio() {
+        long now = System.currentTimeMillis();
+
         Album album = mActiveAudio.getAlbum();
         album.setLastPlayedID(mActiveAudio.getID());
-        album.setLastPlayedTimestamp(System.currentTimeMillis());
+        album.setLastPlayedTimestamp(now);
         album.updateInDB(this);
+
+        // Also record the timestamp on the track itself, for the "sort tracks by last played"
+        // option -- a direct targeted update (like updateAudioFileStatus()'s completed_time
+        // write below) rather than going through AudioFile.getContentValues(), which is only
+        // meant for inserting brand-new tracks.
+        mActiveAudio.setLastPlayedTimestamp(now);
+        Uri audioUri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mActiveAudio.getID());
+        ContentValues audioValues = new ContentValues();
+        audioValues.put(AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP, now);
+        getContentResolver().update(audioUri, audioValues, null, null);
     }
 
     /*

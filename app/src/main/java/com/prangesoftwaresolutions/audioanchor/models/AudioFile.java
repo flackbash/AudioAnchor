@@ -21,29 +21,37 @@ public class AudioFile implements Serializable {
     private final Album mAlbum;
     private int mTime;
     private int mCompletedTime;
+    private long mDateAdded = -1;
+    private long mLastPlayedTimestamp = -1;
 
     private static final String[] mAudioFileColumns = {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_DATE_ADDED,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP
     };
 
-    private AudioFile(Context context, long id, String title, long albumId, int time, int completedTime) {
+    private AudioFile(Context context, long id, String title, long albumId, int time, int completedTime, long dateAdded, long lastPlayedTimestamp) {
         mID = id;
         mTitle = title;
         mAlbum = Album.getAlbumByID(context, albumId);
         mTime = time;
         mCompletedTime = completedTime;
+        mDateAdded = dateAdded;
+        mLastPlayedTimestamp = lastPlayedTimestamp;
     }
 
-    private AudioFile(long id, String title, Album album, int time, int completedTime) {
+    private AudioFile(long id, String title, Album album, int time, int completedTime, long dateAdded, long lastPlayedTimestamp) {
         mID = id;
         mTitle = title;
         mAlbum = album;
         mTime = time;
         mCompletedTime = completedTime;
+        mDateAdded = dateAdded;
+        mLastPlayedTimestamp = lastPlayedTimestamp;
     }
 
     public AudioFile(Context context, String title, long albumId) {
@@ -51,6 +59,7 @@ public class AudioFile implements Serializable {
         mAlbum = Album.getAlbumByID(context, albumId);
         setTimeFromMetadata();
         mCompletedTime = 0;
+        mDateAdded = System.currentTimeMillis();
     }
 
     /*
@@ -63,6 +72,7 @@ public class AudioFile implements Serializable {
         mAlbum = album;
         setTimeFromMetadata();
         mCompletedTime = 0;
+        mDateAdded = System.currentTimeMillis();
     }
 
     public long getID() {
@@ -89,6 +99,18 @@ public class AudioFile implements Serializable {
 
     public int getCompletedTime() {
         return mCompletedTime;
+    }
+
+    public long getDateAdded() {
+        return mDateAdded;
+    }
+
+    public long getLastPlayedTimestamp() {
+        return mLastPlayedTimestamp;
+    }
+
+    public void setLastPlayedTimestamp(long lastPlayedTimestamp) {
+        mLastPlayedTimestamp = lastPlayedTimestamp;
     }
 
     public String getPath() { return mAlbum.getPath() + File.separator + mTitle; }
@@ -127,6 +149,7 @@ public class AudioFile implements Serializable {
         values.put(AnchorContract.AudioEntry.COLUMN_TITLE, mTitle);
         values.put(AnchorContract.AudioEntry.COLUMN_ALBUM, mAlbum.getID());
         values.put(AnchorContract.AudioEntry.COLUMN_TIME, mTime);
+        values.put(AnchorContract.AudioEntry.COLUMN_DATE_ADDED, mDateAdded);
         return values;
     }
 
@@ -235,7 +258,17 @@ public class AudioFile implements Serializable {
         long albumId = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_ALBUM));
         int completedTime = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
         int time = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
-        return new AudioFile(context, id, title, albumId, time, completedTime);
+        long dateAdded = -1;
+        int dateAddedIndex = c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_DATE_ADDED);
+        if (dateAddedIndex != -1 && !c.isNull(dateAddedIndex)) {
+            dateAdded = c.getLong(dateAddedIndex);
+        }
+        long lastPlayedTimestamp = -1;
+        int lastPlayedTimestampIndex = c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP);
+        if (lastPlayedTimestampIndex != -1 && !c.isNull(lastPlayedTimestampIndex)) {
+            lastPlayedTimestamp = c.getLong(lastPlayedTimestampIndex);
+        }
+        return new AudioFile(context, id, title, albumId, time, completedTime, dateAdded, lastPlayedTimestamp);
     }
 
     /*
@@ -247,6 +280,16 @@ public class AudioFile implements Serializable {
         String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TITLE));
         int completedTime = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
         int time = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
-        return new AudioFile(id, title, album, time, completedTime);
+        long dateAdded = -1;
+        int dateAddedIndex = c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_DATE_ADDED);
+        if (dateAddedIndex != -1 && !c.isNull(dateAddedIndex)) {
+            dateAdded = c.getLong(dateAddedIndex);
+        }
+        long lastPlayedTimestamp = -1;
+        int lastPlayedTimestampIndex = c.getColumnIndex(AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP);
+        if (lastPlayedTimestampIndex != -1 && !c.isNull(lastPlayedTimestampIndex)) {
+            lastPlayedTimestamp = c.getLong(lastPlayedTimestampIndex);
+        }
+        return new AudioFile(id, title, album, time, completedTime, dateAdded, lastPlayedTimestamp);
     }
 }

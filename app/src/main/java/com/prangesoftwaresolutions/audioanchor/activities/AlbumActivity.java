@@ -113,12 +113,14 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         long albumId = getIntent().getLongExtra(getString(R.string.album_id), -1);
         mAlbum = Album.getAlbumByID(this, albumId);
 
-        // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
-        getLoaderManager().initLoader(ALBUM_LOADER, null, this);
-
-        // Set up the shared preferences.
+        // Set up the shared preferences. Must happen before initLoader() below, since
+        // initLoader() synchronously calls onCreateLoader(), which now reads the track sort
+        // order preference.
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mShowHiddenFiles = mPrefs.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
+
+        // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
+        getLoaderManager().initLoader(ALBUM_LOADER, null, this);
 
         // Initialize the cursor adapter
         mCursorAdapter = new AudioFileCursorAdapter(this, null);
@@ -350,9 +352,37 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         String sel = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbum.getID())};
-        // Pinned tracks always float to the top of the track list.
-        String sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_PINNED + " DESC, "
-                + "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
+
+        String sortOrderPref = mPrefs.getString(getString(R.string.settings_track_sort_order_key), getString(R.string.settings_track_sort_order_default));
+        // Tiebreaker used whenever tracks compare equal on the primary sort key, so that e.g.
+        // tracks with a tied/missing date_added still come out in a stable, predictable order.
+        String titleTiebreaker = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
+        String sortOrder;
+        if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_date_added_newest_value))) {
+            // Most recently added first. Tracks synced before this feature existed have a NULL
+            // date_added, which SQLite already sorts last in a DESC ordering.
+            sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_DATE_ADDED + " DESC, " + titleTiebreaker;
+        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_date_added_oldest_value))) {
+            // Least recently added first. NULL date_added sorts first in an ASC ordering here,
+            // i.e. tracks that predate this feature are treated as the oldest -- a reasonable
+            // default since they really were already in the library before it was tracked.
+            sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_DATE_ADDED + " ASC, " + titleTiebreaker;
+        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_progress_value))) {
+            // Least progress first (0% at the top). Per-track completion fraction, 0 for tracks
+            // with zero duration rather than dividing by zero.
+            String progressExpr = "CASE WHEN " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME + " = 0 THEN 0 "
+                    + "ELSE CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME + " AS REAL) / " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME + " END";
+            sortOrder = progressExpr + " ASC, " + titleTiebreaker;
+        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_last_played_value))) {
+            // Most recently played first. Tracks that were never played (or predate this
+            // feature) have a NULL last_played_timestamp, which SQLite already sorts last in a
+            // DESC ordering.
+            sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " DESC, " + titleTiebreaker;
+        } else {
+            sortOrder = titleTiebreaker;
+        }
+        // Pinned tracks always float to the top of the track list, regardless of sort order.
+        sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_PINNED + " DESC, " + sortOrder;
 
         return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
     }

@@ -22,7 +22,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "audio_anchor.db";
 
     // Database version. Must be incremented when the database schema is changed.
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 7;
 
     private static AnchorDbHelper mInstance = null;
     private final Context mContext;
@@ -42,7 +42,9 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 + AnchorContract.AudioEntry.COLUMN_PATH + " TEXT, "
                 + AnchorContract.AudioEntry.COLUMN_TIME + " INTEGER DEFAULT 0, "
                 + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME + " INTEGER DEFAULT 0, "
-                + AnchorContract.AudioEntry.COLUMN_PINNED + " INTEGER DEFAULT 0);";
+                + AnchorContract.AudioEntry.COLUMN_PINNED + " INTEGER DEFAULT 0, "
+                + AnchorContract.AudioEntry.COLUMN_DATE_ADDED + " INTEGER, "
+                + AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " INTEGER);";
 
         // Create a String that contains the SQL statement to create the album table
         String SQL_CREATE_ALBUM_TABLE = "CREATE TABLE " + AnchorContract.AlbumEntry.TABLE_NAME + " ("
@@ -52,6 +54,7 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 + AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED + " INTEGER, "
                 + AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " INTEGER, "
                 + AnchorContract.AlbumEntry.COLUMN_PINNED + " INTEGER DEFAULT 0, "
+                + AnchorContract.AlbumEntry.COLUMN_DATE_ADDED + " INTEGER, "
                 + AnchorContract.AlbumEntry.COLUMN_COVER_PATH + " TEXT);";
 
         // Create a String that contains the SQL statement to create the bookmark table
@@ -84,12 +87,13 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                     + AnchorContract.BookmarkEntry.COLUMN_AUDIO_FILE + " INTEGER);";
             db.execSQL(SQL_CREATE_BOOKMARK_TABLE);
         }
-        // NOTE: this block (and the "i < 5" block below it) must run before the "i < 3" block
-        // further down, even though they upgrade to later schema versions. The "i < 3" block
-        // populates album rows via getAllAlbums() and album.getContentValues(), both of which
-        // reference every column in Album.getColumns()/getContentValues() -- including
-        // last_played_timestamp and pinned. If those columns were added after those calls run,
-        // they would fail with "no such column: ..." on databases upgrading from version 1 or 2.
+        // NOTE: this block (and the "i < 5" and "i < 7" blocks below it) must run before the
+        // "i < 3" block further down, even though they upgrade to later schema versions. The
+        // "i < 3" block populates album rows via getAllAlbums() and album.getContentValues(),
+        // both of which reference every column in Album.getColumns()/getContentValues() --
+        // including last_played_timestamp, pinned, and date_added. If those columns were added
+        // after those calls run, they would fail with "no such column: ..." on databases
+        // upgrading from version 1 or 2.
         if (i < 4) {
             // Add last_played_timestamp column to album table. Existing rows get NULL (i.e.
             // "never played"), since no per-album play timestamp was ever recorded before this
@@ -104,6 +108,27 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
             db.execSQL(SQL_ADD_ALBUM_PINNED_COLUMN);
             String SQL_ADD_AUDIO_FILE_PINNED_COLUMN = "ALTER TABLE " + AnchorContract.AudioEntry.TABLE_NAME + " ADD COLUMN " + AnchorContract.AudioEntry.COLUMN_PINNED + " INTEGER DEFAULT 0";
             db.execSQL(SQL_ADD_AUDIO_FILE_PINNED_COLUMN);
+        }
+        if (i < 6) {
+            // Add date_added column to the audio file table so tracks can be sorted by when they
+            // were added to the library. Existing rows get NULL, since their real add time was
+            // never recorded and there is nothing truthful to backfill it with -- the sort order
+            // in AlbumActivity treats NULL consistently (sorts first when showing oldest-first,
+            // last when showing newest-first). No existing data is touched or lost.
+            String SQL_ADD_AUDIO_FILE_DATE_ADDED_COLUMN = "ALTER TABLE " + AnchorContract.AudioEntry.TABLE_NAME + " ADD COLUMN " + AnchorContract.AudioEntry.COLUMN_DATE_ADDED + " INTEGER";
+            db.execSQL(SQL_ADD_AUDIO_FILE_DATE_ADDED_COLUMN);
+        }
+        if (i < 7) {
+            // Add date_added to the album table (so albums can be sorted by when they were
+            // added) and last_played_timestamp to the audio file table (so tracks can be sorted
+            // by when they were last played, mirroring the existing per-album last-played sort).
+            // Existing rows get NULL for both -- there is nothing truthful to backfill them with,
+            // and the sort order in MainActivity/AlbumActivity treats NULL consistently (sorts
+            // first/last depending on direction). No existing data is touched or lost.
+            String SQL_ADD_ALBUM_DATE_ADDED_COLUMN = "ALTER TABLE " + AnchorContract.AlbumEntry.TABLE_NAME + " ADD COLUMN " + AnchorContract.AlbumEntry.COLUMN_DATE_ADDED + " INTEGER";
+            db.execSQL(SQL_ADD_ALBUM_DATE_ADDED_COLUMN);
+            String SQL_ADD_AUDIO_FILE_LAST_PLAYED_TIMESTAMP_COLUMN = "ALTER TABLE " + AnchorContract.AudioEntry.TABLE_NAME + " ADD COLUMN " + AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " INTEGER";
+            db.execSQL(SQL_ADD_AUDIO_FILE_LAST_PLAYED_TIMESTAMP_COLUMN);
         }
         if (i < 3) {
             // Create directory table
@@ -177,7 +202,11 @@ public class AnchorDbHelper extends SQLiteOpenHelper {
                 lastPlayedTimestamp = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP));
             }
             boolean pinned = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_PINNED)) != 0;
-            Album album = new Album(id, title, directory, coverPath, lastPlayed, lastPlayedTimestamp, pinned);
+            long dateAdded = -1;
+            if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DATE_ADDED))) {
+                dateAdded = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DATE_ADDED));
+            }
+            Album album = new Album(id, title, directory, coverPath, lastPlayed, lastPlayedTimestamp, pinned, dateAdded);
             albums.add(album);
         }
         c.close();
