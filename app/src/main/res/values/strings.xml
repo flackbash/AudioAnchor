@@ -105,6 +105,9 @@
     <string name="settings_notification_forward_button">Notification forward button</string>
     <string name="settings_skip_interval_msg">Skip interval for %s</string>
     <string name="settings_manage_external_storage_label">Request \"All files access\"</string>
+    <string name="settings_manage_external_storage_summary">Only needed for a few uncommon audio containers, such as .webm, .mkv, or .3gp, that Android classifies as video and hides from AudioAnchor unless this is granted. Common formats like mp3, m4a/m4b, flac, wav, ogg, opus, aac, wma, gsm, and mid all work fine without it.</string>
+    <string name="settings_manage_external_storage_granted">Currently granted.</string>
+    <string name="settings_manage_external_storage_not_granted">Currently not granted.</string>
     <string name="settings_directory_picker_initial_path_label">Initial directory picker path</string>
 
 
