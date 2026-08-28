@@ -64,6 +64,10 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, PlayStatusChangeListener, SynchronizationStateListener {
 
+    // Set once per process lifetime so auto-sync runs on genuine app startup only, not on every
+    // MainActivity recreation (e.g. a screen rotation).
+    private static boolean sHasAutoSyncedThisProcess = false;
+
     // Preferences
     private SharedPreferences mSharedPreferences;
     private boolean mShowHiddenFiles;
@@ -233,6 +237,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Set up SwipeRefreshLayout onRefresh action
         mSwipeRefreshLayout = findViewById(R.id.swiperefresh);
         mSwipeRefreshLayout.setOnRefreshListener(() -> mSynchronizer.updateDBTables());
+
+        // Automatically sync once per app startup, so a library changed outside the app (e.g.
+        // files added on a computer) shows up without the user having to remember to pull-to-
+        // refresh or tap "Sync". Runs in the background (see Synchronizer), so this doesn't
+        // block the initial UI.
+        if (!sHasAutoSyncedThisProcess) {
+            sHasAutoSyncedThisProcess = true;
+            mSwipeRefreshLayout.setRefreshing(true);
+            mSynchronizer.updateDBTables();
+        }
 
         mPlayPauseFAB = findViewById(R.id.play_pause_fab);
 
@@ -432,6 +446,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         mCursorAdapter.shutdown();
+        mSynchronizer.shutdown();
 
         super.onDestroy();
     }

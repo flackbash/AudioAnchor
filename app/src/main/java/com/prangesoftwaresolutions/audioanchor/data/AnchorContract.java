@@ -12,7 +12,7 @@ import com.prangesoftwaresolutions.audioanchor.BuildConfig;
 
 public class AnchorContract {
     // Content constants
-    static final String CONTENT_AUTHORITY = BuildConfig.APPLICATION_ID;
+    public static final String CONTENT_AUTHORITY = BuildConfig.APPLICATION_ID;
     private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     static final String PATH_AUDIO_FILES = "audio";
     static final String PATH_AUDIO_FILES_DISTINCT = "audio_distinct";

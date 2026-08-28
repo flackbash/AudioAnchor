@@ -1,8 +1,11 @@
 package com.prangesoftwaresolutions.audioanchor.data;
 
 import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.OperationApplicationException;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -203,6 +206,25 @@ public class AnchorProvider extends ContentProvider {
                 return AnchorContract.DirectoryEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
+        }
+    }
+
+    /**
+     * Run a batch of operations in a single database transaction, instead of each operation
+     * (e.g. one insert per new audio file during a library sync) committing its own transaction.
+     * This is what lets Synchronizer bulk-insert/delete many rows per round trip.
+     */
+    @NonNull
+    @Override
+    public ContentProviderResult[] applyBatch(@NonNull ArrayList<ContentProviderOperation> operations) throws OperationApplicationException {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentProviderResult[] results = super.applyBatch(operations);
+            db.setTransactionSuccessful();
+            return results;
+        } finally {
+            db.endTransaction();
         }
     }
 

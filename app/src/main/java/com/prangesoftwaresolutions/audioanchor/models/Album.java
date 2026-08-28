@@ -213,9 +213,19 @@ public class Album {
      * Get all albums in the given directory
      */
     public static ArrayList<Album> getAllAlbumsInDirectory(Context context, long directoryId) {
+        Directory directory = Directory.getDirectoryByID(context, directoryId);
+        return getAllAlbumsInDirectory(context, directory);
+    }
+
+    /*
+     * Get all albums in the given directory. Takes the Directory object directly (rather than
+     * just its id) so that callers who already hold it -- e.g. Synchronizer, which iterates
+     * albums grouped by directory -- don't pay for a redundant per-row directory lookup below.
+     */
+    public static ArrayList<Album> getAllAlbumsInDirectory(Context context, Directory directory) {
         ArrayList<Album> albums = new ArrayList<>();
         String sel = AnchorContract.AlbumEntry.COLUMN_DIRECTORY + "=?";
-        String[] selArgs = {Long.toString(directoryId)};
+        String[] selArgs = {Long.toString(directory.getID())};
 
         Cursor c = context.getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI,
                 mAlbumColumns, sel, selArgs, null, null);
@@ -229,7 +239,7 @@ public class Album {
         }
 
         while (c.moveToNext()) {
-            Album album = getAlbumFromPositionedCursor(context, c);
+            Album album = getAlbumFromPositionedCursor(context, c, directory);
             albums.add(album);
         }
         c.close();
@@ -243,10 +253,19 @@ public class Album {
      * ListView adapter) can build an Album without an extra redundant DB round trip.
      */
     public static Album getAlbumFromPositionedCursor(Context context, Cursor c) {
-        long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
-        String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE));
         long directoryId = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DIRECTORY));
         Directory directory = Directory.getDirectoryByID(context, directoryId);
+        return getAlbumFromPositionedCursor(context, c, directory);
+    }
+
+    /*
+     * Same as getAlbumFromPositionedCursor(Context, Cursor), but for callers that already know
+     * the row's Directory (e.g. Synchronizer processing all albums of one directory), so it
+     * skips the redundant per-row Directory.getDirectoryByID() DB round trip.
+     */
+    public static Album getAlbumFromPositionedCursor(Context context, Cursor c, Directory directory) {
+        long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry._ID));
+        String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE));
         String coverPath = c.getString(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_COVER_PATH));
         long lastPlayed = -1;
         if (!c.isNull(c.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED))) {

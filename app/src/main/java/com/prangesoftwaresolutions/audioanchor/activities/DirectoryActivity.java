@@ -136,6 +136,12 @@ public class DirectoryActivity extends AppCompatActivity  implements LoaderManag
         mSynchronizer.setListener(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        mSynchronizer.shutdown();
+        super.onDestroy();
+    }
+
     private void addDirectory(boolean isParentDirectory) {
         String baseDirectoryPref = PreferenceManager.getDefaultSharedPreferences(this).getString(
                 getString(R.string.settings_directory_picker_initial_path_key), getString(R.string.settings_directory_picker_initial_path_default));

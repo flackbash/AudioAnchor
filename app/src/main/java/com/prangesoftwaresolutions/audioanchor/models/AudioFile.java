@@ -38,9 +38,29 @@ public class AudioFile implements Serializable {
         mCompletedTime = completedTime;
     }
 
+    private AudioFile(long id, String title, Album album, int time, int completedTime) {
+        mID = id;
+        mTitle = title;
+        mAlbum = album;
+        mTime = time;
+        mCompletedTime = completedTime;
+    }
+
     public AudioFile(Context context, String title, long albumId) {
         mTitle = title;
         mAlbum = Album.getAlbumByID(context, albumId);
+        setTimeFromMetadata();
+        mCompletedTime = 0;
+    }
+
+    /*
+     * Same as AudioFile(Context, String, long), but for callers that already hold the Album
+     * object (e.g. Synchronizer, scanning many files per album) so it skips the redundant
+     * Album.getAlbumByID() -> Directory.getDirectoryByID() DB round trips per file.
+     */
+    public AudioFile(Context context, String title, Album album) {
+        mTitle = title;
+        mAlbum = album;
         setTimeFromMetadata();
         mCompletedTime = 0;
     }
@@ -100,13 +120,21 @@ public class AudioFile implements Serializable {
     }
 
     /*
-     * Insert audio file into the audio_files table in the database
+     * Put audio file column values into content values
      */
-    public long insertIntoDB(Context context) {
+    public ContentValues getContentValues() {
         ContentValues values = new ContentValues();
         values.put(AnchorContract.AudioEntry.COLUMN_TITLE, mTitle);
         values.put(AnchorContract.AudioEntry.COLUMN_ALBUM, mAlbum.getID());
         values.put(AnchorContract.AudioEntry.COLUMN_TIME, mTime);
+        return values;
+    }
+
+    /*
+     * Insert audio file into the audio_files table in the database
+     */
+    public long insertIntoDB(Context context) {
+        ContentValues values = getContentValues();
         Uri uri = context.getContentResolver().insert(AnchorContract.AudioEntry.CONTENT_URI, values);
 
         if (uri == null) {
@@ -169,6 +197,36 @@ public class AudioFile implements Serializable {
     }
 
     /*
+     * Same as getAllAudioFilesInAlbum(Context, long, String), but for callers that already hold
+     * the Album object (e.g. Synchronizer) so each row skips the redundant
+     * Album.getAlbumByID() -> Directory.getDirectoryByID() DB round trips.
+     */
+    public static ArrayList<AudioFile> getAllAudioFilesInAlbum(Context context, Album album, String sortOrder) {
+        ArrayList<AudioFile> audioFiles = new ArrayList<>();
+        String sel = AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
+        String[] selArgs = {Long.toString(album.getID())};
+
+        Cursor c = context.getContentResolver().query(AnchorContract.AudioEntry.CONTENT_URI,
+                mAudioFileColumns, sel, selArgs, sortOrder, null);
+
+        // Bail early if the cursor is null
+        if (c == null) {
+            return audioFiles;
+        } else if (c.getCount() < 1) {
+            c.close();
+            return audioFiles;
+        }
+
+        while (c.moveToNext()) {
+            AudioFile audioFile = getAudioFileFromPositionedCursor(c, album);
+            audioFiles.add(audioFile);
+        }
+        c.close();
+
+        return audioFiles;
+    }
+
+    /*
      * Create an Audio File from a cursor that is already at the correct position
      */
     private static AudioFile getAudioFileFromPositionedCursor(Context context, Cursor c) {
@@ -178,5 +236,17 @@ public class AudioFile implements Serializable {
         int completedTime = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
         int time = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
         return new AudioFile(context, id, title, albumId, time, completedTime);
+    }
+
+    /*
+     * Same as getAudioFileFromPositionedCursor(Context, Cursor), but for a caller that already
+     * knows the row's Album.
+     */
+    private static AudioFile getAudioFileFromPositionedCursor(Cursor c, Album album) {
+        long id = c.getLong(c.getColumnIndexOrThrow(AnchorContract.AudioEntry._ID));
+        String title = c.getString(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TITLE));
+        int completedTime = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME));
+        int time = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME));
+        return new AudioFile(id, title, album, time, completedTime);
     }
 }

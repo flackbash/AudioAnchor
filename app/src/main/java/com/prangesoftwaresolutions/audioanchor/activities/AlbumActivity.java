@@ -335,6 +335,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             mHandler.removeCallbacks(mRunnable);
         }
 
+        mSynchronizer.shutdown();
+
         super.onDestroy();
     }
 
