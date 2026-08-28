@@ -191,7 +191,7 @@ public class Synchronizer {
             }
 
             // Only list files that are readable and audio files
-            String[] supportedFormats = {".mp3", ".wma", ".ogg", ".wav", ".flac", ".m4a", ".m4b", ".aac", ".3gp", ".gsm", ".mid", ".mkv", ".opus"};
+            String[] supportedFormats = {".mp3", ".wma", ".ogg", ".wav", ".flac", ".m4a", ".m4b", ".aac", ".3gp", ".gsm", ".mid", ".mkv", ".opus", ".webm"};
             for (String format : supportedFormats) {
                 if (sel.getName().endsWith(format)) return true;
             }
