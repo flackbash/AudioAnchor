@@ -103,6 +103,11 @@ public class PlayActivity extends AppCompatActivity {
     // SleepTimer variables
     int mLastSleepTime;
 
+    // True while the user has a finger on the seek bar. Suppresses the periodic position poll
+    // (see initializeSeekBar()) from fighting the drag, and defers the actual (potentially slow
+    // for long files) seek until the user lets go instead of firing one on every drag tick.
+    boolean mIsUserSeeking = false;
+
     // Bookmark Adapter and Bookmark ListView
     BookmarkCursorAdapter mBookmarkAdapter;
     ListView mBookmarkListView;
@@ -252,16 +257,22 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    updateAudioCompletedTime(progress * 1000);
+                    // Just reflect the drag position in the label here; the actual seek (which
+                    // can take a while on very long files) is only issued once in
+                    // onStopTrackingTouch, so dragging across the bar doesn't fire a seek per tick.
+                    mCompletedTimeTV.setText(Utils.formatTime(progress * 1000L, mAudioFile.getTime()));
                 }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+                mIsUserSeeking = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                mIsUserSeeking = false;
+                updateAudioCompletedTime(seekBar.getProgress() * 1000);
             }
         });
 
@@ -490,7 +501,12 @@ public class PlayActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            // The service is gone (crashed, or its process was killed) -- drop the reference so
+            // every mPlayer != null check below correctly falls back to the "no service" path
+            // instead of calling into a dead service (which previously left the UI, e.g. the
+            // seek bar, showing stale/zeroed state without actually doing anything).
             serviceBound = false;
+            mPlayer = null;
         }
     };
 
@@ -639,9 +655,11 @@ public class PlayActivity extends AppCompatActivity {
                     mSeekBar.setMax(mAudioFile.getTime() / 1000);
                     firstRun = false;
                 }
-                int currentPosition = getAudioCompletedTime();
-                mSeekBar.setProgress(currentPosition / 1000);
-                mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mAudioFile.getTime()));
+                if (!mIsUserSeeking) {
+                    int currentPosition = getAudioCompletedTime();
+                    mSeekBar.setProgress(currentPosition / 1000);
+                    mCompletedTimeTV.setText(Utils.formatTime(currentPosition, mAudioFile.getTime()));
+                }
                 mHandler.postDelayed(mRunnable, 100);
             }
         };

@@ -29,7 +29,9 @@ import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
@@ -62,6 +64,8 @@ import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC;
 
@@ -143,6 +147,17 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     SensorManager mSensorManager;
     boolean mStopAtEndOfCurrentTrack = false;
 
+    // All MediaPlayer calls that can block (setDataSource/prepare/seekTo/setPlaybackParams/etc.)
+    // run serialized on this single background thread instead of the caller's thread. Some
+    // audio containers (e.g. very long single-stream Ogg/Opus files) can take tens of seconds
+    // for the framework to prepare or seek within, which would otherwise freeze the UI since
+    // PlayActivity calls into this same-process service directly. Read-only state queries
+    // (getCurrentPosition/getDuration/isPlaying) still happen on the caller's thread since
+    // they're cheap; they're wrapped in try/catch since they can now race the narrow window
+    // where this executor is transitioning the player between states.
+    private final ExecutorService mPlayerExecutor = Executors.newSingleThreadExecutor();
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -211,8 +226,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         if (mediaSession == null) {
             initMediaSession();
-            initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime());
-            play();
+            initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime(), this::play);
         }
 
         // Handle Intent action from MediaSession.TransportControls
@@ -241,9 +255,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         if (mMediaPlayer != null) {
             stopMedia();
-            mMediaPlayer.release();
+            // Null the field immediately so no new work gets submitted against this player,
+            // but release it on mPlayerExecutor so it runs after any stop() already queued
+            // there by stopMedia() -- release() racing a not-yet-run stop() on another thread
+            // would be unsafe.
+            final MediaPlayer playerToRelease = mMediaPlayer;
             mMediaPlayer = null;
+            mPlayerExecutor.execute(playerToRelease::release);
         }
+        mPlayerExecutor.shutdown();
         if (mediaSession != null) {
             mediaSession.release();
         }
@@ -286,11 +306,29 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .build();
     }
 
-    void initMediaPlayer(String path, int position) {
+    /*
+     * Set up the MediaPlayer for the given path/position and run onReady (on the main thread)
+     * once it's actually ready to use. The blocking setup work (setDataSource/prepare/seekTo)
+     * runs on mPlayerExecutor -- for a normal file this completes almost instantly, but for a
+     * very long single-stream file (e.g. a multi-hour Ogg/Opus audiobook) Android's extractor
+     * can take tens of seconds, and this keeps that off the UI thread. Do not touch mMediaPlayer
+     * from anywhere else while this is in flight -- everything that mutates it must go through
+     * mPlayerExecutor so calls are never made concurrently from two threads.
+     */
+    void initMediaPlayer(String path, int position, Runnable onReady) {
         if (mMediaPlayer == null) {
             mMediaPlayer = new MediaPlayer();
             mMediaPlayer.setOnCompletionListener(this);
         }
+        mPlayerExecutor.execute(() -> {
+            if (initMediaPlayerBlocking(path, position) && onReady != null) {
+                mMainHandler.post(onReady);
+            }
+        });
+    }
+
+    // Must only run on mPlayerExecutor's thread.
+    private boolean initMediaPlayerBlocking(String path, int position) {
         try {
             mMediaPlayer.reset();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -318,11 +356,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
             mMediaPlayer.prepare();
             mMediaPlayer.seekTo(position);
+            return true;
 
         } catch (IOException e) {
             e.printStackTrace();
             stopForeground(true);
             stopSelf();
+            return false;
         }
     }
 
@@ -331,32 +371,39 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         setCurrentPosition(getDuration());
         updateAudioFileStatus();
 
-        boolean playingNext = false;
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
 
         if (autoplay && !mStopAtEndOfCurrentTrack) {
-            playingNext = initNextAudioFile();
-        } else if (mStopAtEndOfCurrentTrack) {
-            terminateSleepTimer();
-        }
-
-        if (playingNext) {
-            play();
+            if (!initNextAudioFile(true)) {
+                finishPlaybackAfterCompletion();
+            }
         } else {
-            // Notify the play activity that the playback was paused
-            sendPlayStatusResult(MSG_STOP);
-
-            removeNotification();
-
-            // Send broadcast that the notification was removed
-            // The MediaPlayerService receiver will then also stop the service by calling stopSelf()
-            sendBroadcast(new Intent(BROADCAST_REMOVE_NOTIFICATION).setPackage(getPackageName()));
-
-            mLockManager.releaseWakeLock();
+            if (mStopAtEndOfCurrentTrack) {
+                terminateSleepTimer();
+            }
+            finishPlaybackAfterCompletion();
         }
     }
 
-    public boolean initNextAudioFile() {
+    private void finishPlaybackAfterCompletion() {
+        // Notify the play activity that the playback was paused
+        sendPlayStatusResult(MSG_STOP);
+
+        removeNotification();
+
+        // Send broadcast that the notification was removed
+        // The MediaPlayerService receiver will then also stop the service by calling stopSelf()
+        sendBroadcast(new Intent(BROADCAST_REMOVE_NOTIFICATION).setPackage(getPackageName()));
+
+        mLockManager.releaseWakeLock();
+    }
+
+    /*
+     * Advance to the next audio file, if there is one. The (potentially slow) player setup for
+     * the new file happens asynchronously; playAfter decides whether to start playing it, or
+     * just reflect the paused state, once it's actually ready.
+     */
+    public boolean initNextAudioFile(boolean playAfter) {
         boolean autoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
         if (mAudioIndex + 1 < mAudioIdQueue.size()) {
             mAudioIndex++;
@@ -374,16 +421,26 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             } else {
                 startPosition = mActiveAudio.getCompletedTime();
             }
-            initMediaPlayer(mActiveAudio.getPath(), startPosition);
-            updateAudioFileStatus();  // Needed if startPosition is set to 0 such that the time in the AlbumActivity is updated
-            updateMetaData();
-            buildNotification();
+            initMediaPlayer(mActiveAudio.getPath(), startPosition, () -> {
+                updateAudioFileStatus();  // Needed if startPosition is set to 0 such that the time in the AlbumActivity is updated
+                updateMetaData();
+                buildNotification();
+                if (playAfter) {
+                    play();
+                } else {
+                    setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+                }
+            });
             return true;
         }
         return false;
     }
 
-    public boolean initPreviousAudioFile() {
+    /*
+     * Go back to the previous audio file, if there is one. See initNextAudioFile() for the
+     * playAfter/async behavior.
+     */
+    public boolean initPreviousAudioFile(boolean playAfter) {
         boolean autoplayRestart = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_restart_key), Boolean.getBoolean(getString(R.string.settings_autoplay_restart_default)));
         if (mAudioIndex - 1 >= 0) {
             mAudioIndex--;
@@ -401,10 +458,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             } else {
                 startPosition = mActiveAudio.getCompletedTime();
             }
-            initMediaPlayer(mActiveAudio.getPath(), startPosition);
-            updateAudioFileStatus();
-            updateMetaData();
-            buildNotification();
+            initMediaPlayer(mActiveAudio.getPath(), startPosition, () -> {
+                updateAudioFileStatus();
+                updateMetaData();
+                buildNotification();
+                if (playAfter) {
+                    play();
+                } else {
+                    setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+                }
+            });
             return true;
         }
         return false;
@@ -418,15 +481,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             case AudioManager.AUDIOFOCUS_GAIN:
                 Log.e("MediaPlayerService", "Audiofocus Gain");
                 if (mMediaPlayer == null) {
-                    initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime());
+                    initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime(), this::resumeAfterAudioFocusGain);
+                } else {
+                    resumeAfterAudioFocusGain();
                 }
-
-                if (mIsPausedByTransientFocusLoss) {
-                    // Resume playback if audiofocus was lost only temporarily
-                    play();
-                    mIsPausedByTransientFocusLoss = false;
-                }
-                setVolume(1.0f);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
                 // Lost focus for an unbounded amount of time: stop playback and release media player
@@ -439,7 +497,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // is likely to resume
                 Log.e("MediaPlayerService", "Audiofocus loss transient");
 
-                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                if (isPlaying()) {
                     pauseDueToAudioInterruption();
                 }
                 break;
@@ -447,7 +505,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
                 Log.e("MediaPlayerService", "Audiofocus loss can duck");
-                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                if (isPlaying()) {
                     boolean duckAudio = mSharedPreferences.getBoolean(getString(R.string.settings_duck_audio_key), Boolean.getBoolean(getString(R.string.settings_duck_audio_default)));
                     if (duckAudio) {
                         setVolume(0.1f);
@@ -457,6 +515,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 }
                 break;
         }
+    }
+
+    private void resumeAfterAudioFocusGain() {
+        if (mIsPausedByTransientFocusLoss) {
+            // Resume playback if audiofocus was lost only temporarily
+            play();
+            mIsPausedByTransientFocusLoss = false;
+        }
+        setVolume(1.0f);
     }
 
     /*
@@ -552,7 +619,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                         case TelephonyManager.CALL_STATE_OFFHOOK:
                         case TelephonyManager.CALL_STATE_RINGING:
                             if (mMediaPlayer != null && !ongoingCall) {
-                                resumeAfterCall = mMediaPlayer.isPlaying();
+                                resumeAfterCall = isPlaying();
                                 pause();
                                 ongoingCall = true;
                             }
@@ -814,7 +881,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             stopForeground(true);
             stopSelf();
         } else if (actionString.equalsIgnoreCase(ACTION_TOGGLE_PAUSE)) {
-            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) pause();
+            if (isPlaying()) pause();
             else play();
         } else if (actionString.equalsIgnoreCase(ACTION_FORWARD)) {
             int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_forward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
@@ -849,12 +916,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     public boolean isPlaying() {
         if (mMediaPlayer != null) {
-            return mMediaPlayer.isPlaying();
+            try {
+                return mMediaPlayer.isPlaying();
+            } catch (IllegalStateException e) {
+                // mMediaPlayer is being (re)initialized on mPlayerExecutor right now.
+                e.printStackTrace();
+            }
         }
         return false;
     }
 
     public void play() {
+        if (mMediaPlayer == null) return;
+
         // Get Autoplay and Autorewind settings
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
         int autorewindTime = Integer.parseInt(mSharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
@@ -862,20 +936,41 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Request a partial wake lock for the duration of the playback
         mLockManager.acquireWakeLock();
 
-        if (mMediaPlayer != null && !mMediaPlayer.isPlaying() && (autoplay || getCurrentPosition() != getDuration())) {
-            if (getCurrentPosition() != getDuration()) {
-                mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition() - autorewindTime * 1000);
+        // All the decisions below are made inside the executor task itself (not here) so they
+        // see the player's state as of when they actually run, not as of when play() happened
+        // to be called -- important since a call made while a previous track's setup is still
+        // in flight only runs once that setup (and any state it changes) has completed.
+        mPlayerExecutor.execute(() -> {
+            boolean started;
+            try {
+                if (mMediaPlayer.isPlaying()) return;
+                int currentPosition = mMediaPlayer.getCurrentPosition();
+                int duration = mMediaPlayer.getDuration();
+                if (!(autoplay || currentPosition != duration)) return;
+                if (currentPosition != duration) {
+                    mMediaPlayer.seekTo(currentPosition - autorewindTime * 1000);
+                }
+                mMediaPlayer.start();
+                started = true;
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+                started = false;
             }
-            mMediaPlayer.start();
-            sendPlayStatusResult(MSG_PLAY);
-            mediaSession.setActive(true);
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-            buildNotification();
+            if (started) {
+                mMainHandler.post(this::onPlaybackStarted);
+            }
+        });
+    }
 
-            updateLastPlayedAudio();
-            boolean addLastPlayPositionBookmarks = mSharedPreferences.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_key), Boolean.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_default)));
-            if (addLastPlayPositionBookmarks) updateLastPlayPositionBookmarks();
-        }
+    private void onPlaybackStarted() {
+        sendPlayStatusResult(MSG_PLAY);
+        mediaSession.setActive(true);
+        setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+        buildNotification();
+
+        updateLastPlayedAudio();
+        boolean addLastPlayPositionBookmarks = mSharedPreferences.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_key), Boolean.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_default)));
+        if (addLastPlayPositionBookmarks) updateLastPlayPositionBookmarks();
     }
 
     public void stopMedia() {
@@ -885,7 +980,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (mMediaPlayer != null) {
             updateAudioFileStatus();
             sendPlayStatusResult(MSG_STOP);
-            mMediaPlayer.stop();
+            mPlayerExecutor.execute(() -> {
+                try {
+                    mMediaPlayer.stop();
+                } catch (IllegalStateException e) {
+                    e.printStackTrace();
+                }
+            });
             setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
         }
         mediaSession.setActive(false);
@@ -896,12 +997,22 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Release the partial wake lock to save battery
         mLockManager.releaseWakeLock();
 
-        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-            mMediaPlayer.pause();
-            updateAudioFileStatus();
-            sendPlayStatusResult(MSG_PAUSE);
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
-            buildNotification();
+        if (mMediaPlayer != null) {
+            mPlayerExecutor.execute(() -> {
+                boolean wasPlaying;
+                try {
+                    wasPlaying = mMediaPlayer.isPlaying();
+                    if (wasPlaying) {
+                        mMediaPlayer.pause();
+                    }
+                } catch (IllegalStateException e) {
+                    e.printStackTrace();
+                    wasPlaying = false;
+                }
+                if (wasPlaying) {
+                    mMainHandler.post(this::onPlaybackPaused);
+                }
+            });
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_DETACH);
@@ -910,52 +1021,62 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
+    private void onPlaybackPaused() {
+        updateAudioFileStatus();
+        sendPlayStatusResult(MSG_PAUSE);
+        setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+        buildNotification();
+    }
+
+    /*
+     * Skip the specified amount of milliseconds forward (positive) or backward (negative),
+     * clamped to the track's bounds.
+     */
+    private void seekRelativeAsync(int deltaMillis) {
+        if (mMediaPlayer == null) return;
+        mPlayerExecutor.execute(() -> {
+            try {
+                int duration = mMediaPlayer.getDuration();
+                int newPos = Math.max(0, Math.min(duration, mMediaPlayer.getCurrentPosition() + deltaMillis));
+                mMediaPlayer.seekTo(newPos);
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+                return;
+            }
+            mMainHandler.post(this::updateAudioFileStatus);
+        });
+    }
+
     /*
      * Skip the specified amount of seconds forward
      */
     void forward(int seconds) {
-        int newPos = Math.min(getDuration(), mMediaPlayer.getCurrentPosition() + seconds * 1000);
-        mMediaPlayer.seekTo(newPos);
-        updateAudioFileStatus();
+        seekRelativeAsync(seconds * 1000);
     }
 
     /*
      * Skip the specified amount of seconds backward
      */
     void backward(int seconds) {
-        int newPos = Math.max(0, mMediaPlayer.getCurrentPosition() - seconds * 1000);
-        mMediaPlayer.seekTo(newPos);
-        updateAudioFileStatus();
+        seekRelativeAsync(-seconds * 1000);
     }
 
     /*
      * Skip to next audio file
      */
     public void skipToNextAudioFile() {
-        boolean wasPlaying = mMediaPlayer != null && mMediaPlayer.isPlaying();
+        boolean wasPlaying = isPlaying();
         updateAudioFileStatus();
-        initNextAudioFile();
-        if (wasPlaying) {
-            play();
-        } else {
-            // Update the playback state to reflect the new position in the progress bar
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
-        }
+        initNextAudioFile(wasPlaying);
     }
 
     /*
      * Skip to previous audio file
      */
     public void skipToPreviousAudioFile() {
-        boolean wasPlaying = mMediaPlayer != null && mMediaPlayer.isPlaying();
+        boolean wasPlaying = isPlaying();
         updateAudioFileStatus();
-        initPreviousAudioFile();
-        if (wasPlaying) {
-            play();
-        } else {
-            // Update the playback state to reflect the new position in the progress bar
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
-        }
+        initPreviousAudioFile(wasPlaying);
     }
 
     /*
@@ -963,19 +1084,31 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      */
     int getDuration() {
         if (mMediaPlayer != null) {
-            return mMediaPlayer.getDuration();
+            try {
+                return mMediaPlayer.getDuration();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            }
         }
         return 0;
     }
 
     /*
-     * Get current position of the played audio file
+     * Get current position of the played audio file. Returns -1 (rather than 0) when the
+     * position can't reliably be read right now -- either there is no player yet, or
+     * mPlayerExecutor is mid-(re)initialization -- so callers that persist this value (see
+     * updateAudioFileStatus()) can tell "unknown" apart from a real position of zero and avoid
+     * overwriting stored progress with a bogus value.
      */
     public int getCurrentPosition() {
         if (mMediaPlayer != null) {
-            return mMediaPlayer.getCurrentPosition();
+            try {
+                return mMediaPlayer.getCurrentPosition();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            }
         }
-        return 0;
+        return -1;
     }
 
     /*
@@ -983,10 +1116,20 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      */
     public void setCurrentPosition(int progress) {
         if (mMediaPlayer != null) {
-            mMediaPlayer.seekTo(progress);
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+            mPlayerExecutor.execute(() -> {
+                try {
+                    mMediaPlayer.seekTo(progress);
+                } catch (IllegalStateException e) {
+                    e.printStackTrace();
+                }
+                mMainHandler.post(() -> {
+                    setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                    updateAudioFileStatus();
+                });
+            });
+        } else {
+            updateAudioFileStatus();
         }
-        updateAudioFileStatus();
     }
 
     public void decreaseVolume(int step, int totalSteps) {
@@ -999,7 +1142,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     public void setVolume(float volume) {
         if (mMediaPlayer != null) {
-            mMediaPlayer.setVolume(volume, volume);
+            mPlayerExecutor.execute(() -> {
+                try {
+                    mMediaPlayer.setVolume(volume, volume);
+                } catch (IllegalStateException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 
@@ -1007,21 +1156,23 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void setPlaybackSpeed(float speed) {
         if (mMediaPlayer == null) return;
 
-        boolean isPlaying = mMediaPlayer.isPlaying();
-        if (!isPlaying) {
-            initMediaPlayer(mActiveAudio.getPath(), mMediaPlayer.getCurrentPosition());
+        if (!isPlaying()) {
+            initMediaPlayer(mActiveAudio.getPath(), Math.max(0, getCurrentPosition()), null);
         } else {
-            setPlaybackSpeedIfInLegalRange(speed);
+            mPlayerExecutor.execute(() -> setPlaybackSpeedIfInLegalRange(speed));
         }
     }
 
+    // Must only run on mPlayerExecutor's thread (it's also called from initMediaPlayerBlocking(),
+    // which already runs there).
     @TargetApi(Build.VERSION_CODES.M)
     void setPlaybackSpeedIfInLegalRange(float speed) {
         try {
             mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed(speed));
         } catch (IllegalArgumentException e) {
             String illegalSpeed = getResources().getString(R.string.illegal_speed, speed);
-            Toast.makeText(getApplicationContext(), illegalSpeed, Toast.LENGTH_LONG).show();
+            // Toast requires a Looper thread; this can run on mPlayerExecutor.
+            mMainHandler.post(() -> Toast.makeText(getApplicationContext(), illegalSpeed, Toast.LENGTH_LONG).show());
         }
     }
 
@@ -1043,13 +1194,20 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * Update the completed time of the current audio file in the audiofiles table of the database
      */
     void updateAudioFileStatus() {
+        int position = getCurrentPosition();
+        if (position < 0) {
+            // Position isn't reliably known right now (see getCurrentPosition()) -- skip this
+            // update rather than persisting a bogus value over the real stored progress.
+            return;
+        }
+
         // Update the current active audio
-        mActiveAudio.setCompletedTime(getCurrentPosition());
+        mActiveAudio.setCompletedTime(position);
 
         // Update the completedTime column of the audiofiles table
         Uri uri = ContentUris.withAppendedId(AnchorContract.AudioEntry.CONTENT_URI, mActiveAudio.getID());
         ContentValues values = new ContentValues();
-        values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, getCurrentPosition());
+        values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, position);
         getContentResolver().update(uri, values, null, null);
     }
 
@@ -1160,10 +1318,20 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void setMediaPlaybackState(int state) {
+        if (mMediaPlayer == null) return;
+
         PlaybackStateCompat.Builder playbackstateBuilder = new PlaybackStateCompat.Builder();
         float playbackSpeed = 1;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            playbackSpeed = mMediaPlayer.getPlaybackParams().getSpeed();
+        int position = 0;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                playbackSpeed = mMediaPlayer.getPlaybackParams().getSpeed();
+            }
+            position = mMediaPlayer.getCurrentPosition();
+        } catch (IllegalStateException e) {
+            // mMediaPlayer is being (re)initialized on mPlayerExecutor right now; fall back to
+            // position 0 / normal speed for this update, the next one will have real values.
+            e.printStackTrace();
         }
 
         // Define all available actions including skip actions
@@ -1171,12 +1339,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                        PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
 
+        playbackstateBuilder.setActions(actions);
         if( state == PlaybackStateCompat.STATE_PLAYING ) {
-            playbackstateBuilder.setActions(actions);
-            playbackstateBuilder.setState(state,mMediaPlayer.getCurrentPosition(), playbackSpeed);
+            playbackstateBuilder.setState(state, position, playbackSpeed);
         } else {
-            playbackstateBuilder.setActions(actions);
-            playbackstateBuilder.setState(state, mMediaPlayer.getCurrentPosition(), 0);
+            playbackstateBuilder.setState(state, position, 0);
         }
 
         // Add custom actions for Android 16 compatibility
