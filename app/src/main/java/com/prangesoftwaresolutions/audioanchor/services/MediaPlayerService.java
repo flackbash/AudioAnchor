@@ -74,7 +74,7 @@ import static androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC;
  * Media Player Service class
  * Based on a tutorial by Valdio Veliu. See https://github.com/sitepoint-editors/AudioPlayer
  */
-public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener, SleepTimerStatusListener {
+public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener, SleepTimerStatusListener {
 
     public static final String ACTION_PLAY = "com.prangesoftwaresolutions.audioanchor.ACTION_PLAY";
     public static final String ACTION_PAUSE = "com.prangesoftwaresolutions.audioanchor.ACTION_PAUSE";
@@ -319,6 +319,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (mMediaPlayer == null) {
             mMediaPlayer = new MediaPlayer();
             mMediaPlayer.setOnCompletionListener(this);
+            mMediaPlayer.setOnErrorListener(this);
         }
         mPlayerExecutor.execute(() -> {
             if (initMediaPlayerBlocking(path, position) && onReady != null) {
@@ -396,6 +397,26 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         sendBroadcast(new Intent(BROADCAST_REMOVE_NOTIFICATION).setPackage(getPackageName()));
 
         mLockManager.releaseWakeLock();
+    }
+
+    /*
+     * Called by the framework when the MediaPlayer hits an unrecoverable error (e.g. a
+     * malformed or unsupported file, or -- as seen with very long single-stream Ogg/Opus
+     * files -- the platform's own extractor/decoder failing). Without this listener such a
+     * failure left the player silently stuck in the Error state: the UI kept showing whatever
+     * position it last had, indistinguishable from a paused, working track. Returning true
+     * tells the framework we've handled it (a plain onCompletion() would otherwise not fire,
+     * but would also be wrong here since this isn't a normal end-of-track).
+     */
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        Log.e(LOG_TAG, "MediaPlayer error: what=" + what + ", extra=" + extra);
+        if (mActiveAudio != null) {
+            String errorMsg = getResources().getString(R.string.audio_file_error, mActiveAudio.getTitle());
+            Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
+        }
+        finishPlaybackAfterCompletion();
+        return true;
     }
 
     /*
