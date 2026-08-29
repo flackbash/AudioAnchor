@@ -386,9 +386,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             if (!haveNextAudioFile()) {
                 finishPlaybackAfterCompletion();
             } else {
-                // play next after a bit
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
+                // Give the framework a moment to finish tearing down the just-completed track
+                // before reusing the same MediaPlayer for the next one. Confirmed via logcat
+                // timestamps that calling reset() ~20ms after onCompletion() (i.e. immediately)
+                // races that teardown: it can truncate the last bit of the finished track's
+                // audio, and on one observed run threw a spurious MediaPlayer error (what=-38)
+                // that silently killed playback. Widening the gap to NEXT_TRACK_WAIT_TIME (50ms)
+                // avoided both in repeated testing.
+                mMainHandler.postDelayed(() -> {
                     if (!initNextAudioFile(true)) {
                         finishPlaybackAfterCompletion();
                     }
@@ -402,7 +407,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    public boolean haveNextAudioFile() {
+    private boolean haveNextAudioFile() {
         return (mAudioIndex + 1 < mAudioIdQueue.size());
     }
 
