@@ -1116,7 +1116,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Get sleep timer preferences
         boolean shakeEnabledSetting = mSharedPreferences.getBoolean(getString(R.string.settings_shake_key), Boolean.getBoolean(getString(R.string.settings_shake_default)));
-        int shakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), R.string.settings_shake_sensitivity_default);
+        int shakeSensitivitySetting = mSharedPreferences.getInt(getString(R.string.settings_shake_sensitivity_key), Integer.parseInt(getString(R.string.settings_shake_sensitivity_default)));
         float shakeForceRequired = (100 - shakeSensitivitySetting) / 100f;
 
         if (mSleepTimer == null) {

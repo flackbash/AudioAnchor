@@ -160,11 +160,17 @@ public class SleepTimer {
 
     private void startShakeDetection() {
         if (mSensorMng != null) {
+            // getDefaultSensor() returns null on devices/ROMs without an accelerometer
+            // (or with an incomplete sensor HAL, which happens on some custom ROMs).
+            // registerListener() throws IllegalArgumentException for a null sensor, so
+            // skip shake detection instead of crashing when none is available.
             Sensor sensor = mSensorMng.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-            mSensorMng.registerListener(
-                    mShakeDetector,
-                    sensor,
-                    SensorManager.SENSOR_DELAY_NORMAL);
+            if (sensor != null) {
+                mSensorMng.registerListener(
+                        mShakeDetector,
+                        sensor,
+                        SensorManager.SENSOR_DELAY_NORMAL);
+            }
         }
     }
 

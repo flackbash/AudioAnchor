@@ -676,7 +676,14 @@ public class PlayActivity extends AppCompatActivity {
             if (minutesString.isEmpty()) {
                 minutes = 0;
             } else {
-                minutes = Integer.parseInt(minutesString);
+                try {
+                    minutes = Integer.parseInt(minutesString);
+                } catch (NumberFormatException e) {
+                    // Input filters restrict the soft keyboard to digits, but a hardware
+                    // keyboard, paste, or a locale-specific numeric IME can still produce
+                    // non-numeric text here -- fall back to "no timer" rather than crash.
+                    minutes = 0;
+                }
             }
 
             if (mPlayer != null) {
