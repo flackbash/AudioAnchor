@@ -158,6 +158,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private final ExecutorService mPlayerExecutor = Executors.newSingleThreadExecutor();
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
 
+    // How long to wait after onCompletion() before tearing down the just-finished track and
+    // loading the next one. Fixes https://github.com/praecipitator/AudioAnchor (interruptFix):
+    // calling MediaPlayer.reset() immediately on completion races the framework's own teardown
+    // of the finished track -- confirmed via logcat timestamps to both truncate its last audio
+    // and occasionally throw a spurious MediaPlayer error (what=-38) when the gap is ~20ms.
+    // 50ms consistently avoided both in testing.
+    private final int NEXT_TRACK_WAIT_TIME = 50;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -375,8 +383,21 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
 
         if (autoplay && !mStopAtEndOfCurrentTrack) {
-            if (!initNextAudioFile(true)) {
+            if (!haveNextAudioFile()) {
                 finishPlaybackAfterCompletion();
+            } else {
+                // Give the framework a moment to finish tearing down the just-completed track
+                // before reusing the same MediaPlayer for the next one. Confirmed via logcat
+                // timestamps that calling reset() ~20ms after onCompletion() (i.e. immediately)
+                // races that teardown: it can truncate the last bit of the finished track's
+                // audio, and on one observed run threw a spurious MediaPlayer error (what=-38)
+                // that silently killed playback. Widening the gap to NEXT_TRACK_WAIT_TIME (50ms)
+                // avoided both in repeated testing.
+                mMainHandler.postDelayed(() -> {
+                    if (!initNextAudioFile(true)) {
+                        finishPlaybackAfterCompletion();
+                    }
+                }, NEXT_TRACK_WAIT_TIME);
             }
         } else {
             if (mStopAtEndOfCurrentTrack) {
@@ -384,6 +405,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             }
             finishPlaybackAfterCompletion();
         }
+    }
+
+    private boolean haveNextAudioFile() {
+        return (mAudioIndex + 1 < mAudioIdQueue.size());
     }
 
     private void finishPlaybackAfterCompletion() {
