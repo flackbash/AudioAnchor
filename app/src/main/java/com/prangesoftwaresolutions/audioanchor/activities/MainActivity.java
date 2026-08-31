@@ -41,6 +41,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.helpers.ChangelogHelper;
 import com.prangesoftwaresolutions.audioanchor.helpers.Migrator;
 import com.prangesoftwaresolutions.audioanchor.listeners.PlayStatusChangeListener;
 import com.prangesoftwaresolutions.audioanchor.listeners.SynchronizationStateListener;
@@ -306,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             int versionCode = pInfo.versionCode;
             String versionName = pInfo.versionName;
             if (previousVersionCode != versionCode) {
-                // TODO: Show Changelog
+                ChangelogHelper.showIfUpdated(this, previousVersionCode, versionCode);
                 // Save new version code and name
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
                 editor.putInt(getString(R.string.preference_version_code_key), versionCode);

@@ -159,6 +159,7 @@
     <string name="add_directory">You can select a single directory that contains audio files or a parent directory that contains several directories containing audio files.</string>
 
     <!-- Dialog strings -->
+    <string name="changelog_title">What\'s new</string>
     <string name="dialog_msg_select_dir">Select</string>
     <string name="dialog_msg_set_default_dir">Set default</string>
     <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing</string>

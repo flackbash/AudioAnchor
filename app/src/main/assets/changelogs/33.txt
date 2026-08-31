@@ -1,0 +1,7 @@
+- Added sort options for albums and tracks: by date added, by progress, and by last played
+- Added the ability to pin albums and tracks via long-press
+- Added landscape orientation support
+- Added support for .webm audio files
+- Library sync is faster, runs automatically on startup, and no longer shows duplicate notifications
+- Fixed laggy scrolling in the library list
+- Fixed several playback reliability issues: audio being cut off right before autoplay switches tracks, brief freezing when starting playback or seeking (especially on long files), sleep timer resets, and silent failures when a file can't be played
