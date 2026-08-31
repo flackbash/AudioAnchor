@@ -22,6 +22,8 @@
     <string name="settings_progress_percentage_default" translatable="false">false</string>
     <string name="settings_keep_deleted_key" translatable="false">keep_deleted</string>
     <string name="settings_keep_deleted_default" translatable="false">false</string>
+    <string name="settings_auto_sync_startup_key" translatable="false">auto_sync_startup</string>
+    <string name="settings_auto_sync_startup_default" translatable="false">true</string>
     <string name="settings_cover_from_metadata_key" translatable="false">cover_from_metadata</string>
     <string name="settings_cover_from_metadata_default" translatable="false">false</string>
     <string name="settings_sleep_fadeout_key" translatable="false">settings_sleep_fadeout</string>

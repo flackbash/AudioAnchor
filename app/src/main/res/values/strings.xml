@@ -65,6 +65,7 @@
     <string name="settings_autoplay_restart_label">Replay tracks from beginning when playing next/previous track</string>
     <string name="settings_progress_percentage_label">Show progress in percent</string>
     <string name="settings_keep_deleted_label">Keep progress of deleted files in library</string>
+    <string name="settings_auto_sync_startup_label">Automatically sync library on startup</string>
     <string name="settings_cover_from_metadata_label">Get cover image from metadata</string>
     <string name="settings_sleep_timer_category">Sleep timer</string>
     <string name="settings_sleep_fadeout_label">Fade out time</string>

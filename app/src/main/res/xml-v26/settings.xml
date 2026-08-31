@@ -185,6 +185,12 @@
             android:title="@string/settings_keep_deleted_label"
             android:singleLineTitle="false" />
 
+        <SwitchPreference
+            android:defaultValue="@string/settings_auto_sync_startup_default"
+            android:key="@string/settings_auto_sync_startup_key"
+            android:title="@string/settings_auto_sync_startup_label"
+            android:singleLineTitle="false" />
+
         <EditTextPreference
             android:defaultValue="@string/settings_directory_picker_initial_path_default"
             android:key="@string/settings_directory_picker_initial_path_key"

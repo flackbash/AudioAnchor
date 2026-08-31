@@ -242,8 +242,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Automatically sync once per app startup, so a library changed outside the app (e.g.
         // files added on a computer) shows up without the user having to remember to pull-to-
         // refresh or tap "Sync". Runs in the background (see Synchronizer), so this doesn't
-        // block the initial UI.
-        if (!sHasAutoSyncedThisProcess) {
+        // block the initial UI. Can be turned off in Settings for large libraries where the
+        // startup sync is unwanted.
+        boolean autoSyncOnStartup = mSharedPreferences.getBoolean(getString(R.string.settings_auto_sync_startup_key), Boolean.parseBoolean(getString(R.string.settings_auto_sync_startup_default)));
+        if (!sHasAutoSyncedThisProcess && autoSyncOnStartup) {
             sHasAutoSyncedThisProcess = true;
             mSwipeRefreshLayout.setRefreshing(true);
             mSynchronizer.updateDBTables();
