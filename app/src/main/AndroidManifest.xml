@@ -16,6 +16,10 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <!-- Required so the app can access audio files that other apps created -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <!-- Some supported audio containers (.webm, .mkv, .3gp) are classified as video by
+         MediaProvider, so without this permission scoped storage hides them from the app
+         even though it never wants to see actual videos -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <uses-feature
         android:name="android.hardware.sensor.accelerometer"

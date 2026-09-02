@@ -747,6 +747,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     != PackageManager.PERMISSION_GRANTED) {
                 permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO);
             }
+            // Some supported audio containers (.webm, .mkv, .3gp) are classified as video by
+            // MediaProvider, so without this permission scoped storage silently hides them from
+            // directory scans even though READ_MEDIA_AUDIO is granted.
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO);
+            }
         } else { // Android 12 and below
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -754,7 +761,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         }
 
-        if (!permissionsToRequest.isEmpty()) {
+        if (permissionsToRequest.isEmpty()) {
+            return;
+        }
+
+        if (permissionsToRequest.contains(Manifest.permission.READ_MEDIA_VIDEO)) {
+            // READ_MEDIA_VIDEO is not self-explanatory for an audio app, so explain it before
+            // the system permission dialog rather than leaving users to wonder.
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.video_permission_rationale_title)
+                    .setMessage(R.string.video_permission_rationale_message)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.dialog_msg_ok, (dialog, which) ->
+                            mRequestPermissionsLauncher.launch(permissionsToRequest.toArray(new String[0])))
+                    .show();
+        } else {
             mRequestPermissionsLauncher.launch(permissionsToRequest.toArray(new String[0]));
         }
     }

@@ -13,6 +13,8 @@
     <string name="no_audio_files">No audio files found in this album.</string>
     <string name="play_error">The selected audio file is not playable. Maybe the file does not exist anymore.</string>
     <string name="permission_denied">Necessary permission was not granted. Quit AudioAnchor.</string>
+    <string name="video_permission_rationale_title">Why does AudioAnchor need video access?</string>
+    <string name="video_permission_rationale_message">Some audio files, such as .webm, .mkv or .3gp files, are categorized as video by Android even though they only contain audio. Without this permission, Android hides those files from AudioAnchor entirely, so they won\'t show up in your library. AudioAnchor does not access your actual video files.</string>
     <string name="write_permission_denied">Necessary permission was not granted. Cannot write to storage.</string>
     <string name="time_format_error">Please enter a valid time in the format hh:mm:ss.</string>
     <string name="import_success">Import successful :)</string>
