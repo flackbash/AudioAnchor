@@ -839,7 +839,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return;
         }
 
-        if (permissionsToRequest.contains(Manifest.permission.READ_MEDIA_VIDEO)) {
+        // READ_MEDIA_VIDEO shares its permission group ("Photos and videos") with
+        // READ_MEDIA_IMAGES. Once a user has granted any permission in a group, Android
+        // silently auto-grants sibling permissions from that same group on first request,
+        // without ever showing a system dialog -- so if READ_MEDIA_IMAGES is already granted,
+        // requesting READ_MEDIA_VIDEO here will resolve instantly and invisibly. Only show our
+        // own rationale when a system dialog will actually follow it; otherwise users are shown
+        // an explanation for a prompt they'll never see, which is just confusing.
+        boolean videoPermissionWillPrompt = permissionsToRequest.contains(Manifest.permission.READ_MEDIA_VIDEO)
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED;
+
+        if (videoPermissionWillPrompt) {
             // READ_MEDIA_VIDEO is not self-explanatory for an audio app, so explain it before
             // the system permission dialog rather than leaving users to wonder.
             new AlertDialog.Builder(this)
