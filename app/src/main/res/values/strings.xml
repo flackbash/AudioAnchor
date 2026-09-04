@@ -16,6 +16,8 @@
     <string name="video_permission_rationale_title">Why does AudioAnchor need video access?</string>
     <string name="video_permission_rationale_message">Some audio files, such as .webm, .mkv or .3gp files, are categorized as video by Android even though they only contain audio. Without this permission, Android hides those files from AudioAnchor entirely, so they won\'t show up in your library. AudioAnchor does not access your actual video files.</string>
     <string name="write_permission_denied">Necessary permission was not granted. Cannot write to storage.</string>
+    <string name="storage_permission_rationale_title">Why does AudioAnchor need All files access?</string>
+    <string name="storage_permission_rationale_message">On this version of Android, deleting audio files directly from your device requires the \"All files access\" permission. Without it, Android blocks the deletion. You\'ll be taken to the system settings screen to grant it; AudioAnchor only uses this to remove files you explicitly choose to delete.</string>
     <string name="time_format_error">Please enter a valid time in the format hh:mm:ss.</string>
     <string name="import_success">Import successful :)</string>
     <string name="import_fail">Something went wrong. Import failed.</string>
@@ -116,7 +118,7 @@
     <string name="settings_notification_forward_button">Notification forward button</string>
     <string name="settings_skip_interval_msg">Skip interval for %s</string>
     <string name="settings_manage_external_storage_label">Request \"All files access\"</string>
-    <string name="settings_manage_external_storage_summary">Only needed for a few uncommon audio containers, such as .webm, .mkv, or .3gp, that Android classifies as video and hides from AudioAnchor unless this is granted. Common formats like mp3, m4a/m4b, flac, wav, ogg, opus, aac, wma, gsm, and mid all work fine without it.</string>
+    <string name="settings_manage_external_storage_summary">Needed to delete audio files from your device on this version of Android, and for a few uncommon audio containers, such as .webm, .mkv, or .3gp, that Android classifies as video and hides from AudioAnchor unless this is granted. Everything else, including playback of common formats like mp3, m4a/m4b, flac, wav, ogg, opus, aac, wma, gsm, and mid, works fine without it.</string>
     <string name="settings_manage_external_storage_granted">Currently granted.</string>
     <string name="settings_manage_external_storage_not_granted">Currently not granted.</string>
     <string name="settings_directory_picker_initial_path_label">Initial directory picker path</string>

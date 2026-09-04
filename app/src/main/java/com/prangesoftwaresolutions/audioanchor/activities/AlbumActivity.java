@@ -14,9 +14,13 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.Settings;
 import androidx.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -104,6 +108,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     private Synchronizer mSynchronizer;
 
     static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE = 1;
+    // Request code for the "All files access" system settings screen (Android 11+), not a
+    // runtime permission request, so it's handled in onActivityResult() rather than
+    // onRequestPermissionsResult().
+    static final int PERMISSION_REQUEST_MANAGE_STORAGE_DELETE = 2;
 
 
     @Override
@@ -218,13 +226,13 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 switch (menuItem.getItemId()) {
                     case R.id.menu_delete:
                         // Check if app has the necessary permissions
-                        if (ContextCompat.checkSelfPermission(AlbumActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        if (hasStorageWritePermission()) {
+                            deleteSelectedTracksWithConfirmation();
+                        } else {
                             // This is necessary because requesting permission destroys action mode
                             // such that selected tracks are cleared
                             mTmpSelectedTracks = new ArrayList<>(mSelectedTracks);
-                            ActivityCompat.requestPermissions(AlbumActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE);
-                        } else {
-                            deleteSelectedTracksWithConfirmation();
+                            requestStorageWritePermission();
                         }
 
                         actionMode.finish();
@@ -549,6 +557,56 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 }
                 break;
             }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PERMISSION_REQUEST_MANAGE_STORAGE_DELETE) {
+            // The system settings screen has no result code for grant/deny, so just re-check
+            // the actual permission state once the user returns to the app.
+            if (hasStorageWritePermission()) {
+                mSelectedTracks = mTmpSelectedTracks;
+                deleteSelectedTracksWithConfirmation();
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    /*
+     * On Android 11+ (API 30+), targeting API 30+ makes scoped storage mandatory and
+     * requestLegacyExternalStorage a no-op, so a plain File.delete() only works on files this
+     * app created itself. WRITE_EXTERNAL_STORAGE can't help -- it's capped at maxSdkVersion 29
+     * in the manifest, so it can never actually be granted on these versions, which used to make
+     * every delete attempt fail with no way to fix it (see issue #218). "All files access"
+     * (MANAGE_EXTERNAL_STORAGE) is what actually restores raw file deletion there.
+     */
+    private boolean hasStorageWritePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager();
+        }
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestStorageWritePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // "All files access" is not self-explanatory, so explain it before sending the user
+            // off to the system settings screen rather than leaving them to wonder.
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.storage_permission_rationale_title)
+                    .setMessage(R.string.storage_permission_rationale_message)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.dialog_msg_ok, (dialog, which) -> {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                                Uri.parse(getString(R.string.app_package_uri)));
+                        startActivityForResult(intent, PERMISSION_REQUEST_MANAGE_STORAGE_DELETE);
+                    })
+                    .show();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE);
         }
     }
 
