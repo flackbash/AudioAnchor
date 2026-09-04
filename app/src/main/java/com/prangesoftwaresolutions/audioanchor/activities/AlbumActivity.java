@@ -55,7 +55,6 @@ import com.prangesoftwaresolutions.audioanchor.adapters.AudioFileCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
-import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.io.File;
@@ -701,12 +700,19 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     return;
                 }
 
-                // Get index of the current audio file in the list view
-                StorageUtil storage = new StorageUtil(getApplicationContext());
-                int index = storage.loadAudioIndex();
-
-                // Get the ListView item for the current audio file
-                View v = mListView.getChildAt(index - mListView.getFirstVisiblePosition());
+                // Find the currently visible ListView row for the playing track by matching its
+                // stable row id, not its position in the playback queue -- that queue position
+                // (StorageUtil.loadAudioIndex()) is fixed when playback starts and goes stale,
+                // silently pointing at the wrong row, as soon as another track above it is
+                // deleted from the list (see issue #207).
+                View v = null;
+                int firstVisible = mListView.getFirstVisiblePosition();
+                for (int i = 0; i < mListView.getChildCount(); i++) {
+                    if (mListView.getItemIdAtPosition(firstVisible + i) == mCurrUpdatedAudioId) {
+                        v = mListView.getChildAt(i);
+                        break;
+                    }
+                }
 
                 if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getID() == mCurrUpdatedAudioId) {
                     // Set the progress string for the currently playing ListView item
