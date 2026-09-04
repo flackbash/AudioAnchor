@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,6 +44,7 @@ import android.widget.Toast;
 
 import com.prangesoftwaresolutions.audioanchor.helpers.ChangelogHelper;
 import com.prangesoftwaresolutions.audioanchor.helpers.Migrator;
+import com.prangesoftwaresolutions.audioanchor.helpers.NaturalOrderComparator;
 import com.prangesoftwaresolutions.audioanchor.listeners.PlayStatusChangeListener;
 import com.prangesoftwaresolutions.audioanchor.listeners.SynchronizationStateListener;
 import com.prangesoftwaresolutions.audioanchor.models.Album;
@@ -59,6 +61,7 @@ import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 import java.io.File;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -321,42 +324,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        String sortOrderPref = mSharedPreferences.getString(getString(R.string.settings_sort_order_key), getString(R.string.settings_sort_order_default));
-        // Tiebreaker used whenever albums compare equal on the primary sort key, so that
-        // e.g. not-started or completed albums keep a stable, predictable relative order.
-        String titleTiebreaker = "CAST(" + AnchorContract.AlbumEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AlbumEntry.COLUMN_TITLE + ") ASC";
-        String sortOrder;
-        if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_progress_value))) {
-            // Correlated subquery computing each album's completion fraction (0 for albums
-            // with no tracks or zero total duration) from the audio_files table.
-            String progressExpr = "(SELECT CASE WHEN IFNULL(SUM(" + AnchorContract.AudioEntry.COLUMN_TIME + "), 0) = 0 THEN 0 "
-                    + "ELSE CAST(SUM(" + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME + ") AS REAL) / SUM(" + AnchorContract.AudioEntry.COLUMN_TIME + ") END "
-                    + "FROM " + AnchorContract.AudioEntry.TABLE_NAME
-                    + " WHERE " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM
-                    + " = " + AnchorContract.AlbumEntry.TABLE_NAME + "." + AnchorContract.AlbumEntry._ID + ")";
-            sortOrder = progressExpr + " ASC, " + titleTiebreaker;
-        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_last_played_value))) {
-            // Most recently played first. Albums that were never played have a NULL
-            // last_played_timestamp, which SQLite already sorts last in a DESC ordering.
-            sortOrder = AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " DESC, " + titleTiebreaker;
-        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_date_added_newest_value))) {
-            // Most recently added first. Albums that predate this feature have a NULL
-            // date_added, which SQLite already sorts last in a DESC ordering.
-            sortOrder = AnchorContract.AlbumEntry.COLUMN_DATE_ADDED + " DESC, " + titleTiebreaker;
-        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_date_added_oldest_value))) {
-            // Least recently added first. NULL date_added sorts first in an ASC ordering here,
-            // i.e. albums that predate this feature are treated as the oldest -- a reasonable
-            // default since they really were already in the library before it was tracked.
-            sortOrder = AnchorContract.AlbumEntry.COLUMN_DATE_ADDED + " ASC, " + titleTiebreaker;
-        } else {
-            sortOrder = "";
-            if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_directory_value))) {
-                sortOrder += AnchorContract.AlbumEntry.COLUMN_DIRECTORY + " ASC, ";
-            }
-            sortOrder += titleTiebreaker;
-        }
-        // Pinned albums always float to the top, regardless of the selected sort order.
-        sortOrder = AnchorContract.AlbumEntry.COLUMN_PINNED + " DESC, " + sortOrder;
+        // The actual ordering (including natural-order title comparison, which SQLite can't do
+        // -- see NaturalOrderComparator) is applied in Java in onLoadFinished(). This is just a
+        // stable baseline order for the query itself.
+        String sortOrder = AnchorContract.AlbumEntry._ID + " ASC";
 
         // Compute each album's total/completed time as part of this single query (correlated
         // subqueries over audio_files), instead of AlbumCursorAdapter issuing a separate
@@ -375,6 +346,105 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return new CursorLoader(this, AnchorContract.AlbumEntry.CONTENT_URI, projection, null, null, sortOrder);
     }
 
+    /*
+     * Re-orders the albums in `cursor` according to the selected "Album sort order" preference,
+     * using natural-order (numeric-aware) title comparison as the tiebreaker instead of
+     * SQLite's plain lexicographic LOWER(title) -- see NaturalOrderComparator for why that
+     * matters (e.g. "book 2" vs "book 10"). Applied here in Java rather than as SQL because
+     * natural sort isn't expressible in a plain SQLite ORDER BY. Returns a new Cursor with the
+     * same columns as `cursor` (so it's a drop-in replacement for both the adapter and the
+     * "find the currently playing album" scan below), in the corrected order.
+     */
+    private Cursor sortAlbumsNaturally(Cursor cursor) {
+        String sortOrderPref = mSharedPreferences.getString(getString(R.string.settings_sort_order_key), getString(R.string.settings_sort_order_default));
+
+        String[] columnNames = cursor.getColumnNames();
+        int colCount = columnNames.length;
+        int titleIdx = cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_TITLE);
+        int pinnedIdx = cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_PINNED);
+        int directoryIdx = cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DIRECTORY);
+        int dateAddedIdx = cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_DATE_ADDED);
+        int lastPlayedTimestampIdx = cursor.getColumnIndexOrThrow(AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP);
+        int totalTimeIdx = cursor.getColumnIndexOrThrow(AlbumCursorAdapter.COLUMN_TOTAL_TIME);
+        int completedTimeIdx = cursor.getColumnIndexOrThrow(AlbumCursorAdapter.COLUMN_COMPLETED_TIME);
+
+        ArrayList<Object[]> rows = new ArrayList<>(cursor.getCount());
+        while (cursor.moveToNext()) {
+            Object[] row = new Object[colCount];
+            for (int c = 0; c < colCount; c++) {
+                switch (cursor.getType(c)) {
+                    case Cursor.FIELD_TYPE_NULL:
+                        row[c] = null;
+                        break;
+                    case Cursor.FIELD_TYPE_INTEGER:
+                        row[c] = cursor.getLong(c);
+                        break;
+                    case Cursor.FIELD_TYPE_FLOAT:
+                        row[c] = cursor.getDouble(c);
+                        break;
+                    case Cursor.FIELD_TYPE_BLOB:
+                        row[c] = cursor.getBlob(c);
+                        break;
+                    default:
+                        row[c] = cursor.getString(c);
+                        break;
+                }
+            }
+            rows.add(row);
+        }
+
+        // Stable sorts applied least-significant key first, so each later pass preserves the
+        // relative order ties were left in by the previous one.
+        Collections.sort(rows, (r1, r2) -> NaturalOrderComparator.INSTANCE.compare((String) r1[titleIdx], (String) r2[titleIdx]));
+
+        if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_progress_value))) {
+            // Least progress first (0% at the top).
+            Collections.sort(rows, (r1, r2) -> Double.compare(
+                    albumProgress(r1, totalTimeIdx, completedTimeIdx), albumProgress(r2, totalTimeIdx, completedTimeIdx)));
+        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_last_played_value))) {
+            // Most recently played first. Albums that were never played have a NULL
+            // last_played_timestamp, which sorts last.
+            Collections.sort(rows, (r1, r2) -> compareNullableLong((Long) r2[lastPlayedTimestampIdx], (Long) r1[lastPlayedTimestampIdx]));
+        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_date_added_newest_value))) {
+            // Most recently added first. Albums that predate this feature have a NULL
+            // date_added, which sorts last.
+            Collections.sort(rows, (r1, r2) -> compareNullableLong((Long) r2[dateAddedIdx], (Long) r1[dateAddedIdx]));
+        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_date_added_oldest_value))) {
+            // Least recently added first. NULL date_added sorts first, i.e. albums that predate
+            // this feature are treated as the oldest.
+            Collections.sort(rows, (r1, r2) -> compareNullableLong((Long) r1[dateAddedIdx], (Long) r2[dateAddedIdx]));
+        } else if (sortOrderPref.equals(getString(R.string.settings_sort_order_by_directory_value))) {
+            Collections.sort(rows, (r1, r2) -> Long.compare((Long) r1[directoryIdx], (Long) r2[directoryIdx]));
+        }
+        // else: title mode, already sorted by title above.
+
+        // Pinned albums always float to the top, regardless of the selected sort order.
+        Collections.sort(rows, (r1, r2) -> Boolean.compare(((Long) r2[pinnedIdx]) != 0, ((Long) r1[pinnedIdx]) != 0));
+
+        MatrixCursor sorted = new MatrixCursor(columnNames, rows.size());
+        for (Object[] row : rows) {
+            sorted.addRow(row);
+        }
+        return sorted;
+    }
+
+    private static double albumProgress(Object[] row, int totalTimeIdx, int completedTimeIdx) {
+        long total = (Long) row[totalTimeIdx];
+        long completed = (Long) row[completedTimeIdx];
+        return total == 0 ? 0.0 : (double) completed / total;
+    }
+
+    /*
+     * Ascending compare with SQLite's NULL-sorts-first-in-ASC semantics. Swap the arguments at
+     * the call site to get NULL-sorts-last / a descending order instead.
+     */
+    private static int compareNullableLong(Long a, Long b) {
+        if (a == null && b == null) return 0;
+        if (a == null) return -1;
+        if (b == null) return 1;
+        return a.compareTo(b);
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         // Hide the progress bar when the loading is finished.
@@ -383,6 +453,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Set the text of the empty view
         mEmptyTV.setText(R.string.no_albums);
+
+        // Re-sort using natural-order title comparison (see sortAlbumsNaturally()). The Loader
+        // still owns and closes the original `cursor`.
+        cursor = sortAlbumsNaturally(cursor);
 
         if (mPlayer != null) {
             long albumId = mPlayer.getCurrentAudioFile().getAlbumId();

@@ -43,6 +43,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.prangesoftwaresolutions.audioanchor.helpers.NaturalOrderComparator;
 import com.prangesoftwaresolutions.audioanchor.helpers.SleepTimer;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
@@ -56,6 +57,7 @@ import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class PlayActivity extends AppCompatActivity {
@@ -541,10 +543,12 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     private void storeAudioFiles() {
-        // Store Serializable audioList in SharedPreferences
-        String sortOrder = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
-
-        ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesInAlbum(this, mAudioFile.getAlbumId(), sortOrder);
+        // Store Serializable audioList in SharedPreferences, in natural (numeric-aware) title
+        // order, e.g. "episode 2" before "episode 10" -- SQLite can only compare titles
+        // lexicographically or by a leading numeric prefix, so the real sort happens in Java
+        // (see NaturalOrderComparator) rather than via the query's ORDER BY.
+        ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesInAlbum(this, mAudioFile.getAlbumId(), null);
+        Collections.sort(audioList, (a, b) -> NaturalOrderComparator.INSTANCE.compare(a.getTitle(), b.getTitle()));
         mAudioIdList = new ArrayList<>();
         for (AudioFile audioFile : audioList) {
             mAudioIdList.add(audioFile.getID());

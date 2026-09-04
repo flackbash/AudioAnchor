@@ -13,6 +13,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -44,6 +45,7 @@ import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.receivers.PlayStatusReceiver;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.helpers.NaturalOrderComparator;
 import com.prangesoftwaresolutions.audioanchor.helpers.Synchronizer;
 import com.prangesoftwaresolutions.audioanchor.adapters.AudioFileCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
@@ -54,6 +56,7 @@ import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, PlayStatusChangeListener, SynchronizationStateListener {
 
@@ -348,43 +351,121 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_PINNED,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_DATE_ADDED,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP,
         };
 
         String sel = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_ALBUM + "=?";
         String[] selArgs = {Long.toString(mAlbum.getID())};
 
-        String sortOrderPref = mPrefs.getString(getString(R.string.settings_track_sort_order_key), getString(R.string.settings_track_sort_order_default));
-        // Tiebreaker used whenever tracks compare equal on the primary sort key, so that e.g.
-        // tracks with a tied/missing date_added still come out in a stable, predictable order.
-        String titleTiebreaker = "CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + " as SIGNED) ASC, LOWER(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TITLE + ") ASC";
-        String sortOrder;
-        if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_date_added_newest_value))) {
-            // Most recently added first. Tracks synced before this feature existed have a NULL
-            // date_added, which SQLite already sorts last in a DESC ordering.
-            sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_DATE_ADDED + " DESC, " + titleTiebreaker;
-        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_date_added_oldest_value))) {
-            // Least recently added first. NULL date_added sorts first in an ASC ordering here,
-            // i.e. tracks that predate this feature are treated as the oldest -- a reasonable
-            // default since they really were already in the library before it was tracked.
-            sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_DATE_ADDED + " ASC, " + titleTiebreaker;
-        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_progress_value))) {
-            // Least progress first (0% at the top). Per-track completion fraction, 0 for tracks
-            // with zero duration rather than dividing by zero.
-            String progressExpr = "CASE WHEN " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME + " = 0 THEN 0 "
-                    + "ELSE CAST(" + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME + " AS REAL) / " + AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME + " END";
-            sortOrder = progressExpr + " ASC, " + titleTiebreaker;
-        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_last_played_value))) {
-            // Most recently played first. Tracks that were never played (or predate this
-            // feature) have a NULL last_played_timestamp, which SQLite already sorts last in a
-            // DESC ordering.
-            sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " DESC, " + titleTiebreaker;
-        } else {
-            sortOrder = titleTiebreaker;
-        }
-        // Pinned tracks always float to the top of the track list, regardless of sort order.
-        sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_PINNED + " DESC, " + sortOrder;
+        // The actual ordering (including natural-order title comparison, which SQLite can't do
+        // -- see NaturalOrderComparator) is applied in Java in onLoadFinished(). This is just a
+        // stable baseline order for the query itself.
+        String sortOrder = AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID + " ASC";
 
         return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
+    }
+
+    private static final class TrackRow {
+        final long id;
+        final String title;
+        final boolean pinned;
+        final Long dateAdded;
+        final int time;
+        final int completedTime;
+        final Long lastPlayed;
+
+        TrackRow(long id, String title, boolean pinned, Long dateAdded, int time, int completedTime, Long lastPlayed) {
+            this.id = id;
+            this.title = title;
+            this.pinned = pinned;
+            this.dateAdded = dateAdded;
+            this.time = time;
+            this.completedTime = completedTime;
+            this.lastPlayed = lastPlayed;
+        }
+    }
+
+    /*
+     * Re-orders the tracks in `cursor` according to the selected "Track sort order" preference,
+     * using natural-order (numeric-aware) title comparison as the tiebreaker instead of SQLite's
+     * plain lexicographic LOWER(title) -- see NaturalOrderComparator for why that matters (e.g.
+     * "episode 2" vs "episode 10"). Applied here in Java rather than as SQL because natural sort
+     * isn't expressible in a plain SQLite ORDER BY. Returns a new Cursor with the same
+     * _ID/TITLE/PINNED columns the adapter reads, in the corrected order.
+     */
+    private Cursor sortTracksNaturally(Cursor cursor) {
+        String sortOrderPref = mPrefs.getString(getString(R.string.settings_track_sort_order_key), getString(R.string.settings_track_sort_order_default));
+
+        ArrayList<TrackRow> rows = new ArrayList<>(cursor.getCount());
+        int idIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry._ID);
+        int titleIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TITLE);
+        int pinnedIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_PINNED);
+        int dateAddedIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_DATE_ADDED);
+        int timeIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TIME);
+        int completedTimeIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME);
+        int lastPlayedIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP);
+
+        while (cursor.moveToNext()) {
+            rows.add(new TrackRow(
+                    cursor.getLong(idIdx),
+                    cursor.getString(titleIdx),
+                    cursor.getInt(pinnedIdx) != 0,
+                    cursor.isNull(dateAddedIdx) ? null : cursor.getLong(dateAddedIdx),
+                    cursor.getInt(timeIdx),
+                    cursor.getInt(completedTimeIdx),
+                    cursor.isNull(lastPlayedIdx) ? null : cursor.getLong(lastPlayedIdx)));
+        }
+
+        // Stable sorts applied least-significant key first, so each later pass preserves the
+        // relative order ties were left in by the previous one.
+        Collections.sort(rows, (r1, r2) -> NaturalOrderComparator.INSTANCE.compare(r1.title, r2.title));
+
+        if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_date_added_newest_value))) {
+            // Most recently added first. Tracks synced before this feature existed have a NULL
+            // date_added, which sorts last here, just like it did in the old DESC SQL ordering.
+            Collections.sort(rows, (r1, r2) -> compareNullableLong(r2.dateAdded, r1.dateAdded));
+        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_date_added_oldest_value))) {
+            // Least recently added first. NULL date_added sorts first, i.e. tracks that predate
+            // this feature are treated as the oldest.
+            Collections.sort(rows, (r1, r2) -> compareNullableLong(r1.dateAdded, r2.dateAdded));
+        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_progress_value))) {
+            // Least progress first (0% at the top). 0 for tracks with zero duration rather than
+            // dividing by zero.
+            Collections.sort(rows, (r1, r2) -> Double.compare(progressFraction(r1), progressFraction(r2)));
+        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_last_played_value))) {
+            // Most recently played first. Tracks that were never played (or predate this
+            // feature) have a NULL last_played_timestamp, which sorts last.
+            Collections.sort(rows, (r1, r2) -> compareNullableLong(r2.lastPlayed, r1.lastPlayed));
+        }
+
+        // Pinned tracks always float to the top of the track list, regardless of sort order.
+        Collections.sort(rows, (r1, r2) -> Boolean.compare(r2.pinned, r1.pinned));
+
+        MatrixCursor sorted = new MatrixCursor(new String[]{
+                AnchorContract.AudioEntry._ID, AnchorContract.AudioEntry.COLUMN_TITLE, AnchorContract.AudioEntry.COLUMN_PINNED
+        }, rows.size());
+        for (TrackRow row : rows) {
+            sorted.addRow(new Object[]{row.id, row.title, row.pinned ? 1 : 0});
+        }
+        return sorted;
+    }
+
+    /*
+     * Ascending compare with SQLite's NULL-sorts-first-in-ASC semantics. Swap the arguments at
+     * the call site to get NULL-sorts-last / a descending order instead.
+     */
+    private static int compareNullableLong(Long a, Long b) {
+        if (a == null && b == null) return 0;
+        if (a == null) return -1;
+        if (b == null) return 1;
+        return a.compareTo(b);
+    }
+
+    private static double progressFraction(TrackRow row) {
+        return row.time == 0 ? 0.0 : (double) row.completedTime / row.time;
     }
 
     @Override
@@ -414,12 +495,14 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
         mAlbumInfoTitleTV.setText(mAlbum.getTitle());
 
-        // Swap the new cursor in. The framework will take care of closing the old cursor
-        mCursorAdapter.swapCursor(cursor);
+        // Re-sort using natural-order title comparison (see sortTracksNaturally()), then swap
+        // the resulting cursor into the adapter. The Loader still owns and closes `cursor`.
+        Cursor sortedCursor = sortTracksNaturally(cursor);
+        mCursorAdapter.swapCursor(sortedCursor);
 
         // Scroll to the last played track, unless scrolling is skipped because the reload was
         // triggered by a DB op from within the AlbumActivity such as marking tracks as completed
-        if (mScroll) scrollToLastPlayed(cursor);
+        if (mScroll) scrollToLastPlayed(sortedCursor);
         mScroll = true;
     }
 
