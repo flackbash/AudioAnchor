@@ -176,6 +176,7 @@ public class PlayActivity extends AppCompatActivity {
 
         setNewAudioFile();
         setAlbumCover();
+        updatePlayPauseIcon();
 
         mHandler = new Handler();
         // Bind service if it is already running
@@ -203,7 +204,7 @@ public class PlayActivity extends AppCompatActivity {
                             break;
                         case MediaPlayerService.MSG_PAUSE:
                         case MediaPlayerService.MSG_STOP:
-                            mPlayIV.setImageResource(R.drawable.play_button);
+                            updatePlayPauseIcon();
                             break;
                     }
                 }
@@ -222,14 +223,10 @@ public class PlayActivity extends AppCompatActivity {
         };
 
         mPlayIV.setOnClickListener(view -> {
-            // Avoid "App not responding" error when clicking play on a completed file by not
-            // starting the MediaPlayerService in that case.
-            boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
-            if (mPlayer == null && mAudioFile.getCompletedTime() == mAudioFile.getTime() && !autoplay) {
-                return;
-            }
-
             if (mPlayer == null || !mPlayer.isPlaying()) {
+                // Pressing play on a finished track always restarts it from the beginning (see
+                // issue #196), so there's no longer a completed-but-nothing-will-happen case to
+                // skip starting the service for.
                 playAudio();
             } else {
                 pauseAudio();
@@ -352,6 +349,7 @@ public class PlayActivity extends AppCompatActivity {
             mAudioFile = mPlayer.getCurrentAudioFile();
             setNewAudioFile();
             setAlbumCover();
+            updatePlayPauseIcon();
         }
         initializeSeekBar();
     }
@@ -487,11 +485,7 @@ public class PlayActivity extends AppCompatActivity {
 
             // Perform actions that can only be performed once the service is connected
             // Set the play ImageView
-            if (mPlayer.isPlaying()) {
-                mPlayIV.setImageResource(R.drawable.pause_button);
-            } else {
-                mPlayIV.setImageResource(R.drawable.play_button);
-            }
+            updatePlayPauseIcon();
 
             // Connect SleepTimerTV if a sleep timer is active
             if (mPlayer.getSleepTimer() != null) {
@@ -516,6 +510,13 @@ public class PlayActivity extends AppCompatActivity {
         // Check if service is active
         if (!serviceBound) {
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
+            // Carry the play request directly on the intent that (re)creates the service,
+            // instead of relying solely on the separate BROADCAST_PLAY_AUDIO below -- that
+            // LocalBroadcast can be sent (and silently dropped, since nothing is registered to
+            // receive it yet) before the freshly-started service's onCreate() has had a chance
+            // to run, which previously meant the first press did nothing and the user had to
+            // press play again once the service caught up.
+            playerIntent.setAction(MediaPlayerService.ACTION_PLAY);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(playerIntent);
             } else {
@@ -567,6 +568,7 @@ public class PlayActivity extends AppCompatActivity {
         mAudioFile = AudioFile.getAudioFileById(this, audioId);
         setNewAudioFile();
         setAlbumCover();
+        updatePlayPauseIcon();
     }
 
     /*
@@ -607,6 +609,29 @@ public class PlayActivity extends AppCompatActivity {
         mTitleTV.setText(title);
         mTimeTV.setText(Utils.formatTime(mAudioFile.getTime(), mAudioFile.getTime()));
         mAlbumTV.setText(mAudioFile.getAlbumTitle());
+    }
+
+    /*
+     * Show the play, pause, or replay icon on the play button: pause while actually playing,
+     * replay if the track has already finished (pressing play restarts it from the beginning --
+     * see issue #196), otherwise play.
+     */
+    void updatePlayPauseIcon() {
+        updatePlayPauseIcon(getAudioCompletedTime());
+    }
+
+    // Takes the completed time explicitly rather than always re-reading getAudioCompletedTime()
+    // so a caller that just issued a seek (which resolves asynchronously on the service side --
+    // see setCurrentPosition()) can reflect the position it's seeking *to* immediately, instead
+    // of racing the stale pre-seek value.
+    void updatePlayPauseIcon(int completedTime) {
+        if (mPlayer != null && mPlayer.isPlaying()) {
+            mPlayIV.setImageResource(R.drawable.pause_button);
+        } else if (mAudioFile.getTime() > 0 && completedTime >= mAudioFile.getTime()) {
+            mPlayIV.setImageResource(R.drawable.replay_button);
+        } else {
+            mPlayIV.setImageResource(R.drawable.play_button);
+        }
     }
 
     /*
@@ -1197,6 +1222,11 @@ public class PlayActivity extends AppCompatActivity {
             values.put(AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME, newTime);
             getContentResolver().update(uri, values, null, null);
         }
+
+        // Reflect the new position (e.g. dragging/tapping the seek bar, or skipping) right away
+        // instead of leaving a stale replay icon up from before the position moved away from the
+        // end of the track.
+        updatePlayPauseIcon(newTime);
     }
 
     int getAudioCompletedTime() {

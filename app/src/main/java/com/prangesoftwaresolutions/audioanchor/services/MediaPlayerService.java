@@ -186,6 +186,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // into repeated stutter instead of a single clean recovery.
     private Runnable mPendingInitRetry;
     private int mInitRetryCount = 0;
+    // See onError()'s de-duplication check -- true once a failure has actually been shown to
+    // the user (or retries exhausted) for the current attempt, reset wherever a new attempt
+    // legitimately starts.
+    private boolean mErrorAlreadyHandled = false;
 
     // How often to persist the current playback position to the database while playing, so at
     // most this much progress is lost if the process is killed without a clean pause/stop
@@ -411,6 +415,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mLastInitPosition = position;
         mLastInitOnReady = onReady;
         mInitRetryCount = 0;
+        mErrorAlreadyHandled = false;
         initMediaPlayerInternal(path, position, onReady);
     }
 
@@ -539,13 +544,29 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Log.e(LOG_TAG, "MediaPlayer error: what=" + what + ", extra=" + extra);
 
-        // what=-38 is the same transient "grabbed the native audio session too soon after a
-        // just-abandoned player's own teardown" failure NEXT_TRACK_WAIT_TIME is for, just from
-        // switching to an unrelated track instead of auto-advancing -- most reliably hit by
-        // switching again before the previous track's own setup had finished. It goes away on
-        // its own shortly after, so retry a few times instead of surfacing it to the user; a
-        // genuine problem with the file will keep failing every time and fall through below.
-        if (what == -38 && mInitRetryCount < MAX_INIT_RETRIES && mLastInitPath != null) {
+        // A single underlying native fault can be delivered to this listener more than once
+        // (observed 2-3 deliveries a few ms apart for the same failure) -- without this, each
+        // delivery independently retried or (once retries were exhausted) showed its own toast,
+        // so one glitch could surface as several "problem with the audio file" toasts in a row.
+        // Once we've decided to give up on the current attempt, ignore anything further until a
+        // new attempt starts (see initMediaPlayer() and onPlaybackStarted(), which reset this).
+        if (mErrorAlreadyHandled) {
+            return true;
+        }
+
+        // Both of these are known-transient native/framework hiccups, not a real problem with
+        // the file, so retry a few times instead of surfacing them to the user; a genuine
+        // problem keeps failing every time and falls through below once retries are exhausted.
+        // - what=-38: grabbed the native audio session too soon after a just-abandoned player's
+        //   own teardown -- the same race NEXT_TRACK_WAIT_TIME above fixes for auto-advance, but
+        //   also reachable by switching to an unrelated track before the abandoned one's own
+        //   setup had finished.
+        // - what=1/extra=MIN_VALUE: the audio decoder itself faulting, observed specifically
+        //   when seeking a paused player (native log: "received error(0x80000000) from audio
+        //   decoder"). A full reset()+reload recovers it, landing back at the position (and
+        //   playing/paused state) the seek was trying to reach -- see setCurrentPosition().
+        boolean knownTransient = what == -38 || (what == 1 && extra == Integer.MIN_VALUE);
+        if (knownTransient && mInitRetryCount < MAX_INIT_RETRIES && mLastInitPath != null) {
             mInitRetryCount++;
             String path = mLastInitPath;
             int position = mLastInitPosition;
@@ -561,6 +582,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             return true;
         }
 
+        mErrorAlreadyHandled = true;
         if (mActiveAudio != null) {
             String errorMsg = getResources().getString(R.string.audio_file_error, mActiveAudio.getTitle());
             Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
@@ -1113,8 +1135,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void play() {
         if (mMediaPlayer == null) return;
 
-        // Get Autoplay and Autorewind settings
-        boolean autoplay = mSharedPreferences.getBoolean(getString(R.string.settings_autoplay_key), Boolean.getBoolean(getString(R.string.settings_autoplay_default)));
+        // Get Autorewind setting
         int autorewindTime = Integer.parseInt(mSharedPreferences.getString(getString(R.string.settings_autorewind_key), getString(R.string.settings_autorewind_default)));
 
         // Request a partial wake lock for the duration of the playback
@@ -1130,9 +1151,28 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 if (mMediaPlayer.isPlaying()) return;
                 int currentPosition = mMediaPlayer.getCurrentPosition();
                 int duration = mMediaPlayer.getDuration();
-                if (!(autoplay || currentPosition != duration)) return;
-                if (currentPosition != duration) {
-                    mMediaPlayer.seekTo(currentPosition - autorewindTime * 1000);
+                if (duration > 0 && currentPosition >= duration) {
+                    // This is an explicit play() request (button press, media button, etc) --
+                    // as opposed to the auto-advance in onCompletion(), which governs its own
+                    // next track separately -- for a track that's already finished. Always
+                    // restart it from the beginning instead of either silently doing nothing or
+                    // instantly re-completing and skipping to the next track, regardless of the
+                    // autoplay setting. See issue #196.
+                    //
+                    // Update the retry target (see onError()) to match *before* seeking: if this
+                    // seek itself faults, a retry must restore to 0, not to the stale
+                    // pre-existing duration/finished position -- otherwise the retry lands back
+                    // on the same finished check above, seeks to 0 again, can fault again, and
+                    // so on, bouncing the seek bar between the end and the start of the track on
+                    // each cycle instead of recovering.
+                    mLastInitPosition = 0;
+                    mLastInitOnReady = this::play;
+                    mMediaPlayer.seekTo(0);
+                } else if (currentPosition != duration) {
+                    int rewoundPosition = currentPosition - autorewindTime * 1000;
+                    mLastInitPosition = rewoundPosition;
+                    mLastInitOnReady = this::play;
+                    mMediaPlayer.seekTo(rewoundPosition);
                 }
                 mMediaPlayer.start();
                 started = true;
@@ -1151,6 +1191,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // relevant -- see the comment on mPendingInitRetry.
         cancelPendingInitRetry();
         mInitRetryCount = 0;
+        mErrorAlreadyHandled = false;
 
         sendPlayStatusResult(MSG_PLAY);
         mediaSession.setActive(true);
@@ -1167,6 +1208,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // already at its full duration -- reflects a plain paused/ready state instead of calling
     // play(), which would otherwise immediately re-complete the track (see issue #150).
     private void onResumedPaused() {
+        // Setup genuinely succeeded (this is also the onReady used when a retry recovers a
+        // seek-triggered failure while paused -- see setCurrentPosition() and onError()), so no
+        // init-retry state from an earlier failed attempt is still relevant.
+        cancelPendingInitRetry();
+        mInitRetryCount = 0;
+        mErrorAlreadyHandled = false;
+
         updateMetaData();
         buildNotification();
         setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
@@ -1176,6 +1224,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         // Release the partial wake lock to save battery
         mLockManager.releaseWakeLock();
         stopPeriodicPositionSave();
+        // See the matching comment in pause() -- a pending init-retry must not outlive a
+        // deliberate stop either.
+        cancelPendingInitRetry();
+        mInitRetryCount = 0;
+        mErrorAlreadyHandled = false;
 
         if (mMediaPlayer != null) {
             updateAudioFileStatus();
@@ -1196,6 +1249,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void pause() {
         // Release the partial wake lock to save battery
         mLockManager.releaseWakeLock();
+
+        // A pending init-retry (see onError()) recovering from an earlier failure would
+        // otherwise still fire after this deliberate pause and silently resume playback --
+        // reload the track, call its onReady (typically play()), and leave the notification/UI
+        // showing playing even though the user just paused. Cancel it and close out that
+        // recovery episode; a future resume starts a fresh retry budget instead of inheriting a
+        // partially-exhausted one.
+        cancelPendingInitRetry();
+        mInitRetryCount = 0;
+        mErrorAlreadyHandled = false;
 
         if (mMediaPlayer != null) {
             mPlayerExecutor.execute(() -> {
@@ -1317,6 +1380,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      */
     public void setCurrentPosition(int progress) {
         if (mMediaPlayer != null) {
+            // Update what a retry (see onError()) should restore to if this seek itself
+            // destabilizes the decoder (observed on some devices specifically when seeking a
+            // paused player) -- without this, a retry would silently discard the seek and land
+            // back at wherever the track was last (re)initialized from instead, and would
+            // wrongly resume playback if the player was actually paused when the seek failed.
+            mLastInitPosition = progress;
+            mLastInitOnReady = isPlaying() ? this::play : this::onResumedPaused;
             mPlayerExecutor.execute(() -> {
                 try {
                     mMediaPlayer.seekTo(progress);
