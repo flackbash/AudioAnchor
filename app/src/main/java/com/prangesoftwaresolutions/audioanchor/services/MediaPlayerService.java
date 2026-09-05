@@ -272,7 +272,17 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         if (mediaSession == null) {
             initMediaSession();
-            initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime(), this::play);
+            // Auto-resume playback of whatever was playing when the service last died (e.g. the
+            // OS killed the process for memory while paused, and the user just reopened the
+            // app) -- but not if the stored position is already at (or past) the track's full
+            // duration. Seeking there and calling play() would immediately fire onCompletion(),
+            // which -- with autoplay on -- skips straight to the *next* track on a simple
+            // reconnect the user never asked to advance from (see issue #150). A deliberate
+            // play() request (the app's play button, or a media button while the service is
+            // already alive) is untouched by this and still legitimately advances to the next
+            // track when pressed on an already-finished file with autoplay on.
+            boolean alreadyFinished = mActiveAudio.getTime() > 0 && mActiveAudio.getCompletedTime() >= mActiveAudio.getTime();
+            initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime(), alreadyFinished ? this::onResumedPaused : this::play);
         }
 
         // Handle Intent action from MediaSession.TransportControls
@@ -1073,6 +1083,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         updateLastPlayedAudio();
         boolean addLastPlayPositionBookmarks = mSharedPreferences.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_key), Boolean.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_default)));
         if (addLastPlayPositionBookmarks) updateLastPlayPositionBookmarks();
+    }
+
+    // onReady callback for onStartCommand()'s initMediaPlayer() when the track being reloaded is
+    // already at its full duration -- reflects a plain paused/ready state instead of calling
+    // play(), which would otherwise immediately re-complete the track (see issue #150).
+    private void onResumedPaused() {
+        updateMetaData();
+        buildNotification();
+        setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
     }
 
     public void stopMedia() {
