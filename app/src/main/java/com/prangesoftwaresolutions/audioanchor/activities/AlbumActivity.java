@@ -317,6 +317,10 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     protected void onResume() {
         super.onResume();
         bindToServiceIfRunning();
+        // Returning to this screen (e.g. from PlayActivity, where the user may have started a
+        // different track) is a legitimate reason to jump back to the currently playing track --
+        // see the comment in onLoadFinished() for why that's not the default for every reload.
+        mScroll = true;
         getLoaderManager().restartLoader(0, null, this);
     }
 
@@ -507,10 +511,15 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         Cursor sortedCursor = sortTracksNaturally(cursor);
         mCursorAdapter.swapCursor(sortedCursor);
 
-        // Scroll to the last played track, unless scrolling is skipped because the reload was
-        // triggered by a DB op from within the AlbumActivity such as marking tracks as completed
+        // Only scroll to the last played track when mScroll was explicitly armed beforehand (see
+        // onResume() and onCreate()'s initial value) -- a reload can also be triggered by all
+        // sorts of unrelated background writes this Activity had no part in and shouldn't jump
+        // the list for: the service's periodic position save while playing, its last-played
+        // timestamp update on every play/pause, or a sync completing. Default back to not
+        // scrolling after consuming it, so the *next* reload -- whatever triggers it -- doesn't
+        // scroll unless something explicitly re-arms this again.
         if (mScroll) scrollToLastPlayed(sortedCursor);
-        mScroll = true;
+        mScroll = false;
     }
 
     @Override
