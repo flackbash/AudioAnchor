@@ -166,6 +166,40 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // 50ms consistently avoided both in testing.
     private final int NEXT_TRACK_WAIT_TIME = 50;
 
+    // How often to persist the current playback position to the database while playing, so at
+    // most this much progress is lost if the process is killed without a clean pause/stop
+    // (e.g. the OS reboots, or kills this now-background process for memory, mid-playback --
+    // see https://github.com/flackbash/AudioAnchor/issues/158 and /issues/159). Position is
+    // already saved on every pause/stop/skip, but those are the only save points today, so any
+    // uninterrupted stretch of listening longer than this interval was previously unrecoverable.
+    private static final long POSITION_SAVE_INTERVAL_MS = 15000;
+    private final Runnable mPositionSaveRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateAudioFileStatus();
+            mMainHandler.postDelayed(this, POSITION_SAVE_INTERVAL_MS);
+        }
+    };
+
+    private void startPeriodicPositionSave() {
+        mMainHandler.removeCallbacks(mPositionSaveRunnable);
+        mMainHandler.postDelayed(mPositionSaveRunnable, POSITION_SAVE_INTERVAL_MS);
+    }
+
+    private void stopPeriodicPositionSave() {
+        mMainHandler.removeCallbacks(mPositionSaveRunnable);
+    }
+
+    // Save the position immediately when the system is about to shut down (e.g. a scheduled
+    // nightly reboot, see issue #159) rather than waiting for the next periodic save above --
+    // ACTION_SHUTDOWN gives no guarantee the process survives long enough for a delayed one.
+    private final BroadcastReceiver mShutdownReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateAudioFileStatus();
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -180,6 +214,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Register system wide BroadcastReceiver for changes in audio outputs
         registerReceiver(mBecomingNoisyReceiver, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+
+        // Register for the system shutdown broadcast so the playback position gets one last
+        // synchronous save before the process is killed for a reboot (see issue #159).
+        registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
 
         // Register BroadcastReceivers for broadcasts from PlayActivity
         mBroadcaster.registerReceiver(mPlayAudioReceiver, new IntentFilter(PlayActivity.BROADCAST_PLAY_AUDIO));
@@ -258,6 +296,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void onDestroy() {
         super.onDestroy();
         Log.e("MediaPlayerService", "calling onDestroy()");
+        stopPeriodicPositionSave();
         if (mSleepTimer != null)
             mSleepTimer.disableTimer();
 
@@ -289,6 +328,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Unregister BroadcastReceivers
         unregisterReceiver(mBecomingNoisyReceiver);
+        unregisterReceiver(mShutdownReceiver);
         mBroadcaster.unregisterReceiver(mPlayAudioReceiver);
         mBroadcaster.unregisterReceiver(mPauseAudioReceiver);
         unregisterReceiver(mRemoveNotificationReceiver);
@@ -412,6 +452,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void finishPlaybackAfterCompletion() {
+        stopPeriodicPositionSave();
+
         // Notify the play activity that the playback was paused
         sendPlayStatusResult(MSG_STOP);
 
@@ -1026,6 +1068,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mediaSession.setActive(true);
         setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
         buildNotification();
+        startPeriodicPositionSave();
 
         updateLastPlayedAudio();
         boolean addLastPlayPositionBookmarks = mSharedPreferences.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_key), Boolean.getBoolean(getString(R.string.settings_add_last_play_position_bookmark_default)));
@@ -1035,6 +1078,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void stopMedia() {
         // Release the partial wake lock to save battery
         mLockManager.releaseWakeLock();
+        stopPeriodicPositionSave();
 
         if (mMediaPlayer != null) {
             updateAudioFileStatus();
@@ -1081,6 +1125,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void onPlaybackPaused() {
+        stopPeriodicPositionSave();
         updateAudioFileStatus();
         sendPlayStatusResult(MSG_PAUSE);
         setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
