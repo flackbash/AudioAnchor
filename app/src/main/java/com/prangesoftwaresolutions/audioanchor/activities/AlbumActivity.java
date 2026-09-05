@@ -641,6 +641,17 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
             Log.e("AlbumActivity", "Update currAudioLastCompletedTime");
             if (mPlayer.getCurrentAudioFile().getAlbumId() == mAlbum.getID()) {
+                // The Loader's onLoadFinished() only refreshes these two fields when it runs
+                // while the service is already bound. Binding here is async, same as the
+                // Loader's own reload, so onLoadFinished() can just as easily win that race and
+                // run first -- with mPlayer still null -- leaving them stale for whichever
+                // track was playing before. That stale mCurrUpdatedAudioId then makes the live
+                // per-100ms album time updater below silently no-op until the next periodic DB
+                // save (up to 15s later) triggers another reload, this time with mPlayer bound.
+                // Set them here too so they're correct the moment the service connects,
+                // regardless of which of the two races first.
+                mCurrAudioLastCompletedTime = mPlayer.getCurrentAudioFile().getCompletedTime();
+                mCurrUpdatedAudioId = mPlayer.getCurrentAudioFile().getID();
                 setCompletedTimeUpdater();
             }
         }
