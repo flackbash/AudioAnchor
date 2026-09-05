@@ -55,8 +55,14 @@ public class AudioFileCursorAdapter extends CursorAdapter {
         String title = "";
         boolean titleFromMetadata = mPrefs.getBoolean(mContext.getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(mContext.getString(R.string.settings_title_from_metadata_default)));
         if (titleFromMetadata && audioFile != null && new File(audioFile.getPath()).exists()) {
-            mMetadataRetriever.setDataSource(audioFile.getPath());
-            title = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            try {
+                mMetadataRetriever.setDataSource(audioFile.getPath());
+                title = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            } catch (RuntimeException e) {
+                // MediaMetadataRetriever can fail to open a file it doesn't like (e.g. some
+                // paths containing a colon) -- fall back to the file name below instead of
+                // crashing the whole ListView.
+            }
         }
         if (title == null || title.isEmpty()) {
             // Also use the file name if the audio file has no metadata title

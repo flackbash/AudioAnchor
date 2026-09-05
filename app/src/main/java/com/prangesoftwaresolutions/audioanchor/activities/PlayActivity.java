@@ -592,8 +592,14 @@ public class PlayActivity extends AppCompatActivity {
         // Set TextViews
         String title = "";
         if (mTitleFromMetadata) {
-            mMetadataRetriever.setDataSource(mAudioFile.getPath());
-            title = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            try {
+                mMetadataRetriever.setDataSource(mAudioFile.getPath());
+                title = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            } catch (RuntimeException e) {
+                // MediaMetadataRetriever can fail to open a file it doesn't like (e.g. some
+                // paths containing a colon) -- fall back to the file name below instead of
+                // crashing the screen.
+            }
         }
         if (title == null || title.isEmpty()) {
             title = mAudioFile.getTitle();
@@ -620,9 +626,15 @@ public class PlayActivity extends AppCompatActivity {
 
         if (mCoverFromMetadata) {
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            mmr.setDataSource(mAudioFile.getPath());
-
-            byte[] coverData = mmr.getEmbeddedPicture();
+            byte[] coverData = null;
+            try {
+                mmr.setDataSource(mAudioFile.getPath());
+                coverData = mmr.getEmbeddedPicture();
+            } catch (RuntimeException e) {
+                // MediaMetadataRetriever can fail to open a file it doesn't like (e.g. some
+                // paths containing a colon) -- fall back to the cover path below instead of
+                // crashing the screen.
+            }
 
             // Convert the byte array to a bitmap
             if (coverData != null) {

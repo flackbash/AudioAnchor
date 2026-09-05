@@ -765,8 +765,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         boolean coverFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_cover_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_cover_from_metadata_default)));
 
         if (coverFromMetadata) {
-            mMetadataRetriever.setDataSource(mActiveAudio.getPath());
-            byte[] coverData = mMetadataRetriever.getEmbeddedPicture();
+            byte[] coverData = null;
+            try {
+                mMetadataRetriever.setDataSource(mActiveAudio.getPath());
+                coverData = mMetadataRetriever.getEmbeddedPicture();
+            } catch (RuntimeException e) {
+                // MediaMetadataRetriever can fail to open a file it doesn't like (e.g. some
+                // paths containing a colon) -- fall back to the cover path below instead of
+                // crashing the notification.
+            }
 
             if (coverData != null) {
                 notificationCover = BitmapUtils.decodeSampledBitmap(coverData, size, size);
@@ -812,8 +819,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         String audioTitle = "";
         boolean titleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
         if (titleFromMetadata) {
-            mMetadataRetriever.setDataSource(mActiveAudio.getPath());
-            audioTitle = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            try {
+                mMetadataRetriever.setDataSource(mActiveAudio.getPath());
+                audioTitle = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            } catch (RuntimeException e) {
+                // MediaMetadataRetriever can fail to open a file it doesn't like (e.g. some
+                // paths containing a colon) -- fall back to the file name below instead of
+                // crashing the notification.
+            }
         }
         if (audioTitle == null || audioTitle.isEmpty()) {
             audioTitle = mActiveAudio.getTitle();
