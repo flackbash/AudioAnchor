@@ -176,7 +176,17 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private final Runnable mPositionSaveRunnable = new Runnable() {
         @Override
         public void run() {
-            updateAudioFileStatus();
+            // Route the actual position read/write through mPlayerExecutor instead of calling
+            // it directly here on the main thread. This Runnable fires on its own schedule,
+            // completely independent of playback state, so without this it could call
+            // mMediaPlayer.getCurrentPosition() concurrently with mPlayerExecutor's thread
+            // mid-reset()/setDataSource()/prepare() during a track switch -- MediaPlayer is
+            // documented as unsafe to call from more than one thread at once, and that race
+            // could surface as a spurious "problem with the audio file" error toast even though
+            // the new track goes on to play fine.
+            if (mMediaPlayer != null) {
+                mPlayerExecutor.execute(MediaPlayerService.this::updateAudioFileStatus);
+            }
             mMainHandler.postDelayed(this, POSITION_SAVE_INTERVAL_MS);
         }
     };
