@@ -166,6 +166,27 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // 50ms consistently avoided both in testing.
     private final int NEXT_TRACK_WAIT_TIME = 50;
 
+    // Retry parameters for the same "reset() too soon after a just-abandoned player's own
+    // teardown" race that NEXT_TRACK_WAIT_TIME above fixes for the auto-advance case -- this
+    // handles the other place it shows up: switching to an unrelated track (AlbumActivity stops
+    // the old service and a brand-new instance immediately starts playing the new one) has no
+    // such gap at all. Unlike the auto-advance case, a fixed short wait isn't reliable here: if
+    // the abandoned track's own setup hadn't finished yet, its stop()/release() queue up behind
+    // that setup on its own executor, so how long its native resources stay held varies. Retry a
+    // few times with a short backoff instead of a single fixed delay.
+    private static final int MAX_INIT_RETRIES = 4;
+    private static final long INIT_RETRY_DELAY_MS = 200;
+    private String mLastInitPath;
+    private int mLastInitPosition;
+    private Runnable mLastInitOnReady;
+    // Kept so a scheduled retry can be cancelled -- without this, a retry that already
+    // succeeded (actually started playing) could still get torn down moments later by an
+    // earlier, still-pending retry's postDelayed callback finally firing and calling reset() on
+    // the now-playing player, which throws its own -38 and schedules yet another retry, cascading
+    // into repeated stutter instead of a single clean recovery.
+    private Runnable mPendingInitRetry;
+    private int mInitRetryCount = 0;
+
     // How often to persist the current playback position to the database while playing, so at
     // most this much progress is lost if the process is killed without a clean pause/stop
     // (e.g. the OS reboots, or kills this now-background process for memory, mid-playback --
@@ -317,6 +338,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         super.onDestroy();
         Log.e("MediaPlayerService", "calling onDestroy()");
         stopPeriodicPositionSave();
+        cancelPendingInitRetry();
         if (mSleepTimer != null)
             mSleepTimer.disableTimer();
 
@@ -384,6 +406,24 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * mPlayerExecutor so calls are never made concurrently from two threads.
      */
     void initMediaPlayer(String path, int position, Runnable onReady) {
+        cancelPendingInitRetry();
+        mLastInitPath = path;
+        mLastInitPosition = position;
+        mLastInitOnReady = onReady;
+        mInitRetryCount = 0;
+        initMediaPlayerInternal(path, position, onReady);
+    }
+
+    private void cancelPendingInitRetry() {
+        if (mPendingInitRetry != null) {
+            mMainHandler.removeCallbacks(mPendingInitRetry);
+            mPendingInitRetry = null;
+        }
+    }
+
+    // Does the actual setup work; used both for a fresh initMediaPlayer() call and for onError()
+    // retrying the same one after a transient failure (see MAX_INIT_RETRIES above).
+    private void initMediaPlayerInternal(String path, int position, Runnable onReady) {
         if (mMediaPlayer == null) {
             mMediaPlayer = new MediaPlayer();
             mMediaPlayer.setOnCompletionListener(this);
@@ -498,6 +538,29 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Log.e(LOG_TAG, "MediaPlayer error: what=" + what + ", extra=" + extra);
+
+        // what=-38 is the same transient "grabbed the native audio session too soon after a
+        // just-abandoned player's own teardown" failure NEXT_TRACK_WAIT_TIME is for, just from
+        // switching to an unrelated track instead of auto-advancing -- most reliably hit by
+        // switching again before the previous track's own setup had finished. It goes away on
+        // its own shortly after, so retry a few times instead of surfacing it to the user; a
+        // genuine problem with the file will keep failing every time and fall through below.
+        if (what == -38 && mInitRetryCount < MAX_INIT_RETRIES && mLastInitPath != null) {
+            mInitRetryCount++;
+            String path = mLastInitPath;
+            int position = mLastInitPosition;
+            Runnable onReady = mLastInitOnReady;
+            // Cancel any earlier still-pending retry first -- only one may ever be scheduled at
+            // once, so an earlier one can't fire later and stomp on this (or a later) attempt.
+            cancelPendingInitRetry();
+            mPendingInitRetry = () -> {
+                mPendingInitRetry = null;
+                initMediaPlayerInternal(path, position, onReady);
+            };
+            mMainHandler.postDelayed(mPendingInitRetry, INIT_RETRY_DELAY_MS);
+            return true;
+        }
+
         if (mActiveAudio != null) {
             String errorMsg = getResources().getString(R.string.audio_file_error, mActiveAudio.getTitle());
             Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
@@ -1084,6 +1147,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void onPlaybackStarted() {
+        // Playback genuinely started, so no init-retry from an earlier failed attempt is still
+        // relevant -- see the comment on mPendingInitRetry.
+        cancelPendingInitRetry();
+        mInitRetryCount = 0;
+
         sendPlayStatusResult(MSG_PLAY);
         mediaSession.setActive(true);
         setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
