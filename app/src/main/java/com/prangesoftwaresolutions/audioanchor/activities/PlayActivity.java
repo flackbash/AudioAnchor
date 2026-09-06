@@ -271,7 +271,19 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 mIsUserSeeking = false;
-                updateAudioCompletedTime(seekBar.getProgress() * 1000);
+                // The SeekBar only has whole-second resolution (see initializeSeekBar()), so
+                // reconstructing a position from its progress truncates up to 999ms off the
+                // real duration whenever that duration isn't an exact multiple of a second --
+                // true for virtually every real audio file. Dragged to the very end, that
+                // truncated value then lands just *below* mAudioFile.getTime(), so
+                // Utils.isFinished() sees it as not-yet-finished and every play/pause/replay
+                // control (this button, the AlbumActivity/MainActivity FABs, the notification)
+                // keeps showing play instead of replay. Snap to the exact duration when the
+                // bar is at its max so the seek this produces always matches the finished check.
+                int newTime = (seekBar.getProgress() >= seekBar.getMax())
+                        ? mAudioFile.getTime()
+                        : seekBar.getProgress() * 1000;
+                updateAudioCompletedTime(newTime);
             }
         });
 
@@ -627,7 +639,7 @@ public class PlayActivity extends AppCompatActivity {
     void updatePlayPauseIcon(int completedTime) {
         if (mPlayer != null && mPlayer.isPlaying()) {
             mPlayIV.setImageResource(R.drawable.pause_button);
-        } else if (mAudioFile.getTime() > 0 && completedTime >= mAudioFile.getTime()) {
+        } else if (Utils.isFinished(mAudioFile, completedTime)) {
             mPlayIV.setImageResource(R.drawable.replay_button);
         } else {
             mPlayIV.setImageResource(R.drawable.play_button);

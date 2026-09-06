@@ -3,6 +3,7 @@
     <string name="channel_description">Notification channel to display the media controls.</string>
     <string name="button_pause">Pause</string>
     <string name="button_play">Play</string>
+    <string name="button_replay">Replay</string>
     <string name="button_backward">Backward</string>
     <string name="button_forward">Forward</string>
     <string name="button_bookmark">Bookmark</string>

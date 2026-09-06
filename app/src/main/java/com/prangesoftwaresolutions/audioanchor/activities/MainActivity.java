@@ -587,11 +587,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             // Perform actions that can only be performed once the service is connected
             // Set up the play-pause FAB image according to the current MediaPlayerService state
             mPlayPauseFAB.setVisibility(View.VISIBLE);
-            if (mPlayer.isPlaying()) {
-                mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
-            } else {
-                mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
-            }
+            updatePlayPauseFABIcon();
 
             setCompletedTimeUpdater();
         }
@@ -606,6 +602,29 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onPlayMsgReceived() {
         mDoNotBindService = false;
+    }
+
+    @Override
+    public void onPauseMsgReceived() {
+        updatePlayPauseFABIcon();
+    }
+
+    /*
+     * Show the play, pause, or replay icon on the play-pause FAB: pause while actually playing,
+     * replay if the current track has already finished (pressing play restarts it from the
+     * beginning -- see issue #196), otherwise play. Mirrors PlayActivity.updatePlayPauseIcon().
+     */
+    private void updatePlayPauseFABIcon() {
+        if (mPlayer == null) {
+            return;
+        }
+        if (mPlayer.isPlaying()) {
+            mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
+        } else if (Utils.isFinished(mPlayer.getCurrentAudioFile(), mPlayer.getCurrentPosition())) {
+            mPlayPauseFAB.setImageResource(R.drawable.ic_replay_white);
+        } else {
+            mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+        }
     }
 
     @Override

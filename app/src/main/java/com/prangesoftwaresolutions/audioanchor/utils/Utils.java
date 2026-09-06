@@ -162,6 +162,17 @@ public class Utils {
     }
 
 
+    /*
+     * Whether an audio file has already played to its end -- pressing play in this state should
+     * restart it from the beginning rather than resume, and callers showing a play/pause control
+     * for it (PlayActivity's play button, the AlbumActivity/MainActivity FABs, the notification)
+     * should show a replay icon instead of the play icon so the user knows what to expect. See
+     * issue #196.
+     */
+    public static boolean isFinished(AudioFile audioFile, int completedTime) {
+        return audioFile.getTime() > 0 && completedTime >= audioFile.getTime();
+    }
+
     public static boolean isMediaPlayerServiceRunning(Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         if (manager != null) {

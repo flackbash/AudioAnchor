@@ -38,8 +38,14 @@ public class PlayStatusReceiver extends BroadcastReceiver {
                     }
                     break;
                 case MediaPlayerService.MSG_PAUSE:
-                    mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+                    // Whether this should show the play or replay icon depends on whether the
+                    // track has finished (see issue #196) -- only the listener Activity has the
+                    // player/track state needed to tell, so leave the icon choice to it instead
+                    // of guessing here.
                     mPlayPauseFAB.setVisibility(View.VISIBLE);
+                    if (mListener != null) {
+                        mListener.onPauseMsgReceived();
+                    }
                     break;
                 case MediaPlayerService.MSG_STOP:
                     mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);

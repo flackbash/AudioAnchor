@@ -60,6 +60,7 @@ import com.prangesoftwaresolutions.audioanchor.activities.PlayActivity;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 
 import java.io.IOException;
@@ -316,7 +317,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             // play() request (the app's play button, or a media button while the service is
             // already alive) is untouched by this and still legitimately advances to the next
             // track when pressed on an already-finished file with autoplay on.
-            boolean alreadyFinished = mActiveAudio.getTime() > 0 && mActiveAudio.getCompletedTime() >= mActiveAudio.getTime();
+            boolean alreadyFinished = Utils.isFinished(mActiveAudio, mActiveAudio.getCompletedTime());
             initMediaPlayer(mActiveAudio.getPath(), mActiveAudio.getCompletedTime(), alreadyFinished ? this::onResumedPaused : this::play);
         }
 
@@ -617,11 +618,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             initMediaPlayer(mActiveAudio.getPath(), startPosition, () -> {
                 updateAudioFileStatus();  // Needed if startPosition is set to 0 such that the time in the AlbumActivity is updated
                 updateMetaData();
-                buildNotification();
                 if (playAfter) {
                     play();
                 } else {
+                    // play() (above) reaches refreshPlaybackUi() itself once it's done -- only
+                    // need it directly here for the "just land paused" case, which otherwise
+                    // wouldn't rebuild the notification or tell PlayActivity/the FABs about the
+                    // new track at all.
                     setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+                    refreshPlaybackUi();
                 }
             });
             return true;
@@ -654,11 +659,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             initMediaPlayer(mActiveAudio.getPath(), startPosition, () -> {
                 updateAudioFileStatus();
                 updateMetaData();
-                buildNotification();
                 if (playAfter) {
                     play();
                 } else {
+                    // play() (above) reaches refreshPlaybackUi() itself once it's done -- only
+                    // need it directly here for the "just land paused" case, which otherwise
+                    // wouldn't rebuild the notification or tell PlayActivity/the FABs about the
+                    // new track at all.
                     setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+                    refreshPlaybackUi();
                 }
             });
             return true;
@@ -947,10 +956,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         PendingIntent playPauseAction = playbackAction(1);
         String playPauseTitle = getString(R.string.button_pause);
         if (!isPlaying()) {
-            playPauseImageResource = R.drawable.ic_media_play;
             // Create the play action
             playPauseAction = playbackAction(0);
-            playPauseTitle = getString(R.string.button_play);
+            // Show a replay icon instead of play if the track has already finished -- pressing
+            // it restarts from the beginning rather than resuming, mirroring PlayActivity's play
+            // button (see issue #196).
+            if (Utils.isFinished(mActiveAudio, getCurrentPosition())) {
+                playPauseImageResource = R.drawable.ic_media_replay;
+                playPauseTitle = getString(R.string.button_replay);
+            } else {
+                playPauseImageResource = R.drawable.ic_media_play;
+                playPauseTitle = getString(R.string.button_play);
+            }
         }
 
         // Get skip icons according to the notification skip intervals from the settings
@@ -1193,10 +1210,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mInitRetryCount = 0;
         mErrorAlreadyHandled = false;
 
-        sendPlayStatusResult(MSG_PLAY);
         mediaSession.setActive(true);
         setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-        buildNotification();
+        refreshPlaybackUi();
         startPeriodicPositionSave();
 
         updateLastPlayedAudio();
@@ -1216,8 +1232,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         mErrorAlreadyHandled = false;
 
         updateMetaData();
-        buildNotification();
         setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+        refreshPlaybackUi();
     }
 
     public void stopMedia() {
@@ -1287,9 +1303,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private void onPlaybackPaused() {
         stopPeriodicPositionSave();
         updateAudioFileStatus();
-        sendPlayStatusResult(MSG_PAUSE);
         setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
-        buildNotification();
+        refreshPlaybackUi();
     }
 
     /*
@@ -1307,7 +1322,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 e.printStackTrace();
                 return;
             }
-            mMainHandler.post(this::updateAudioFileStatus);
+            mMainHandler.post(() -> {
+                updateAudioFileStatus();
+                // Used by the notification's own forward/backward buttons (and any custom
+                // MediaSession action) -- see refreshPlaybackUi() for why a seek alone needs
+                // this even with no play/pause transition.
+                refreshPlaybackUi();
+            });
         });
     }
 
@@ -1394,8 +1415,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     e.printStackTrace();
                 }
                 mMainHandler.post(() -> {
-                    setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                    setMediaPlaybackState(isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED);
                     updateAudioFileStatus();
+                    // A seek can move the position across the finished/not-finished boundary
+                    // (e.g. dragging or skipping to the very end while paused) without any of
+                    // the play/pause/stop transitions that already refresh the notification and
+                    // the other surfaces -- do it here too (see refreshPlaybackUi()).
+                    refreshPlaybackUi();
                 });
             });
         } else {
@@ -1453,6 +1479,27 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             intent.putExtra(SERVICE_MESSAGE_PLAY_STATUS, message);
             mBroadcaster.sendBroadcast(intent);
         }
+    }
+
+    /*
+     * The single place that must run after ANY operation that can change isPlaying() or the
+     * current position of the active track -- not just starting/pausing/stopping, but also a
+     * seek alone (dragging the progress bar, a within-track skip button, either from
+     * PlayActivity or the notification), since that alone can cross the finished/not-finished
+     * boundary (see issue #196 and Utils.isFinished()) with no play/pause transition to hang a
+     * refresh off of.
+     *
+     * Before this existed, each caller separately decided which of the notification and the
+     * MSG_PLAY/MSG_PAUSE broadcast (which PlayActivity, AlbumActivity and MainActivity all key
+     * their own play/pause/replay icon off of) to refresh, and several of them -- notably
+     * seekRelativeAsync() (the notification's own forward/backward buttons) and the "just land
+     * paused" branches of initNextAudioFile()/initPreviousAudioFile() -- forgot one or both,
+     * which is what let the three surfaces disagree or go stale. Route every one of those
+     * call sites through here instead so they can't drift apart again.
+     */
+    private void refreshPlaybackUi() {
+        buildNotification();
+        sendPlayStatusResult(isPlaying() ? MSG_PLAY : MSG_PAUSE);
     }
 
     public void sendNewAudioFile(int audioIndex) {
