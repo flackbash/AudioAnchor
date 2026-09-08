@@ -31,10 +31,14 @@ public class Synchronizer {
     private final SharedPreferences mPrefManager;
     private SynchronizationStateListener mListener = null;
 
-    // Filesystem scans and DB diffing run here so the calling (UI) thread is never blocked --
-    // single-threaded so consecutive sync requests (e.g. rapid pull-to-refresh taps) are
-    // serialized rather than racing each other over the same directories.
-    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+    // Filesystem scans and DB diffing run here so the calling (UI) thread is never blocked.
+    // Shared and single-threaded across every Synchronizer instance (MainActivity, AlbumActivity
+    // and DirectoryActivity each create their own) so that syncs triggered from different
+    // activities around the same time -- e.g. adding a directory in DirectoryActivity while
+    // MainActivity's pull-to-refresh fires -- are serialized instead of racing each other over
+    // the same directory. Two racing syncs would otherwise both see a not-yet-committed file as
+    // "new" and insert it twice (issue #232).
+    private static final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private volatile boolean mShutdown = false;
 
@@ -48,15 +52,15 @@ public class Synchronizer {
     }
 
     /*
-     * Release background resources. Must be called (e.g. from the host Activity's onDestroy())
-     * once this Synchronizer is no longer needed, so a sync still running in the background
-     * doesn't call back into a destroyed Activity.
+     * Release this Synchronizer's resources. Must be called (e.g. from the host Activity's
+     * onDestroy()) once this Synchronizer is no longer needed, so a sync still running in the
+     * background doesn't call back into a destroyed Activity. The executor itself is shared with
+     * other Synchronizer instances and keeps running.
      */
     public void shutdown() {
         mShutdown = true;
         mListener = null;
         mMainHandler.removeCallbacksAndMessages(null);
-        mExecutor.shutdownNow();
     }
 
     /*
