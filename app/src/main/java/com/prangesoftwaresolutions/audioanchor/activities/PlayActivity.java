@@ -43,7 +43,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.prangesoftwaresolutions.audioanchor.helpers.NaturalOrderComparator;
 import com.prangesoftwaresolutions.audioanchor.helpers.SleepTimer;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
@@ -54,10 +53,10 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
+import com.prangesoftwaresolutions.audioanchor.utils.TrackSortUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 
 public class PlayActivity extends AppCompatActivity {
@@ -180,11 +179,17 @@ public class PlayActivity extends AppCompatActivity {
 
         mHandler = new Handler();
         // Bind service if it is already running
-        if (!serviceBound && Utils.isMediaPlayerServiceRunning(this)) {
+        boolean playbackAlreadyActive = Utils.isMediaPlayerServiceRunning(this);
+        if (!serviceBound && playbackAlreadyActive) {
             bindService();
         }
-        // Store audio file queue.
-        if (!serviceBound) {
+        // Only build a fresh queue when actually starting a new playback session. serviceBound
+        // itself isn't set yet here (bindService() above resolves asynchronously), and an
+        // already-running service's queue is adopted instead once it connects -- see
+        // onServiceConnected() -- so rebuilding it here too would just be redundant, and under a
+        // live-changing track sort order (e.g. "by progress") could rebuild it in a different
+        // order than the one the running service is actually using.
+        if (!playbackAlreadyActive) {
             storeAudioFiles();
         }
 
@@ -495,6 +500,15 @@ public class PlayActivity extends AppCompatActivity {
             mPlayer = binder.getService();
             serviceBound = true;
 
+            // If the service already had its own playback queue going (i.e. storeAudioFiles()
+            // above was skipped because playback was already active), adopt it instead of the
+            // locally-built one -- see storeAudioFiles() for why the two can otherwise disagree.
+            ArrayList<Long> serviceQueue = mPlayer.getAudioIdQueue();
+            if (!serviceQueue.isEmpty()) {
+                mAudioIdList = serviceQueue;
+                mAudioIndex = mPlayer.getAudioIndex();
+            }
+
             // Perform actions that can only be performed once the service is connected
             // Set the play ImageView
             updatePlayPauseIcon();
@@ -556,12 +570,12 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     private void storeAudioFiles() {
-        // Store Serializable audioList in SharedPreferences, in natural (numeric-aware) title
-        // order, e.g. "episode 2" before "episode 10" -- SQLite can only compare titles
-        // lexicographically or by a leading numeric prefix, so the real sort happens in Java
-        // (see NaturalOrderComparator) rather than via the query's ORDER BY.
+        // Store Serializable audioList in SharedPreferences, in the same order AlbumActivity
+        // displays these tracks in (natural title order, the user's track sort preference, and
+        // pinned tracks floated to the top -- see TrackSortUtils) so that autoplay's next/
+        // previous track always matches what's actually shown on screen, pins included.
         ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesInAlbum(this, mAudioFile.getAlbumId(), null);
-        Collections.sort(audioList, (a, b) -> NaturalOrderComparator.INSTANCE.compare(a.getTitle(), b.getTitle()));
+        TrackSortUtils.sort(this, audioList);
         mAudioIdList = new ArrayList<>();
         for (AudioFile audioFile : audioList) {
             mAudioIdList.add(audioFile.getID());

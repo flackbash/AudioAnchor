@@ -8,13 +8,14 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
+import com.prangesoftwaresolutions.audioanchor.utils.TrackSortUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class AudioFile implements Serializable {
+public class AudioFile implements Serializable, TrackSortUtils.SortableTrack {
 
     private long mID = -1;
     private final String mTitle;
@@ -23,6 +24,7 @@ public class AudioFile implements Serializable {
     private int mCompletedTime;
     private long mDateAdded = -1;
     private long mLastPlayedTimestamp = -1;
+    private boolean mPinned = false;
 
     private static final String[] mAudioFileColumns = {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry._ID,
@@ -31,10 +33,11 @@ public class AudioFile implements Serializable {
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_TIME,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_COMPLETED_TIME,
                 AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_DATE_ADDED,
-                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_LAST_PLAYED_TIMESTAMP,
+                AnchorContract.AudioEntry.TABLE_NAME + "." + AnchorContract.AudioEntry.COLUMN_PINNED
     };
 
-    private AudioFile(Context context, long id, String title, long albumId, int time, int completedTime, long dateAdded, long lastPlayedTimestamp) {
+    private AudioFile(Context context, long id, String title, long albumId, int time, int completedTime, long dateAdded, long lastPlayedTimestamp, boolean pinned) {
         mID = id;
         mTitle = title;
         mAlbum = Album.getAlbumByID(context, albumId);
@@ -42,9 +45,10 @@ public class AudioFile implements Serializable {
         mCompletedTime = completedTime;
         mDateAdded = dateAdded;
         mLastPlayedTimestamp = lastPlayedTimestamp;
+        mPinned = pinned;
     }
 
-    private AudioFile(long id, String title, Album album, int time, int completedTime, long dateAdded, long lastPlayedTimestamp) {
+    private AudioFile(long id, String title, Album album, int time, int completedTime, long dateAdded, long lastPlayedTimestamp, boolean pinned) {
         mID = id;
         mTitle = title;
         mAlbum = album;
@@ -52,6 +56,7 @@ public class AudioFile implements Serializable {
         mCompletedTime = completedTime;
         mDateAdded = dateAdded;
         mLastPlayedTimestamp = lastPlayedTimestamp;
+        mPinned = pinned;
     }
 
     public AudioFile(Context context, String title, long albumId) {
@@ -111,6 +116,10 @@ public class AudioFile implements Serializable {
 
     public void setLastPlayedTimestamp(long lastPlayedTimestamp) {
         mLastPlayedTimestamp = lastPlayedTimestamp;
+    }
+
+    public boolean isPinned() {
+        return mPinned;
     }
 
     public String getPath() { return mAlbum.getPath() + File.separator + mTitle; }
@@ -268,7 +277,8 @@ public class AudioFile implements Serializable {
         if (lastPlayedTimestampIndex != -1 && !c.isNull(lastPlayedTimestampIndex)) {
             lastPlayedTimestamp = c.getLong(lastPlayedTimestampIndex);
         }
-        return new AudioFile(context, id, title, albumId, time, completedTime, dateAdded, lastPlayedTimestamp);
+        boolean pinned = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_PINNED)) != 0;
+        return new AudioFile(context, id, title, albumId, time, completedTime, dateAdded, lastPlayedTimestamp, pinned);
     }
 
     /*
@@ -290,6 +300,7 @@ public class AudioFile implements Serializable {
         if (lastPlayedTimestampIndex != -1 && !c.isNull(lastPlayedTimestampIndex)) {
             lastPlayedTimestamp = c.getLong(lastPlayedTimestampIndex);
         }
-        return new AudioFile(id, title, album, time, completedTime, dateAdded, lastPlayedTimestamp);
+        boolean pinned = c.getInt(c.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_PINNED)) != 0;
+        return new AudioFile(id, title, album, time, completedTime, dateAdded, lastPlayedTimestamp, pinned);
     }
 }

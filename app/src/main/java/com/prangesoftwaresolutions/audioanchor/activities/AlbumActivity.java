@@ -49,17 +49,16 @@ import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.receivers.PlayStatusReceiver;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 import com.prangesoftwaresolutions.audioanchor.R;
-import com.prangesoftwaresolutions.audioanchor.helpers.NaturalOrderComparator;
 import com.prangesoftwaresolutions.audioanchor.helpers.Synchronizer;
 import com.prangesoftwaresolutions.audioanchor.adapters.AudioFileCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.TrackSortUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class AlbumActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, PlayStatusChangeListener, SynchronizationStateListener {
 
@@ -82,12 +81,19 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     // Settings variables
     SharedPreferences mPrefs;
     boolean mShowHiddenFiles;
+    String mTrackSortOrderPref;
 
     // Variables for multi choice mode
     ArrayList<Long> mSelectedTracks = new ArrayList<>();
     ArrayList<Long> mTmpSelectedTracks;
     // Used to disable scrolling in onLoadFinished for DB-ops started from within the activity
     boolean mScroll = true;
+    // Armed before an action that should re-sync the active playback session's autoplay queue
+    // (a pin toggle, or -- detected in onRestart() -- a "Track sort order" preference change) on
+    // the next onLoadFinished(), which otherwise also fires for all sorts of routine background
+    // writes (periodic position save, last-played timestamp, a sync) that must NOT resync the
+    // queue -- see onLoadFinished() for why that distinction matters.
+    boolean mSyncPlaybackQueueOnNextLoad = false;
 
     // MediaPlayerService variables
     private MediaPlayerService mPlayer;
@@ -128,6 +134,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // order preference.
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mShowHiddenFiles = mPrefs.getBoolean(getString(R.string.settings_show_hidden_key), Boolean.getBoolean(getString(R.string.settings_show_hidden_default)));
+        mTrackSortOrderPref = mPrefs.getString(getString(R.string.settings_track_sort_order_key), getString(R.string.settings_track_sort_order_default));
 
         // Prepare the CursorLoader. Either re-connect with an existing one or start a new one.
         getLoaderManager().initLoader(ALBUM_LOADER, null, this);
@@ -255,12 +262,14 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                         actionMode.finish();
                         return true;
                     case R.id.menu_pin:
+                        mSyncPlaybackQueueOnNextLoad = true;
                         for (long trackId : mSelectedTracks) {
                             DBAccessUtils.pinTrack(AlbumActivity.this, trackId, true);
                         }
                         actionMode.finish();
                         return true;
                     case R.id.menu_unpin:
+                        mSyncPlaybackQueueOnNextLoad = true;
                         for (long trackId : mSelectedTracks) {
                             DBAccessUtils.pinTrack(AlbumActivity.this, trackId, false);
                         }
@@ -335,6 +344,15 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             mSynchronizer.updateDBTables();
             mShowHiddenFiles = currentShowHiddenFiles;
         }
+
+        // Re-sync the active playback session's autoplay queue (see onLoadFinished()) if the
+        // "Track sort order" preference changed while we were away, e.g. in Settings.
+        String currentTrackSortOrderPref = mPrefs.getString(getString(R.string.settings_track_sort_order_key), getString(R.string.settings_track_sort_order_default));
+        if (!mTrackSortOrderPref.equals(currentTrackSortOrderPref)) {
+            mSyncPlaybackQueueOnNextLoad = true;
+            mTrackSortOrderPref = currentTrackSortOrderPref;
+        }
+
         super.onRestart();
     }
 
@@ -379,16 +397,16 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         return new CursorLoader(this, AnchorContract.AudioEntry.CONTENT_URI, projection, sel, selArgs, sortOrder);
     }
 
-    private static final class TrackRow {
+    private static final class TrackRow implements TrackSortUtils.SortableTrack {
         final long id;
         final String title;
         final boolean pinned;
-        final Long dateAdded;
+        final long dateAdded;
         final int time;
         final int completedTime;
-        final Long lastPlayed;
+        final long lastPlayed;
 
-        TrackRow(long id, String title, boolean pinned, Long dateAdded, int time, int completedTime, Long lastPlayed) {
+        TrackRow(long id, String title, boolean pinned, long dateAdded, int time, int completedTime, long lastPlayed) {
             this.id = id;
             this.title = title;
             this.pinned = pinned;
@@ -397,19 +415,30 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             this.completedTime = completedTime;
             this.lastPlayed = lastPlayed;
         }
+
+        @Override
+        public String getTitle() { return title; }
+        @Override
+        public boolean isPinned() { return pinned; }
+        @Override
+        public long getDateAdded() { return dateAdded; }
+        @Override
+        public long getLastPlayedTimestamp() { return lastPlayed; }
+        @Override
+        public int getTime() { return time; }
+        @Override
+        public int getCompletedTime() { return completedTime; }
     }
 
     /*
-     * Re-orders the tracks in `cursor` according to the selected "Track sort order" preference,
-     * using natural-order (numeric-aware) title comparison as the tiebreaker instead of SQLite's
-     * plain lexicographic LOWER(title) -- see NaturalOrderComparator for why that matters (e.g.
-     * "episode 2" vs "episode 10"). Applied here in Java rather than as SQL because natural sort
-     * isn't expressible in a plain SQLite ORDER BY. Returns a new Cursor with the same
-     * _ID/TITLE/PINNED columns the adapter reads, in the corrected order.
+     * Re-orders the tracks in `cursor` the same way TrackSortUtils orders them for autoplay's
+     * next/previous-track queue (see PlayActivity.storeAudioFiles()) -- natural-order title as
+     * the tiebreaker, the selected "Track sort order" preference, then pinned tracks floated to
+     * the top. Applied here in Java rather than as SQL because natural sort isn't expressible in
+     * a plain SQLite ORDER BY. Returns a new Cursor with the same _ID/TITLE/PINNED columns the
+     * adapter reads, in the corrected order.
      */
     private Cursor sortTracksNaturally(Cursor cursor) {
-        String sortOrderPref = mPrefs.getString(getString(R.string.settings_track_sort_order_key), getString(R.string.settings_track_sort_order_default));
-
         ArrayList<TrackRow> rows = new ArrayList<>(cursor.getCount());
         int idIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry._ID);
         int titleIdx = cursor.getColumnIndexOrThrow(AnchorContract.AudioEntry.COLUMN_TITLE);
@@ -424,36 +453,13 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     cursor.getLong(idIdx),
                     cursor.getString(titleIdx),
                     cursor.getInt(pinnedIdx) != 0,
-                    cursor.isNull(dateAddedIdx) ? null : cursor.getLong(dateAddedIdx),
+                    cursor.isNull(dateAddedIdx) ? -1 : cursor.getLong(dateAddedIdx),
                     cursor.getInt(timeIdx),
                     cursor.getInt(completedTimeIdx),
-                    cursor.isNull(lastPlayedIdx) ? null : cursor.getLong(lastPlayedIdx)));
+                    cursor.isNull(lastPlayedIdx) ? -1 : cursor.getLong(lastPlayedIdx)));
         }
 
-        // Stable sorts applied least-significant key first, so each later pass preserves the
-        // relative order ties were left in by the previous one.
-        Collections.sort(rows, (r1, r2) -> NaturalOrderComparator.INSTANCE.compare(r1.title, r2.title));
-
-        if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_date_added_newest_value))) {
-            // Most recently added first. Tracks synced before this feature existed have a NULL
-            // date_added, which sorts last here, just like it did in the old DESC SQL ordering.
-            Collections.sort(rows, (r1, r2) -> compareNullableLong(r2.dateAdded, r1.dateAdded));
-        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_date_added_oldest_value))) {
-            // Least recently added first. NULL date_added sorts first, i.e. tracks that predate
-            // this feature are treated as the oldest.
-            Collections.sort(rows, (r1, r2) -> compareNullableLong(r1.dateAdded, r2.dateAdded));
-        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_progress_value))) {
-            // Least progress first (0% at the top). 0 for tracks with zero duration rather than
-            // dividing by zero.
-            Collections.sort(rows, (r1, r2) -> Double.compare(progressFraction(r1), progressFraction(r2)));
-        } else if (sortOrderPref.equals(getString(R.string.settings_track_sort_order_by_last_played_value))) {
-            // Most recently played first. Tracks that were never played (or predate this
-            // feature) have a NULL last_played_timestamp, which sorts last.
-            Collections.sort(rows, (r1, r2) -> compareNullableLong(r2.lastPlayed, r1.lastPlayed));
-        }
-
-        // Pinned tracks always float to the top of the track list, regardless of sort order.
-        Collections.sort(rows, (r1, r2) -> Boolean.compare(r2.pinned, r1.pinned));
+        TrackSortUtils.sort(this, rows);
 
         MatrixCursor sorted = new MatrixCursor(new String[]{
                 AnchorContract.AudioEntry._ID, AnchorContract.AudioEntry.COLUMN_TITLE, AnchorContract.AudioEntry.COLUMN_PINNED
@@ -462,21 +468,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             sorted.addRow(new Object[]{row.id, row.title, row.pinned ? 1 : 0});
         }
         return sorted;
-    }
-
-    /*
-     * Ascending compare with SQLite's NULL-sorts-first-in-ASC semantics. Swap the arguments at
-     * the call site to get NULL-sorts-last / a descending order instead.
-     */
-    private static int compareNullableLong(Long a, Long b) {
-        if (a == null && b == null) return 0;
-        if (a == null) return -1;
-        if (b == null) return 1;
-        return a.compareTo(b);
-    }
-
-    private static double progressFraction(TrackRow row) {
-        return row.time == 0 ? 0.0 : (double) row.completedTime / row.time;
     }
 
     @Override
@@ -509,6 +500,29 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Re-sort using natural-order title comparison (see sortTracksNaturally()), then swap
         // the resulting cursor into the adapter. The Loader still owns and closes `cursor`.
         Cursor sortedCursor = sortTracksNaturally(cursor);
+
+        // If a track from this album is the one actually playing, refresh the service's autoplay
+        // queue to match what's now displayed -- but only when mSyncPlaybackQueueOnNextLoad was
+        // explicitly armed beforehand (a pin toggle, or a "Track sort order" preference change
+        // caught in onRestart()). onLoadFinished() also fires for routine background writes that
+        // must NOT resync the queue -- notably the service's own periodic position save while
+        // playing, which under "sort by progress" would otherwise reorder the queue on every tick
+        // and reintroduce exactly the live-drifting instability a frozen per-session queue (see
+        // MediaPlayerService.updateAudioIdQueue()) is meant to avoid.
+        if (mSyncPlaybackQueueOnNextLoad && mPlayer != null) {
+            AudioFile activeAudio = mPlayer.getCurrentAudioFile();
+            if (activeAudio != null && activeAudio.getAlbumId() == mAlbum.getID()) {
+                ArrayList<Long> orderedIds = new ArrayList<>(sortedCursor.getCount());
+                int idIdx = sortedCursor.getColumnIndexOrThrow(AnchorContract.AudioEntry._ID);
+                for (sortedCursor.moveToFirst(); !sortedCursor.isAfterLast(); sortedCursor.moveToNext()) {
+                    orderedIds.add(sortedCursor.getLong(idIdx));
+                }
+                sortedCursor.moveToPosition(-1);
+                mPlayer.updateAudioIdQueue(orderedIds);
+            }
+        }
+        mSyncPlaybackQueueOnNextLoad = false;
+
         mCursorAdapter.swapCursor(sortedCursor);
 
         // Only scroll to the last played track when mScroll was explicitly armed beforehand (see

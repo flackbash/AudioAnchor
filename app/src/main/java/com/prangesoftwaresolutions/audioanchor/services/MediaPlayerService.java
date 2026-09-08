@@ -1635,6 +1635,44 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         return mActiveAudio;
     }
 
+    /*
+     * The playback queue and this active track's position in it, as actually used by
+     * initNextAudioFile()/initPreviousAudioFile() -- captured once when this service started and
+     * held fixed for its lifetime (see onStartCommand()), regardless of any track sort order
+     * (e.g. "by progress") changing afterward while a track keeps playing. A PlayActivity that
+     * binds to an already-running service must adopt this instead of independently rebuilding
+     * its own copy, or the two can disagree about what "next" means -- see storeAudioFiles().
+     */
+    public ArrayList<Long> getAudioIdQueue() {
+        return mAudioIdQueue != null ? new ArrayList<>(mAudioIdQueue) : new ArrayList<>();
+    }
+
+    public int getAudioIndex() {
+        return mAudioIndex;
+    }
+
+    /*
+     * Re-point the playback queue at a freshly-sorted track order (see AlbumActivity's
+     * onLoadFinished(), called after a pin is toggled or the track sort order preference changes)
+     * without disturbing what's currently playing -- only initNextAudioFile()/initPreviousAudioFile()
+     * afterward see the new order. The caller is responsible for only doing this when newQueue
+     * actually belongs to the active track's album; if the active track isn't in newQueue at all
+     * (it should always be, since the caller derives newQueue from that same album) this is a
+     * no-op rather than leaving mAudioIndex pointing at the wrong track.
+     */
+    public void updateAudioIdQueue(ArrayList<Long> newQueue) {
+        if (mActiveAudio == null) return;
+        int newIndex = newQueue.indexOf(mActiveAudio.getID());
+        if (newIndex == -1) return;
+
+        mAudioIdQueue = new ArrayList<>(newQueue);
+        mAudioIndex = newIndex;
+
+        StorageUtil storage = new StorageUtil(this);
+        storage.storeAudioIds(mAudioIdQueue);
+        storage.storeAudioIndex(mAudioIndex);
+    }
+
     private void setMediaPlaybackState(int state) {
         if (mMediaPlayer == null) return;
 
