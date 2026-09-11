@@ -9,11 +9,13 @@ import android.net.Uri;
 
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.TrackSortUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.WebmDurationParser;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class AudioFile implements Serializable, TrackSortUtils.SortableTrack {
 
@@ -136,9 +138,18 @@ public class AudioFile implements Serializable, TrackSortUtils.SortableTrack {
      * Retrieve audio file duration from metadata.
      */
     private void setTimeFromMetadata() {
+        String audioFilePath = mAlbum.getPath() + File.separator + mTitle;
+
+        if (isMatroskaContainer(mTitle)) {
+            Long webmDuration = WebmDurationParser.parseDurationMs(new File(audioFilePath));
+            if (webmDuration != null) {
+                mTime = webmDuration.intValue();
+                return;
+            }
+        }
+
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         try {
-            String audioFilePath = mAlbum.getPath() + File.separator + mTitle;
             metaRetriever.setDataSource(audioFilePath);
             String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             mTime = Integer.parseInt(duration);
@@ -148,6 +159,16 @@ public class AudioFile implements Serializable, TrackSortUtils.SortableTrack {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /*
+     * Whether a file is a Matroska-family container (.webm/.mkv), where WebmDurationParser's fast
+     * header read applies. Other formats keep using MediaMetadataRetriever directly, since it's
+     * already fast for them.
+     */
+    private static boolean isMatroskaContainer(String fileName) {
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".webm") || lower.endsWith(".mkv");
     }
 
     /*
