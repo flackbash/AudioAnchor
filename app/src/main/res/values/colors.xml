@@ -15,4 +15,11 @@
 
     <color name="colorDeletableIcon">#BB6D6E71</color>
     <color name="colorPlayActivityHeaderBG">#BBDBDDE3</color>
+
+    <!-- A translucent black card, with a colorPrimary ring echoing the one already drawn around
+         every play/pause/replay button. -->
+    <color name="widgetBackground">#80000000</color>
+    <color name="widgetBorder">#99FF9800</color>
+    <color name="widgetTextPrimary">#F5F5F5</color>
+    <color name="widgetTextSecondary">#B0B0B5</color>
 </resources>

@@ -20,7 +20,7 @@ It's a local player, not a streaming service: it doesn't fetch content or manage
 - **Free and open source**, licensed under the GPLv3 and available on F-Droid.
 - **Flexible library.** Sort albums and tracks by title, date added, progress, or last played, and pin your current favorites to the top.
 - **Built for long-form listening.** Adjustable playback speed, a sleep timer with fade-out and shake-to-reset, and bookmarks for the moment you want to find again.
-- **Plays nicely with your phone.** Lock screen and notification playback controls, and audio pauses automatically for incoming calls.
+- **Plays nicely with your phone.** Lock screen and notification playback controls, home screen widgets (from a single play button that resumes your latest track up to a full set of skip and bookmark buttons), and audio pauses automatically for incoming calls.
 - **Wide format support**, including MP3, M4A/M4B, OGG/Opus, FLAC, WAV, WebM, MKV, and more.
 - **Your data stays yours.** Export or import your entire listening history as a database file whenever you like.
 

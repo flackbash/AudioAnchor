@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A translucent, rounded card with a thin colorPrimary-toned ring, matching the stroke already
+     drawn around every play/pause/replay button (see play_border_bright.xml and friends) so the
+     widgets read as part of AudioAnchor rather than a generic card. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/widgetBackground" />
+    <stroke
+        android:width="1.5dp"
+        android:color="@color/widgetBorder" />
+    <corners android:radius="22dp" />
+</shape>

@@ -184,33 +184,4 @@ public class Utils {
         }
         return false;
     }
-
-    public static boolean deleteTrack(Context context, AudioFile audioFile, boolean keepDeletedInDB) {
-        // Delete track from file system
-        if (audioFile == null) {
-            return false;
-        }
-
-        File file = new File(audioFile.getPath());
-        boolean deleted = file.delete();
-
-        if (deleted) {
-            // Delete track from the database if keep_deleted is false
-            if (!keepDeletedInDB) {
-                DBAccessUtils.deleteTrackFromDB(context, audioFile.getID());
-            }
-            return true;
-        }
-        return false;
-    }
-
-    /*
-     * Recursively delete a file from the file system
-     */
-    public static boolean deleteRecursively(File fileOrDirectory) {
-        if (fileOrDirectory.isDirectory())
-            for (File child : fileOrDirectory.listFiles())
-                deleteRecursively(child);
-        return fileOrDirectory.delete();
-    }
 }

@@ -6,6 +6,8 @@
 
 • Added support for .webm audio files
 
+• Added home screen widgets: a play button that resumes your most recently played track, and larger ones with skip buttons and a bookmark button
+
 • Library sync is faster and no longer shows duplicate notifications; it now also runs automatically on startup (can be turned off in Settings)
 
 • Fixed laggy scrolling in the library list

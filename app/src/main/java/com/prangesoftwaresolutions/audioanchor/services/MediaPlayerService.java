@@ -62,6 +62,8 @@ import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
+import com.prangesoftwaresolutions.audioanchor.widgets.PlaybackWidgetProvider;
+import com.prangesoftwaresolutions.audioanchor.widgets.PlaybackWidgetState;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,6 +86,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public static final String ACTION_FORWARD = "com.prangesoftwaresolutions.audioanchor.ACTION_FORWARD";
     public static final String ACTION_STOP = "com.prangesoftwaresolutions.audioanchor.ACTION_STOP";
     public static final String ACTION_BOOKMARK = "com.prangesoftwaresolutions.audioanchor.ACTION_BOOKMARK";
+    // Optional extras: the skip interval (in seconds, or "max" for skipping to the previous/next
+    // track) for ACTION_FORWARD / ACTION_BACKWARD, which otherwise use the notification's skip
+    // intervals, and whether ACTION_BOOKMARK should confirm the new bookmark with a toast
+    public static final String EXTRA_SKIP_INTERVAL = "com.prangesoftwaresolutions.audioanchor.EXTRA_SKIP_INTERVAL";
+    public static final String EXTRA_SHOW_BOOKMARK_TOAST = "com.prangesoftwaresolutions.audioanchor.EXTRA_SHOW_BOOKMARK_TOAST";
 
     public static final String SERVICE_PLAY_STATUS_CHANGE = "com.prangesoftwaresolutions.audioanchor.SERVICE_PLAY_STATUS_CHANGE";
     public static final String SERVICE_MESSAGE_PLAY_STATUS = "com.prangesoftwaresolutions.audioanchor.SERVICE_MESSAGE_PLAYING";
@@ -382,6 +389,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
         // Clear cached playlist and set current audio index to -1
         new StorageUtil(this).clearCachedAudioPlaylist();
+
+        // There is no playback session to show on the widgets anymore
+        PlaybackWidgetProvider.updateAll(this, null);
     }
 
     /*
@@ -948,7 +958,30 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         return notificationCover;
     }
 
-    private void buildNotification() {
+    /*
+     * The title to show for the active audio file: the one from the file's metadata if the user
+     * chose so (and it has one), the file name otherwise.
+     */
+    private String getAudioDisplayTitle() {
+        String audioTitle = "";
+        boolean titleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
+        if (titleFromMetadata) {
+            try {
+                mMetadataRetriever.setDataSource(mActiveAudio.getPath());
+                audioTitle = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            } catch (RuntimeException e) {
+                // MediaMetadataRetriever can fail to open a file it doesn't like (e.g. some
+                // paths containing a colon) -- fall back to the file name below instead of
+                // crashing the notification.
+            }
+        }
+        if (audioTitle == null || audioTitle.isEmpty()) {
+            audioTitle = mActiveAudio.getTitle();
+        }
+        return audioTitle;
+    }
+
+    private void buildNotification(String audioTitle) {
         createNotificationChannel();
 
         // Get play/pause image, action and title according to the current state of the MediaPlayer
@@ -979,22 +1012,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (skipIntervalForward == 30) skipForwardImageResource = R.drawable.ic_notification_forward_30;
 
         Bitmap notificationCover = getNotificationImage(200);
-
-        String audioTitle = "";
-        boolean titleFromMetadata = mSharedPreferences.getBoolean(getString(R.string.settings_title_from_metadata_key), Boolean.getBoolean(getString(R.string.settings_title_from_metadata_default)));
-        if (titleFromMetadata) {
-            try {
-                mMetadataRetriever.setDataSource(mActiveAudio.getPath());
-                audioTitle = mMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-            } catch (RuntimeException e) {
-                // MediaMetadataRetriever can fail to open a file it doesn't like (e.g. some
-                // paths containing a colon) -- fall back to the file name below instead of
-                // crashing the notification.
-            }
-        }
-        if (audioTitle == null || audioTitle.isEmpty()) {
-            audioTitle = mActiveAudio.getTitle();
-        }
 
         // Set up intent to start PlayActivity when the notification is clicked
         Intent startActivityIntent = new Intent(this, PlayActivity.class);
@@ -1107,7 +1124,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             if (isPlaying()) pause();
             else play();
         } else if (actionString.equalsIgnoreCase(ACTION_FORWARD)) {
-            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_forward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            int notificationSkipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_forward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            int skipInterval = playbackAction.getIntExtra(EXTRA_SKIP_INTERVAL, notificationSkipInterval);
             if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {
                 skipToNextAudioFile();
             } else {
@@ -1117,7 +1135,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 setMediaPlaybackState(state);
             }
         } else if (actionString.equalsIgnoreCase(ACTION_BACKWARD)) {
-            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_backward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            int notificationSkipInterval = mSharedPreferences.getInt(getString(R.string.settings_notification_backward_button_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            int skipInterval = playbackAction.getIntExtra(EXTRA_SKIP_INTERVAL, notificationSkipInterval);
             if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {
                 skipToPreviousAudioFile();
             } else {
@@ -1127,14 +1146,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 setMediaPlaybackState(state);
             }
         } else if (actionString.equalsIgnoreCase(ACTION_BOOKMARK)) {
-            setBookmark();
+            setBookmark(playbackAction.getBooleanExtra(EXTRA_SHOW_BOOKMARK_TOAST, false));
         }
     }
 
-    private void setBookmark() {
+    private void setBookmark(boolean showToast) {
         String title = getResources().getString(R.string.untitled_bookmark);
         Bookmark bookmark = new Bookmark(title, getCurrentPosition(), mActiveAudio.getID());
         bookmark.insertIntoDB(this);
+        if (showToast) {
+            String timeString = Utils.formatTime(bookmark.getPosition(), 3600000);
+            String addedToastMsg = getString(R.string.bookmark_added_toast, title, timeString);
+            Toast.makeText(getApplicationContext(), addedToastMsg, Toast.LENGTH_SHORT).show();
+        }
     }
 
     public boolean isPlaying() {
@@ -1496,10 +1520,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      * paused" branches of initNextAudioFile()/initPreviousAudioFile() -- forgot one or both,
      * which is what let the three surfaces disagree or go stale. Route every one of those
      * call sites through here instead so they can't drift apart again.
+     *
+     * The home screen widgets are one more such surface, so they are refreshed from here too.
      */
     private void refreshPlaybackUi() {
-        buildNotification();
+        String audioTitle = getAudioDisplayTitle();
+        buildNotification(audioTitle);
         sendPlayStatusResult(isPlaying() ? MSG_PLAY : MSG_PAUSE);
+        PlaybackWidgetProvider.updateAll(this, PlaybackWidgetState.ofSession(
+                mActiveAudio.getID(), audioTitle, mActiveAudio.getAlbumTitle(),
+                isPlaying(), Utils.isFinished(mActiveAudio, getCurrentPosition())));
     }
 
     public void sendNewAudioFile(int audioIndex) {

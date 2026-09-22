@@ -1,9 +1,7 @@
 package com.prangesoftwaresolutions.audioanchor.activities;
 
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.EditTextPreference;
@@ -23,6 +21,7 @@ import com.prangesoftwaresolutions.audioanchor.helpers.SkipIntervalPreference;
 import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
 import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
+import com.prangesoftwaresolutions.audioanchor.widgets.PlaybackWidgetProvider;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -62,6 +61,8 @@ public class SettingsActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         mPreferences.unregisterOnSharedPreferenceChangeListener(mPrefListener);
+        // The widgets show the skip intervals set here
+        PlaybackWidgetProvider.refreshAll(this);
     }
 
     public static class AnchorPreferenceFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -69,7 +70,6 @@ public class SettingsActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             initSummary(getPreferenceScreen());
-            updateManageExternalStorageSummary();
         }
 
         @Override
@@ -148,28 +148,6 @@ public class SettingsActivity extends AppCompatActivity {
         public void onResume() {
             super.onResume();
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-            // Refresh in case the user just came back from the system "All files access" screen
-            updateManageExternalStorageSummary();
-        }
-
-        /*
-         * Prefix the "All files access" preference's explanatory summary with its current
-         * grant status. Only present on API 30+ (see res/xml-v30/settings.xml), so this is a
-         * no-op everywhere else since the permission and its system settings screen don't exist
-         * on older versions.
-         */
-        private void updateManageExternalStorageSummary() {
-            Preference pref = findPreference(getString(R.string.settings_manage_external_storage_key));
-            if (pref == null) {
-                return;
-            }
-            String status;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
-                status = getString(R.string.settings_manage_external_storage_granted);
-            } else {
-                status = getString(R.string.settings_manage_external_storage_not_granted);
-            }
-            pref.setSummary(status + " " + getString(R.string.settings_manage_external_storage_summary));
         }
 
         @Override

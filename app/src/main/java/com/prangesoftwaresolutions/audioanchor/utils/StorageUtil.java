@@ -22,6 +22,16 @@ public class StorageUtil {
         this.context = context;
     }
 
+    /*
+     * Store a complete playback queue and the track within it that is currently active, which is
+     * what MediaPlayerService loads when it is (re)started.
+     */
+    public void storeAudioQueue(ArrayList<Long> audioIds, int audioIndex) {
+        storeAudioIds(audioIds);
+        storeAudioIndex(audioIndex);
+        storeAudioId(audioIds.get(audioIndex));
+    }
+
     public void storeAudioIds(ArrayList<Long> arrayList) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
 

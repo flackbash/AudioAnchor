@@ -250,6 +250,53 @@ public class AudioFile implements Serializable, TrackSortUtils.SortableTrack {
     }
 
     /*
+     * The ids of all audio files in the album, in the order AlbumActivity displays them (natural
+     * title order, the user's track sort preference, and pinned tracks floated to the top -- see
+     * TrackSortUtils). This is the autoplay queue: keeping it identical to what's on screen means
+     * the next/previous track always matches the list, pins included.
+     */
+    public static ArrayList<Long> getSortedAudioIdsInAlbum(Context context, long albumId) {
+        ArrayList<AudioFile> audioFiles = getAllAudioFilesInAlbum(context, albumId, null);
+        TrackSortUtils.sort(context, audioFiles);
+        ArrayList<Long> ids = new ArrayList<>();
+        for (AudioFile audioFile : audioFiles) {
+            ids.add(audioFile.getID());
+        }
+        return ids;
+    }
+
+    /*
+     * The audio file that was played most recently, or null if nothing has been played yet (or
+     * none of the recently played files exist anymore). Goes by the albums' last played
+     * bookkeeping (see MediaPlayerService.updateLastPlayedAudio()), which is also what the
+     * "sort albums by last played" option uses.
+     */
+    public static AudioFile getMostRecentlyPlayed(Context context) {
+        // -1, not SQL NULL, is this column's "never played" sentinel (see TrackSortUtils)
+        String sel = AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " != -1";
+        String sortOrder = AnchorContract.AlbumEntry.COLUMN_LAST_PLAYED_TIMESTAMP + " DESC";
+        Cursor c = context.getContentResolver().query(AnchorContract.AlbumEntry.CONTENT_URI,
+                Album.getColumns(), sel, null, sortOrder);
+        if (c == null) {
+            return null;
+        }
+
+        // Walk from the most recently played album backwards: its last played file may have been
+        // deleted since (or the file removed from disk), in which case the next album is the
+        // most recent one that can still actually be played.
+        AudioFile mostRecent = null;
+        while (mostRecent == null && c.moveToNext()) {
+            Album album = Album.getAlbumFromPositionedCursor(context, c);
+            AudioFile audioFile = getAudioFileById(context, album.getLastPlayedID());
+            if (audioFile != null && new File(audioFile.getPath()).exists()) {
+                mostRecent = audioFile;
+            }
+        }
+        c.close();
+        return mostRecent;
+    }
+
+    /*
      * Same as getAllAudioFilesInAlbum(Context, long, String), but for callers that already hold
      * the Album object (e.g. Synchronizer) so each row skips the redundant
      * Album.getAlbumByID() -> Directory.getDirectoryByID() DB round trips.

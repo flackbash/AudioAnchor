@@ -58,8 +58,6 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
-import java.io.File;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -88,8 +86,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Variables for multi choice mode
     ArrayList<Long> mSelectedAlbums = new ArrayList<>();
-    ArrayList<Long> mTmpSelectedAlbums;
-    ArrayList<AudioFile> mTmpAlbumAudioFiles;
 
     // Permission request
     private ActivityResultLauncher<String[]> mRequestPermissionsLauncher;
@@ -747,75 +743,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     deletionCount, deletionCount);
             Toast.makeText(getApplicationContext(), deletedAlbums, Toast.LENGTH_LONG).show();
         });
-        builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
-            // User clicked the "Cancel" button, so dismiss the dialog
-            if (dialog != null) {
-                dialog.dismiss();
-            }
-        });
-
-        // Create and show the AlertDialog
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-
-    /*
-     * Show a confirmation dialog and let the user decide whether to delete the selected albums
-     * and / or its tracks from the database
-     */
-    private void deleteSelectedAlbumWithConfirmation(final ArrayList<AudioFile> selectedTracks) {
-        Long[] selectedAlbumsTmpArr = new Long[mSelectedAlbums.size()];
-        final Long[] selectedAlbumsArr = mSelectedAlbums.toArray(selectedAlbumsTmpArr);
-
-        // Create a confirmation dialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String confirmationMessage = getResources().getQuantityString(
-                R.plurals.dialog_msg_delete_album, mSelectedAlbums.size());
-        builder.setMessage(confirmationMessage);
-
-        builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
-            // Delete tracks within the selected albums
-            int trackDeletionCount = 0;
-            for (AudioFile audioFile : selectedTracks) {
-                long audioFileID = audioFile.getID();
-
-                // Stop MediaPlayerService if the currently playing file is from deleted directory
-                if (mPlayer != null) {
-                    long activeAudioId = mPlayer.getCurrentAudioFile().getID();
-                    if (activeAudioId == audioFileID) {
-                        mPlayer.stopMedia();
-                        mPlayer.stopSelf();
-                    }
-                }
-
-                boolean keepDeleted = mSharedPreferences.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
-                boolean deleted = Utils.deleteTrack(this, audioFile, keepDeleted);
-                if (deleted) trackDeletionCount += 1;
-            }
-
-            // Delete selected albums
-            int albumDeletionCount = 0;
-            for (long albumId : selectedAlbumsArr) {
-                Album album = Album.getAlbumByID(this, albumId);
-                if (album != null) {
-                    File albumDir = new File(album.getPath());
-                    boolean deleted = Utils.deleteRecursively(albumDir);
-                    if (deleted) {
-                        albumDeletionCount++;
-                        DBAccessUtils.deleteAlbumFromDB(MainActivity.this, albumId);
-                    }
-                }
-            }
-
-            // Update database tables and notify user about the deletion
-            mSynchronizer.updateDBTables();
-            String deletedAlbums = getResources().getQuantityString(R.plurals.quant_albums, albumDeletionCount, albumDeletionCount);
-            String deletedTracks = getResources().getQuantityString(R.plurals.quant_tracks, trackDeletionCount, trackDeletionCount);
-            String deletedFiles = getResources().getString(R.string.album_and_tracks_deleted, deletedAlbums, deletedTracks);
-            Toast.makeText(getApplicationContext(), deletedFiles, Toast.LENGTH_LONG).show();
-            mSelectedAlbums.clear();
-        });
-
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {
             // User clicked the "Cancel" button, so dismiss the dialog
             if (dialog != null) {

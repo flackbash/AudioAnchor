@@ -1,6 +1,5 @@
 package com.prangesoftwaresolutions.audioanchor.activities;
 
-import android.Manifest;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -11,20 +10,13 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.Settings;
 import androidx.preference.PreferenceManager;
-import androidx.annotation.NonNull;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -49,6 +41,7 @@ import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.receivers.PlayStatusReceiver;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 import com.prangesoftwaresolutions.audioanchor.R;
+import com.prangesoftwaresolutions.audioanchor.helpers.MediaStoreDeleteHelper;
 import com.prangesoftwaresolutions.audioanchor.helpers.Synchronizer;
 import com.prangesoftwaresolutions.audioanchor.adapters.AudioFileCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
@@ -85,7 +78,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
 
     // Variables for multi choice mode
     ArrayList<Long> mSelectedTracks = new ArrayList<>();
-    ArrayList<Long> mTmpSelectedTracks;
     // Used to disable scrolling in onLoadFinished for DB-ops started from within the activity
     boolean mScroll = true;
     // Armed before an action that should re-sync the active playback session's autoplay queue
@@ -112,12 +104,8 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
     // Synchronizer
     private Synchronizer mSynchronizer;
 
-    static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE = 1;
-    // Request code for the "All files access" system settings screen (Android 11+), not a
-    // runtime permission request, so it's handled in onActivityResult() rather than
-    // onRequestPermissionsResult().
-    static final int PERMISSION_REQUEST_MANAGE_STORAGE_DELETE = 2;
-
+    // Deletes track files from shared storage
+    private MediaStoreDeleteHelper mDeleteHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,6 +133,9 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Initialize synchronizer
         mSynchronizer = new Synchronizer(this);
         mSynchronizer.setListener(this);
+
+        // Initialize delete helper
+        mDeleteHelper = new MediaStoreDeleteHelper(this);
 
         // Set up the views
         mAlbumInfoTitleTV = findViewById(R.id.album_info_title);
@@ -231,16 +222,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.menu_delete:
-                        // Check if app has the necessary permissions
-                        if (hasStorageWritePermission()) {
-                            deleteSelectedTracksWithConfirmation();
-                        } else {
-                            // This is necessary because requesting permission destroys action mode
-                            // such that selected tracks are cleared
-                            mTmpSelectedTracks = new ArrayList<>(mSelectedTracks);
-                            requestStorageWritePermission();
-                        }
-
+                        deleteSelectedTracksWithConfirmation();
                         actionMode.finish();
                         return true;
                     case R.id.menu_delete_from_db:
@@ -370,6 +352,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         }
 
         mSynchronizer.shutdown();
+        mDeleteHelper.shutdown();
 
         super.onDestroy();
     }
@@ -562,74 +545,6 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         }
 
         return (super.onOptionsItemSelected(item));
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    // Permission was not granted
-                    Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
-                } else {
-                    mSelectedTracks = mTmpSelectedTracks;
-                    deleteSelectedTracksWithConfirmation();
-                }
-                break;
-            }
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PERMISSION_REQUEST_MANAGE_STORAGE_DELETE) {
-            // The system settings screen has no result code for grant/deny, so just re-check
-            // the actual permission state once the user returns to the app.
-            if (hasStorageWritePermission()) {
-                mSelectedTracks = mTmpSelectedTracks;
-                deleteSelectedTracksWithConfirmation();
-            } else {
-                Toast.makeText(getApplicationContext(), R.string.write_permission_denied, Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    /*
-     * On Android 11+ (API 30+), targeting API 30+ makes scoped storage mandatory and
-     * requestLegacyExternalStorage a no-op, so a plain File.delete() only works on files this
-     * app created itself. WRITE_EXTERNAL_STORAGE can't help -- it's capped at maxSdkVersion 29
-     * in the manifest, so it can never actually be granted on these versions, which used to make
-     * every delete attempt fail with no way to fix it (see issue #218). "All files access"
-     * (MANAGE_EXTERNAL_STORAGE) is what actually restores raw file deletion there.
-     */
-    private boolean hasStorageWritePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return Environment.isExternalStorageManager();
-        }
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestStorageWritePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // "All files access" is not self-explanatory, so explain it before sending the user
-            // off to the system settings screen rather than leaving them to wonder.
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.storage_permission_rationale_title)
-                    .setMessage(R.string.storage_permission_rationale_message)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.dialog_msg_ok, (dialog, which) -> {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                                Uri.parse(getString(R.string.app_package_uri)));
-                        startActivityForResult(intent, PERMISSION_REQUEST_MANAGE_STORAGE_DELETE);
-                    })
-                    .show();
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_DELETE);
-        }
     }
 
     /*
@@ -882,32 +797,45 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         builder.setMessage(confirmationMessage);
 
         builder.setPositiveButton(R.string.dialog_msg_ok, (dialog, id) -> {
-            // User clicked the "Ok" button, so delete selected audio files
-            int deletionCount = 0;
+            // User clicked the "Ok" button, so look up the audio files and ask to delete them.
+            // The actual deletion may need a permission/confirmation prompt first (see
+            // MediaStoreDeleteHelper), so the rest of this happens in its callback.
+            ArrayList<AudioFile> audioFiles = new ArrayList<>();
+            ArrayList<File> files = new ArrayList<>();
             for (long audioFileID : selectedTracksArr) {
-                // Stop MediaPlayerService if the currently playing file is from deleted directory
-                if (mPlayer != null) {
-                    long activeAudioId = mPlayer.getCurrentAudioFile().getID();
-                    if (activeAudioId == audioFileID) {
-                        mPlayer.stopMedia();
-                        mPlayer.stopSelf();
-                    }
-                }
+                AudioFile audioFile = AudioFile.getAudioFileById(AlbumActivity.this, audioFileID);
+                if (audioFile == null) continue;
+                audioFiles.add(audioFile);
+                files.add(new File(audioFile.getPath()));
+            }
 
-                // Delete audio file
+            mDeleteHelper.deleteFiles(files, deletedFiles -> {
+                int deletionCount = 0;
                 boolean keepDeleted = mPrefs.getBoolean(getString(R.string.settings_keep_deleted_key), Boolean.getBoolean(getString(R.string.settings_keep_deleted_default)));
-                AudioFile audioFile =  AudioFile.getAudioFileById(AlbumActivity.this, audioFileID);
-                boolean deleted = Utils.deleteTrack(this, audioFile, keepDeleted);
-                if (deleted) {
+                for (AudioFile audioFile : audioFiles) {
+                    if (!deletedFiles.contains(new File(audioFile.getPath()))) continue;
+
+                    // Stop MediaPlayerService if the currently playing file was just deleted
+                    if (mPlayer != null) {
+                        long activeAudioId = mPlayer.getCurrentAudioFile().getID();
+                        if (activeAudioId == audioFile.getID()) {
+                            mPlayer.stopMedia();
+                            mPlayer.stopSelf();
+                        }
+                    }
+
+                    if (!keepDeleted) {
+                        DBAccessUtils.deleteTrackFromDB(this, audioFile.getID());
+                    }
                     deletionCount += 1;
                     mScroll = false;
                 }
-            }
-            mSynchronizer.updateDBTables();
-            String deletedTracks = getResources().getQuantityString(R.plurals.tracks_deleted,
-                    deletionCount, deletionCount);
-            Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
-            mSelectedTracks.clear();
+                mSynchronizer.updateDBTables();
+                String deletedTracks = getResources().getQuantityString(R.plurals.tracks_deleted,
+                        deletionCount, deletionCount);
+                Toast.makeText(getApplicationContext(), deletedTracks, Toast.LENGTH_LONG).show();
+                mSelectedTracks.clear();
+            });
         });
 
         builder.setNegativeButton(R.string.dialog_msg_cancel, (dialog, id) -> {

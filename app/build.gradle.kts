@@ -15,16 +15,12 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
-            resValue("string", "app_package_uri",
-                "package:" + android.defaultConfig.applicationId)
         }
 
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-DEBUG"
             isDebuggable = true
-            resValue("string", "app_package_uri",
-                "package:" + android.defaultConfig.applicationId + applicationIdSuffix)
         }
     }
     compileOptions {

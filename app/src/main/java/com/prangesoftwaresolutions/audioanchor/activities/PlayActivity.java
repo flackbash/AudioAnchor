@@ -53,7 +53,6 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
-import com.prangesoftwaresolutions.audioanchor.utils.TrackSortUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.util.ArrayList;
@@ -241,19 +240,19 @@ public class PlayActivity extends AppCompatActivity {
         initSkipButtons();
 
         mBackward1IV.setOnClickListener(view -> {
-            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_backward_button_1_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            int skipInterval = SkipIntervalUtils.getBackwardButton1(this);
             skipBackward(skipInterval);
         });
         mBackward2IV.setOnClickListener(view -> {
-            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_backward_button_2_key), Integer.parseInt(getString(R.string.settings_skip_interval_small_default)));
+            int skipInterval = SkipIntervalUtils.getBackwardButton2(this);
             skipBackward(skipInterval);
         });
         mForward1IV.setOnClickListener(view -> {
-            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_forward_button_1_key), Integer.parseInt(getString(R.string.settings_skip_interval_small_default)));
+            int skipInterval = SkipIntervalUtils.getForwardButton1(this);
             skipForward(skipInterval);
         });
         mForward2IV.setOnClickListener(view -> {
-            int skipInterval = mSharedPreferences.getInt(getString(R.string.settings_forward_button_2_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+            int skipInterval = SkipIntervalUtils.getForwardButton2(this);
             skipForward(skipInterval);
         });
 
@@ -315,10 +314,10 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     void initSkipButtons() {
-        int skipIntervalBackwardButton1 = mSharedPreferences.getInt(getString(R.string.settings_backward_button_1_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
-        int skipIntervalBackwardButton2 = mSharedPreferences.getInt(getString(R.string.settings_backward_button_2_key), Integer.parseInt(getString(R.string.settings_skip_interval_small_default)));
-        int skipIntervalForwardButton1 = mSharedPreferences.getInt(getString(R.string.settings_forward_button_1_key), Integer.parseInt(getString(R.string.settings_skip_interval_small_default)));
-        int skipIntervalForwardButton2 = mSharedPreferences.getInt(getString(R.string.settings_forward_button_2_key), Integer.parseInt(getString(R.string.settings_skip_interval_big_default)));
+        int skipIntervalBackwardButton1 = SkipIntervalUtils.getBackwardButton1(this);
+        int skipIntervalBackwardButton2 = SkipIntervalUtils.getBackwardButton2(this);
+        int skipIntervalForwardButton1 = SkipIntervalUtils.getForwardButton1(this);
+        int skipIntervalForwardButton2 = SkipIntervalUtils.getForwardButton2(this);
 
         // Set the skip interval text within the skip buttons
         mBackward1TV.setText(String.valueOf(skipIntervalBackwardButton1));
@@ -570,21 +569,11 @@ public class PlayActivity extends AppCompatActivity {
     }
 
     private void storeAudioFiles() {
-        // Store Serializable audioList in SharedPreferences, in the same order AlbumActivity
-        // displays these tracks in (natural title order, the user's track sort preference, and
-        // pinned tracks floated to the top -- see TrackSortUtils) so that autoplay's next/
-        // previous track always matches what's actually shown on screen, pins included.
-        ArrayList<AudioFile> audioList = AudioFile.getAllAudioFilesInAlbum(this, mAudioFile.getAlbumId(), null);
-        TrackSortUtils.sort(this, audioList);
-        mAudioIdList = new ArrayList<>();
-        for (AudioFile audioFile : audioList) {
-            mAudioIdList.add(audioFile.getID());
-        }
-
+        // Store the album's tracks in SharedPreferences, in the same order AlbumActivity displays
+        // them in, so that autoplay's next/previous track always matches what's shown on screen.
+        mAudioIdList = AudioFile.getSortedAudioIdsInAlbum(this, mAudioFile.getAlbumId());
         mAudioIndex = mAudioIdList.indexOf(mAudioFile.getID());
-        mStorage.storeAudioIds(mAudioIdList);
-        mStorage.storeAudioIndex(mAudioIndex);
-        mStorage.storeAudioId(mAudioFile.getID());
+        mStorage.storeAudioQueue(mAudioIdList, mAudioIndex);
     }
 
     private void loadAudioFile(int audioIndex) {
