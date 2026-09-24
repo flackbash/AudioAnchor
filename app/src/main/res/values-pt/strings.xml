@@ -12,7 +12,6 @@
     <string name="no_audio_files">Não foram encontrados arquivos de áudio neste álbum.</string>
     <string name="play_error">O arquivo de áudio selecionado não é reproduzível. Talvez o arquivo não exista mais.</string>
     <string name="permission_denied">A permissão necessária não foi concedida. Feche o AudioAnchor.</string>
-    <string name="write_permission_denied">A permissão necessária não foi concedida. A exportação não pode ser executada.</string>
     <string name="time_format_error">Por favor, digite um tempo válido no formato hh:mm:ss.</string>
     <string name="import_success">A importação obteve êxito :)</string>
     <string name="import_fail">Algo de errado ocorreu. A importação falhou.</string>

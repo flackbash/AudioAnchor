@@ -12,7 +12,6 @@
     <string name="no_audio_files">V albu nenalezeny žádné zvukové soubory.</string>
     <string name="play_error">Vybraný zvukový soubor nejde přehrát. Možná už neexistuje.</string>
     <string name="permission_denied">Potřebná oprávnění nejsou udělena.</string>
-    <string name="write_permission_denied">Potřebná oprávnění nejsou udělena. Nemohu zapisovat do uložiště.</string>
     <string name="time_format_error">Prosím zadejte platný čas ve formátu hh:mm:ss.</string>
     <string name="import_success">Import úspěšný :)</string>
     <string name="import_fail">Něco se pokazilo. Import selhal.</string>

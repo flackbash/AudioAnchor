@@ -13,7 +13,6 @@
     <string name="no_audio_files">В этом альбоме нет аудиофайлов.</string>
     <string name="play_error">Не удается воспроизвести выбранный аудиофайл. Возможно, файл больше не существует.</string>
     <string name="permission_denied">Необходимое разрешение не было получено. Завершение работы программы.</string>
-    <string name="write_permission_denied">Необходимое разрешение не было получено. Экспорт не может быть выполнен.</string>
     <string name="time_format_error">Введите корректное значение времение в формате чч:мм:сс.</string>
     <string name="import_success">Импорт прошел успешно :)</string>
     <string name="import_fail">Что-то пошло не так. Импорт не удался.</string>

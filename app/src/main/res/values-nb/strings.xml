@@ -14,7 +14,6 @@
     <string name="no_audio_files">Ingen lydfiler funnet i dette albumet.</string>
     <string name="play_error">Den valgte lydfilen kan ikke spilles av. Kanskje filen ikke finnes lenger.</string>
     <string name="permission_denied">Nødvendig tillatelse ble ikke gitt. Avslutt AudioAnchor.</string>
-    <string name="write_permission_denied">Nødvendig tillatelse ble ikke gitt. Kan ikke skrive til lagringsplass.</string>
     <string name="time_format_error">Angi et gyldig tidspunkt i formatet tt:mm:ss.</string>
     <string name="import_success">Importert :)</string>
     <string name="import_fail">Noe gikk galt. Importeringen mislyktes.</string>

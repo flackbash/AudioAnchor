@@ -7,7 +7,6 @@
     <string name="no_audio_files">Geen audiobestanden aangetroffen in dit album.</string>
     <string name="play_error">Het gekozen audiobestand is niet-afspeelbaar. Wellicht bestaat het bestand niet meer.</string>
     <string name="permission_denied">De vereiste machtiging is niet verleend. Sluit AudioAnchor af.</string>
-    <string name="write_permission_denied">De vereiste machtiging is niet verleend. Het exporteren kan niet worden uitgevoerd.</string>
     <string name="time_format_error">Voer een geldige tijd in in de opmaak hh:mm:ss.</string>
     <string name="import_success">Importeren voltooid :)</string>
     <string name="import_fail">Er is iets misgegaan; het importeren is mislukt.</string>

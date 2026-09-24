@@ -13,7 +13,6 @@
     <string name="no_audio_files">No se han encontrado archivos de audio en este álbum.</string>
     <string name="play_error">El archivo de audio seleccionado no se puede reproducir. Puede que el archivo ya no exista.</string>
     <string name="permission_denied">No se ha concedido el permiso necesario. Salir de AudioAnchor.</string>
-    <string name="write_permission_denied">No se ha concedido el permiso necesario. No se puede escribir en el almacenamiento.</string>
     <string name="time_format_error">Introduzca una hora válida en el formato hh:mm:ss.</string>
     <string name="import_success">Importación correcta :)</string>
     <string name="import_fail">Algo ha ido mal. Error de importación.</string>
