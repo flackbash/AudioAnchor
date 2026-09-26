@@ -1341,6 +1341,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             try {
                 int duration = mMediaPlayer.getDuration();
                 int newPos = Math.max(0, Math.min(duration, mMediaPlayer.getCurrentPosition() + deltaMillis));
+                // Update the retry target (see onError()) to match *before* seeking -- otherwise
+                // a decoder fault triggered by this seek (see setCurrentPosition()) would recover
+                // by reloading and reseeking to wherever the track was last initialized from
+                // instead of the position this skip was trying to reach, making the skip buttons
+                // appear to silently do nothing on affected devices.
+                mLastInitPosition = newPos;
+                mLastInitOnReady = mMediaPlayer.isPlaying() ? this::play : this::onResumedPaused;
                 mMediaPlayer.seekTo(newPos);
             } catch (IllegalStateException e) {
                 e.printStackTrace();
