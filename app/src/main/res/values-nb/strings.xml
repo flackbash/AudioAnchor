@@ -74,7 +74,7 @@
     <string name="settings_continue_until_end_label">Fortsett å spille til slutten av gjeldende spor</string>
     <string name="settings_title_from_metadata_label">Hent sportittel fra metadata</string>
     <string name="settings_display_cover_below_track_data_label">Vis omslags­bilde under sporinformasjonen</string>
-    <string name="settings_dark_label">Mørkt tema</string>
+    <string name="settings_dark_label">Tema</string>
     <string name="settings_dark_theme_system_label">Følg systemtema</string>
     <string name="settings_dark_theme_false_label">Lyst tema</string>
     <string name="settings_dark_theme_true_label">Mørkt tema</string>

@@ -83,7 +83,7 @@
     <string name="settings_continue_until_end_label">Настави са репродукцијом до краја тренутне нумере</string>
     <string name="settings_title_from_metadata_label">Преузми назив нумере из метаподатака</string>
     <string name="settings_display_cover_below_track_data_label">Прикажи насловну слику испод података о нумери</string>
-    <string name="settings_dark_label">Тамна тема</string>
+    <string name="settings_dark_label">Тема</string>
     <string name="settings_dark_theme_system_label">Прати системску тему</string>
     <string name="settings_dark_theme_false_label">Светла тема</string>
     <string name="settings_dark_theme_true_label">Тамна тема</string>

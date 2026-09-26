@@ -67,7 +67,7 @@
     <string name="settings_vibrate_shake_reset_label">Vibrar no reinício por agitação</string>
     <string name="settings_continue_until_end_label">Continuar tocando até o fim da faixa atual</string>
     <string name="settings_title_from_metadata_label">Obter título da faixa a partir dos metadados</string>
-    <string name="settings_dark_label">Tema escuro</string>
+    <string name="settings_dark_label">Tema</string>
     <string name="settings_autorewind_label">Tempo de autoretroceder</string>
     <string name="settings_immediate_playback_label">Começar a reprodução imediatamente após a seleção do item</string>
     <string name="settings_show_hidden_label">Mostrar arquivos ocultos</string>

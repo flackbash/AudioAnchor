@@ -73,7 +73,7 @@
     <string name="settings_continue_until_end_label">Seguir reproduciendo hasta el final de la pista actual</string>
     <string name="settings_title_from_metadata_label">Obtener el título de la pista a partir de los metadatos</string>
     <string name="settings_display_cover_below_track_data_label">Mostrar la imagen de portada bajo la información de la pista</string>
-    <string name="settings_dark_label">Tema oscuro</string>
+    <string name="settings_dark_label">Tema</string>
     <string name="settings_dark_theme_system_label">Seguir el tema del sistema</string>
     <string name="settings_dark_theme_false_label">Tema claro</string>
     <string name="settings_dark_theme_true_label">Tema oscuro</string>

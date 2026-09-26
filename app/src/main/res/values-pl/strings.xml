@@ -79,7 +79,7 @@
     <string name="settings_continue_until_end_label">Odtwarzaj dalej do końca bieżącej ścieżki dźwiękowej</string>
     <string name="settings_title_from_metadata_label">Uzyskaj tytuł utworu z metadanych</string>
     <string name="settings_display_cover_below_track_data_label">Pokazuj okładkę poniżej informacji o ścieżce dźwiękowej</string>
-    <string name="settings_dark_label">Ciemny motyw</string>
+    <string name="settings_dark_label">Motyw</string>
     <string name="settings_autorewind_label">Czas autocofania</string>
     <string name="settings_immediate_playback_label">Rozpocznij odtwarzanie natychmiast po wybraniu elementu</string>
     <string name="settings_duck_audio_label">Przycisz dźwięk, gdy odtwarzanie zostanie przerwane</string>

@@ -75,7 +75,7 @@
     <string name="settings_vibrate_shake_reset_label">Zavibrovat pro potvrzení zatřesení</string>
     <string name="settings_continue_until_end_label">Přehrávat aktuální stopu do konce</string>
     <string name="settings_title_from_metadata_label">Název stopy z metadat</string>
-    <string name="settings_dark_label">Tmavý režim</string>
+    <string name="settings_dark_label">Motiv</string>
     <string name="settings_autorewind_label">Čas automatického posunu</string>
     <string name="settings_immediate_playback_label">Přehrávat okamžitě po výběru položky</string>
     <string name="settings_show_hidden_label">Zobrazit skryté soubory</string>

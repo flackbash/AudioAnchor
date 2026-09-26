@@ -73,7 +73,7 @@
     <string name="settings_continue_until_end_label">Воспроизводить текущий эпизод до конца</string>
     <string name="settings_title_from_metadata_label">Получить название эпизода из метаданных файла</string>
 	<string name="settings_display_cover_below_track_data_label">Отображать обложку под информацией о треке</string>
-    <string name="settings_dark_label">Тёмная тема</string>
+    <string name="settings_dark_label">Тема</string>
     <string name="settings_dark_theme_system_label">Использовать системную тему</string>
     <string name="settings_dark_theme_false_label">Светлая тема</string>
     <string name="settings_dark_theme_true_label">Тёмная тема</string>
