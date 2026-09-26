@@ -1,0 +1,202 @@
+<resources>
+    <string name="channel_name">Mediensteuerung anzeigen</string>
+    <string name="channel_description">Benachrichtigungskanal zur Anzeige der Mediensteuerung.</string>
+    <string name="button_pause">Pause</string>
+    <string name="button_play">Wiedergabe</string>
+    <string name="button_replay">Wiederholen</string>
+    <string name="button_backward">Zurück</string>
+    <string name="button_forward">Vorwärts</string>
+    <string name="button_bookmark">Lesezeichen</string>
+
+    <!-- Toast messages -->
+    <string name="no_albums">Hier ist es noch etwas leer. Füge zunächst ein Verzeichnis zu deiner Bibliothek hinzu.</string>
+    <string name="no_directories">Es wurden noch keine Verzeichnisse hinzugefügt.</string>
+    <string name="no_audio_files">In diesem Album wurden keine Audiodateien gefunden.</string>
+    <string name="play_error">Die ausgewählte Audiodatei kann nicht abgespielt werden. Möglicherweise existiert die Datei nicht mehr.</string>
+    <string name="permission_denied">Die erforderliche Berechtigung wurde nicht erteilt. AudioAnchor wird beendet.</string>
+    <string name="video_permission_rationale_title">Warum benötigt AudioAnchor Zugriff auf Videos?</string>
+    <string name="video_permission_rationale_message">Manche Audiodateien, wie .webm-, .mkv- oder .3gp-Dateien, werden von Android als Video eingestuft, obwohl sie nur Audio enthalten. Ohne diese Berechtigung blendet Android diese Dateien vor AudioAnchor komplett aus, sodass sie nicht in deiner Bibliothek erscheinen. AudioAnchor greift nicht auf deine tatsächlichen Videodateien zu.</string>
+    <string name="time_format_error">Bitte gib eine gültige Zeit im Format hh:mm:ss ein.</string>
+    <string name="import_success">Import erfolgreich :)</string>
+    <string name="import_fail">Etwas ist schiefgelaufen. Der Import ist fehlgeschlagen.</string>
+    <string name="export_success">Datenbank exportiert</string>
+    <string name="export_fail">Etwas ist schiefgelaufen. Der Export ist fehlgeschlagen.</string>
+    <string name="synchronize_success">Bibliothek synchronisiert.</string>
+    <string name="audio_file_error">Es gibt ein Problem mit der Audiodatei \"%s\".</string>
+    <string name="empty_title_error">Bitte gib einen Titel für dein Lesezeichen ein.</string>
+    <string name="jumped_to_bookmark">Zu Lesezeichen \"%s\" bei %s gesprungen.</string>
+    <string name="bookmark_deleted">Lesezeichen gelöscht.</string>
+    <string name="bookmark_added_toast">Lesezeichen \"%s\" bei %s hinzugefügt.</string>
+    <plurals name="tracks_deleted">
+        <item quantity="one">%d Titel gelöscht.</item>
+        <item quantity="other">%d Titel gelöscht.</item>
+    </plurals>
+    <plurals name="tracks_removed_from_db">
+        <item quantity="one">%d Titel aus deiner Bibliothek entfernt.</item>
+        <item quantity="other">%d Titel aus deiner Bibliothek entfernt.</item>
+    </plurals>
+    <plurals name="quant_albums">
+        <item quantity="one">%d Album</item>
+        <item quantity="other">%d Alben</item>
+    </plurals>
+    <plurals name="quant_tracks">
+        <item quantity="one">%d Titel</item>
+        <item quantity="other">%d Titel</item>
+    </plurals>
+    <!-- First %s = "x albums" (quant_albums), second %s = "x tracks" (quant_tracks) -->
+    <string name="album_and_tracks_deleted">%s und %s gelöscht.</string>
+    <plurals name="albums_removed_from_db">
+        <item quantity="one">%d Album aus deiner Bibliothek entfernt.</item>
+        <item quantity="other">%d Alben aus deiner Bibliothek entfernt.</item>
+    </plurals>
+    <plurals name="directories_removed_from_db">
+        <item quantity="one">%d Verzeichnis aus deiner Bibliothek entfernt.</item>
+        <item quantity="other">%d Verzeichnisse aus deiner Bibliothek entfernt.</item>
+    </plurals>
+    <string name="cannot_mark_as_not_started">Der aktuell wiedergegebene Titel kann nicht als nicht begonnen markiert werden.</string>
+    <string name="cannot_mark_as_completed">Der aktuell wiedergegebene Titel kann nicht als abgeschlossen markiert werden.</string>
+    <string name="path">Pfad: %s</string>
+    <string name="directory_exists">Das ausgewählte Verzeichnis existiert bereits in deiner Bibliothek: %s.</string>
+    <string name="parent_directory_exists">Du kannst keine Unterverzeichnisse von Verzeichnissen hinzufügen, die bereits in deiner Bibliothek existieren:\n%s\n%s.</string>
+    <string name="sub_directory_exists">Du kannst keine übergeordneten Verzeichnisse von Verzeichnissen hinzufügen, die bereits in deiner Bibliothek existieren:\n%s\n%s.</string>
+    <string name="illegal_speed">Die aktuelle Datei kann nicht mit der Geschwindigkeit %.1fx abgespielt werden. Bitte wähle einen anderen Wert.</string>
+
+
+    <!-- Settings strings -->
+    <string name="settings_autoplay_label">Automatische Wiedergabe</string>
+    <string name="settings_autoplay_restart_label">Titel beim Wechsel zum nächsten/vorherigen Titel von vorne abspielen</string>
+    <string name="settings_progress_percentage_label">Fortschritt in Prozent anzeigen</string>
+    <string name="settings_keep_deleted_label">Fortschritt gelöschter Dateien in der Bibliothek behalten</string>
+    <string name="settings_auto_sync_startup_label">Bibliothek beim Start automatisch synchronisieren</string>
+    <string name="settings_cover_from_metadata_label">Cover-Bild aus Metadaten beziehen</string>
+    <string name="settings_sleep_timer_category">Einschlaftimer</string>
+    <string name="settings_sleep_fadeout_label">Ausblendzeit</string>
+    <string name="settings_shake_label">Schütteln, um den Einschlaftimer zurückzusetzen</string>
+    <string name="settings_shake_sensitivity_label">Schüttelempfindlichkeit</string>
+    <string name="settings_vibrate_shake_reset_label">Beim Zurücksetzen durch Schütteln vibrieren</string>
+    <string name="settings_continue_until_end_label">Bis zum Ende des aktuellen Titels weiterspielen</string>
+    <string name="settings_title_from_metadata_label">Titelname aus Metadaten beziehen</string>
+    <string name="settings_display_cover_below_track_data_label">Cover-Bild unterhalb der Titelinformationen anzeigen</string>
+    <string name="settings_dark_label">Dunkles Design</string>
+    <string name="settings_dark_theme_system_label">Systemeinstellung folgen</string>
+    <string name="settings_dark_theme_false_label">Helles Design</string>
+    <string name="settings_dark_theme_true_label">Dunkles Design</string>
+    <string name="settings_autorewind_label">Automatische Rücksprungzeit</string>
+    <string name="settings_immediate_playback_label">Wiedergabe sofort nach Auswahl starten</string>
+    <string name="settings_duck_audio_label">Lautstärke bei Unterbrechung der Wiedergabe absenken</string>
+    <string name="settings_show_hidden_label">Versteckte Dateien anzeigen</string>
+    <string name="settings_display_category">Anzeige</string>
+    <string name="settings_playback_category">Wiedergabe</string>
+    <string name="settings_bookmarks_category">Lesezeichen</string>
+    <string name="settings_miscellaneous_category">Sonstiges</string>
+    <string name="settings_sort_order_by_title_label">Nach Titel</string>
+    <string name="settings_sort_order_by_directory_label">Nach Verzeichnis</string>
+    <string name="settings_sort_order_by_progress_label">Nach Fortschritt</string>
+    <string name="settings_sort_order_by_last_played_label">Nach zuletzt gespielt</string>
+    <string name="settings_sort_order_by_date_added_oldest_label">Nach Hinzufügedatum (älteste zuerst)</string>
+    <string name="settings_sort_order_by_date_added_newest_label">Nach Hinzufügedatum (neueste zuerst)</string>
+    <string name="pin">Anheften</string>
+    <string name="unpin">Loslösen</string>
+    <string name="settings_sort_order_label">Sortierreihenfolge für Alben</string>
+    <string name="settings_track_sort_order_label">Sortierreihenfolge für Titel</string>
+    <string name="settings_track_sort_order_by_title_label">Nach Titel</string>
+    <string name="settings_track_sort_order_by_date_added_oldest_label">Nach Hinzufügedatum (älteste zuerst)</string>
+    <string name="settings_track_sort_order_by_date_added_newest_label">Nach Hinzufügedatum (neueste zuerst)</string>
+    <string name="settings_track_sort_order_by_progress_label">Nach Fortschritt</string>
+    <string name="settings_track_sort_order_by_last_played_label">Nach zuletzt gespielt</string>
+    <string name="settings_add_last_play_position_bookmark_label">Lesezeichen für letzte und vorletzte Wiedergabeposition bei jedem Drücken von Play hinzufügen und aktualisieren</string>
+    <string name="settings_cover_on_lockscreen_label">Cover-Bild auf dem Sperrbildschirm anzeigen</string>
+    <string name="settings_quick_bookmark_label">Lesezeichen mit einem einzigen Klick auf das Lesezeichen-Symbol hinzufügen</string>
+    <string name="settings_skip_intervals_category">Sprungintervalle</string>
+    <string name="settings_forward_button_1">Vorwärts-Taste Nr. 1</string>
+    <string name="settings_forward_button_2">Vorwärts-Taste Nr. 2</string>
+    <string name="settings_backward_button_1">Rückwärts-Taste Nr. 1</string>
+    <string name="settings_backward_button_2">Rückwärts-Taste Nr. 2</string>
+    <string name="settings_notification_backward_button">Rückwärts-Taste in der Benachrichtigung</string>
+    <string name="settings_notification_forward_button">Vorwärts-Taste in der Benachrichtigung</string>
+    <string name="settings_skip_interval_msg">Sprungintervall für %s</string>
+    <string name="settings_directory_picker_initial_path_label">Anfangspfad der Verzeichnisauswahl</string>
+
+
+    <!-- Layout Texts -->
+    <string name="title">Titel</string>
+    <string name="album">Album</string>
+    <string name="choose_directory">Verzeichnis hinzufügen</string>
+    <string name="settings">Einstellungen</string>
+    <string name="time_completed_percent">%d%% abgeschlossen</string>
+    <string name="sleep_timer">Einschlaftimer</string>
+    <string name="go_to">Gehe zu</string>
+    <string name="set_bookmark">Lesezeichen setzen</string>
+    <string name="edit_bookmark">Lesezeichen bearbeiten</string>
+    <string name="about">Über</string>
+    <string name="export_db">Datenbank exportieren</string>
+    <string name="import_db">Datenbank importieren</string>
+    <string name="synchronize">Synchronisieren</string>
+    <string name="set_bookmark_name">Gib den Namen des Lesezeichens ein</string>
+    <string name="set_bookmark_at">Lesezeichen setzen bei</string>
+    <string name="no_bookmarks">Für diese Audiodatei gibt es noch keine Lesezeichen.</string>
+    <string name="bookmarks">Lesezeichen</string>
+    <string name="untitled_bookmark">Unbenannt</string>
+    <string name="delete_from_device">Vom Gerät löschen</string>
+    <string name="remove_from_db">Aus Bibliothek entfernen</string>
+    <string name="remove_from_library">Aus Bibliothek entfernen</string>
+    <string name="mark_as_not_started">Als nicht begonnen markieren</string>
+    <string name="mark_as_completed">Als abgeschlossen markieren</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d ausgewählt</item>
+        <item quantity="other">%d ausgewählt</item>
+    </plurals>
+    <string name="mark_all_as_not_started">Alle Titel als nicht begonnen markieren</string>
+    <string name="mark_all_as_completed">Alle Titel als abgeschlossen markieren</string>
+    <string name="playback_speed">Wiedergabegeschwindigkeit</string>
+    <string name="about_contributors">Eine Liste der Mitwirkenden findest du unter</string>
+    <string name="about_report_bugs">Dort kannst du auch Fehler melden, selbst einen Beitrag leisten oder einen Stern hinterlassen, wenn dir die App gefällt.</string>
+    <string name="about_donations">Wenn dir die App gefällt und du eine Spende machen möchtest, kannst du dies tun über</string>
+    <string name="about_donations_thanks">Danke :)</string>
+    <string name="add_sub_dir">Verzeichnis hinzufügen,\ndas Audiodateien enthält</string>
+    <string name="add_parent_dir">Verzeichnis mit\nUnterverzeichnissen hinzufügen,\ndie Audiodateien enthalten</string>
+    <string name="add_directory">Du kannst entweder ein einzelnes Verzeichnis auswählen, das Audiodateien enthält, oder ein übergeordnetes Verzeichnis, das mehrere Verzeichnisse mit Audiodateien enthält.</string>
+
+    <!-- Dialog strings -->
+    <string name="changelog_title">Was ist neu</string>
+    <string name="dialog_msg_select_dir">Auswählen</string>
+    <string name="dialog_msg_set_default_dir">Als Standard festlegen</string>
+    <string name="dialog_msg_sleep_timer">Gib die Anzahl der Minuten ein, für die der Player weiterspielen soll</string>
+    <string name="dialog_msg_ok">OK</string>
+    <string name="dialog_msg_cancel">Abbrechen</string>
+    <string name="dialog_msg_close">Schließen</string>
+    <string name="dialog_msg_delete">Löschen</string>
+    <string name="dialog_msg_goto">Gib die Zeit ein, zu der du springen möchtest</string>
+    <plurals name="dialog_msg_delete_album">
+        <item quantity="one">Möchtest du das ausgewählte Verzeichnis und seinen Inhalt wirklich löschen?</item>
+        <item quantity="other">Möchtest du die ausgewählten Verzeichnisse und ihren Inhalt wirklich löschen?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_album_from_db">
+        <item quantity="one">Möchtest du das ausgewählte Album und seinen Inhalt wirklich aus deiner Bibliothek entfernen? Dieser Vorgang wird nur für Dateien durchgeführt, die im Dateisystem nicht mehr existieren.</item>
+        <item quantity="other">Möchtest du die ausgewählten Alben und ihren Inhalt wirklich aus deiner Bibliothek entfernen? Dieser Vorgang wird nur für Dateien durchgeführt, die im Dateisystem nicht mehr existieren.</item>
+    </plurals>
+    <plurals name="dialog_msg_delete_audio">
+        <item quantity="one">Möchtest du den ausgewählten Titel wirklich löschen?</item>
+        <item quantity="other">Möchtest du die ausgewählten Titel wirklich löschen?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_audio_from_db">
+        <item quantity="one">Möchtest du den ausgewählten Titel wirklich aus der Bibliothek entfernen? Dieser Vorgang wird nur für Dateien durchgeführt, die im Dateisystem nicht mehr existieren.</item>
+        <item quantity="other">Möchtest du die ausgewählten Titel wirklich aus der Bibliothek entfernen? Dieser Vorgang wird nur für Dateien durchgeführt, die im Dateisystem nicht mehr existieren.</item>
+    </plurals>
+    <string name="dialog_msg_delete_bookmark">Dieses Lesezeichen löschen?</string>
+    <string name="dialog_msg_remove_directory_from_db">Möchtest du das ausgewählte Verzeichnis wirklich aus deiner Bibliothek entfernen? Dadurch werden auch die zugehörigen Alben, Audiodateien und Lesezeichen aus deiner Bibliothek entfernt.</string>
+
+    <string name="bookmark_second_to_last_play_position">&lt;vorletzte Wiedergabeposition&gt;</string>
+    <string name="bookmark_last_play_position">&lt;letzte Wiedergabeposition&gt;</string>
+
+
+    <!-- Home screen widgets -->
+    <string name="widget_label_small">AudioAnchor Wiedergabe-Button</string>
+    <string name="widget_label_medium">AudioAnchor Player</string>
+    <string name="widget_label_large">AudioAnchor Player mit allen Tasten</string>
+    <string name="widget_description_small">Setzt deinen zuletzt gespielten Titel fort.</string>
+    <string name="widget_description_medium">Wiedergabe starten, pausieren und vor- oder zurückspringen.</string>
+    <string name="widget_description_large">Wiedergabe starten, pausieren, mit beiden Tastenpaaren vor- und zurückspringen und Lesezeichen setzen.</string>
+    <string name="widget_nothing_played">Noch nichts abgespielt</string>
+    <string name="widget_nothing_to_play">Es gibt noch nichts fortzusetzen. Spiele zuerst einen Titel in AudioAnchor ab.</string>
+</resources>

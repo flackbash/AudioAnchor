@@ -1,0 +1,213 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="channel_name">Прикажи контроле медија</string>
+    <string name="channel_description">Канал обавештења за приказ контрола медија.</string>
+    <string name="button_pause">Паузирај</string>
+    <string name="button_play">Пусти</string>
+    <string name="button_replay">Понови</string>
+    <string name="button_backward">Уназад</string>
+    <string name="button_forward">Унапред</string>
+    <string name="button_bookmark">Обележивач</string>
+
+    <!-- Toast messages -->
+    <string name="no_albums">Овде је још увек прилично празно. Почни тако што ћеш додати директоријум у своју библиотеку.</string>
+    <string name="no_directories">Још увек нису додати директоријуми.</string>
+    <string name="no_audio_files">У овом албуму нису пронађене аудио датотеке.</string>
+    <string name="play_error">Изабрана аудио датотека се не може пустити. Можда датотека више не постоји.</string>
+    <string name="permission_denied">Неопходна дозвола није одобрена. AudioAnchor ће бити затворен.</string>
+    <string name="video_permission_rationale_title">Зашто је AudioAnchor-у потребан приступ видео датотекама?</string>
+    <string name="video_permission_rationale_message">Неке аудио датотеке, као што су .webm, .mkv или .3gp датотеке, Android сврстава у видео датотеке иако садрже само звук. Без ове дозволе, Android потпуно скрива те датотеке од AudioAnchor-а, па се неће појавити у твојој библиотеци. AudioAnchor не приступа твојим стварним видео датотекама.</string>
+    <string name="time_format_error">Унеси важеће време у формату hh:mm:ss.</string>
+    <string name="import_success">Увоз успешан :)</string>
+    <string name="import_fail">Нешто је пошло по злу. Увоз није успео.</string>
+    <string name="export_success">База података извезена</string>
+    <string name="export_fail">Нешто је пошло по злу. Извоз није успео.</string>
+    <string name="synchronize_success">Библиотека синхронизована.</string>
+    <string name="audio_file_error">Постоји проблем са аудио датотеком \"%s\".</string>
+    <string name="empty_title_error">Унеси наслов за свој обележивач.</string>
+    <string name="jumped_to_bookmark">Скочено на обележивач \"%s\" на %s.</string>
+    <string name="bookmark_deleted">Обележивач обрисан.</string>
+    <string name="bookmark_added_toast">Додат обележивач \"%s\" на %s.</string>
+    <plurals name="tracks_deleted">
+        <item quantity="one">%d трек обрисан.</item>
+        <item quantity="few">%d трека обрисана.</item>
+        <item quantity="other">%d трекова обрисано.</item>
+    </plurals>
+    <plurals name="tracks_removed_from_db">
+        <item quantity="one">Уклоњен %d трек из твоје библиотеке.</item>
+        <item quantity="few">Уклоњена %d трека из твоје библиотеке.</item>
+        <item quantity="other">Уклоњено %d трекова из твоје библиотеке.</item>
+    </plurals>
+    <plurals name="quant_albums">
+        <item quantity="one">%d албум</item>
+        <item quantity="few">%d албума</item>
+        <item quantity="other">%d албума</item>
+    </plurals>
+    <plurals name="quant_tracks">
+        <item quantity="one">%d трек</item>
+        <item quantity="few">%d трека</item>
+        <item quantity="other">%d трекова</item>
+    </plurals>
+    <!-- First %s = "x albums" (quant_albums), second %s = "x tracks" (quant_tracks) -->
+    <string name="album_and_tracks_deleted">Обрисано %s и %s.</string>
+    <plurals name="albums_removed_from_db">
+        <item quantity="one">Уклоњен %d албум из твоје библиотеке.</item>
+        <item quantity="few">Уклоњена %d албума из твоје библиотеке.</item>
+        <item quantity="other">Уклоњено %d албума из твоје библиотеке.</item>
+    </plurals>
+    <plurals name="directories_removed_from_db">
+        <item quantity="one">Уклоњен %d директоријум из твоје библиотеке.</item>
+        <item quantity="few">Уклоњена %d директоријума из твоје библиотеке.</item>
+        <item quantity="other">Уклоњено %d директоријума из твоје библиотеке.</item>
+    </plurals>
+    <string name="cannot_mark_as_not_started">Тренутно пуштена нумера не може бити означена као непочета.</string>
+    <string name="cannot_mark_as_completed">Тренутно пуштена нумера не може бити означена као завршена.</string>
+    <string name="path">Путања: %s</string>
+    <string name="directory_exists">Изабрани директоријум већ постоји у твојој библиотеци: %s.</string>
+    <string name="parent_directory_exists">Не можеш додати поддиректоријуме директоријума који већ постоје у твојој библиотеци:\n%s\n%s.</string>
+    <string name="sub_directory_exists">Не можеш додати надређене директоријуме директоријума који већ постоје у твојој библиотеци:\n%s\n%s.</string>
+    <string name="illegal_speed">Тренутна датотека не може да се пусти брзином %.1fx. Изабери другу вредност.</string>
+
+
+    <!-- Settings strings -->
+    <string name="settings_autoplay_label">Аутоматска репродукција</string>
+    <string name="settings_autoplay_restart_label">Понови нумере од почетка при преласку на следећу/претходну нумеру</string>
+    <string name="settings_progress_percentage_label">Прикажи напредак у процентима</string>
+    <string name="settings_keep_deleted_label">Задржи напредак обрисаних датотека у библиотеци</string>
+    <string name="settings_auto_sync_startup_label">Аутоматски синхронизуј библиотеку при покретању</string>
+    <string name="settings_cover_from_metadata_label">Преузми насловну слику из метаподатака</string>
+    <string name="settings_sleep_timer_category">Тајмер за спавање</string>
+    <string name="settings_sleep_fadeout_label">Време утишавања</string>
+    <string name="settings_shake_label">Протреси за ресетовање тајмера за спавање</string>
+    <string name="settings_shake_sensitivity_label">Осетљивост на тресење</string>
+    <string name="settings_vibrate_shake_reset_label">Вибрирај при ресетовању тресењем</string>
+    <string name="settings_continue_until_end_label">Настави са репродукцијом до краја тренутне нумере</string>
+    <string name="settings_title_from_metadata_label">Преузми назив нумере из метаподатака</string>
+    <string name="settings_display_cover_below_track_data_label">Прикажи насловну слику испод података о нумери</string>
+    <string name="settings_dark_label">Тамна тема</string>
+    <string name="settings_dark_theme_system_label">Прати системску тему</string>
+    <string name="settings_dark_theme_false_label">Светла тема</string>
+    <string name="settings_dark_theme_true_label">Тамна тема</string>
+    <string name="settings_autorewind_label">Време аутоматског премотавања уназад</string>
+    <string name="settings_immediate_playback_label">Одмах покрени репродукцију након избора</string>
+    <string name="settings_duck_audio_label">Утишај звук када је репродукција прекинута</string>
+    <string name="settings_show_hidden_label">Прикажи скривене датотеке</string>
+    <string name="settings_display_category">Приказ</string>
+    <string name="settings_playback_category">Репродукција</string>
+    <string name="settings_bookmarks_category">Обележивачи</string>
+    <string name="settings_miscellaneous_category">Разно</string>
+    <string name="settings_sort_order_by_title_label">По наслову</string>
+    <string name="settings_sort_order_by_directory_label">По директоријуму</string>
+    <string name="settings_sort_order_by_progress_label">По напретку</string>
+    <string name="settings_sort_order_by_last_played_label">По последњем пуштању</string>
+    <string name="settings_sort_order_by_date_added_oldest_label">По датуму додавања (најстарије прво)</string>
+    <string name="settings_sort_order_by_date_added_newest_label">По датуму додавања (најновије прво)</string>
+    <string name="pin">Закачи</string>
+    <string name="unpin">Откачи</string>
+    <string name="settings_sort_order_label">Редослед сортирања албума</string>
+    <string name="settings_track_sort_order_label">Редослед сортирања нумера</string>
+    <string name="settings_track_sort_order_by_title_label">По наслову</string>
+    <string name="settings_track_sort_order_by_date_added_oldest_label">По датуму додавања (најстарије прво)</string>
+    <string name="settings_track_sort_order_by_date_added_newest_label">По датуму додавања (најновије прво)</string>
+    <string name="settings_track_sort_order_by_progress_label">По напретку</string>
+    <string name="settings_track_sort_order_by_last_played_label">По последњем пуштању</string>
+    <string name="settings_add_last_play_position_bookmark_label">Додај и ажурирај обележиваче за последњу и претпоследњу позицију репродукције сваки пут када се притисне дугме за пуштање</string>
+    <string name="settings_cover_on_lockscreen_label">Прикажи насловну слику на закључаном екрану</string>
+    <string name="settings_quick_bookmark_label">Додај обележивач једним кликом на икону обележивача</string>
+    <string name="settings_skip_intervals_category">Интервали премотавања</string>
+    <string name="settings_forward_button_1">Дугме за премотавање унапред бр. 1</string>
+    <string name="settings_forward_button_2">Дугме за премотавање унапред бр. 2</string>
+    <string name="settings_backward_button_1">Дугме за премотавање уназад бр. 1</string>
+    <string name="settings_backward_button_2">Дугме за премотавање уназад бр. 2</string>
+    <string name="settings_notification_backward_button">Дугме уназад у обавештењу</string>
+    <string name="settings_notification_forward_button">Дугме унапред у обавештењу</string>
+    <string name="settings_skip_interval_msg">Интервал премотавања за %s</string>
+    <string name="settings_directory_picker_initial_path_label">Почетна путања бирача директоријума</string>
+
+
+    <!-- Layout Texts -->
+    <string name="title">Наслов</string>
+    <string name="album">Албум</string>
+    <string name="choose_directory">Додај директоријум</string>
+    <string name="settings">Подешавања</string>
+    <string name="time_completed_percent">%d%% завршено</string>
+    <string name="sleep_timer">Тајмер за спавање</string>
+    <string name="go_to">Иди на</string>
+    <string name="set_bookmark">Постави обележивач</string>
+    <string name="edit_bookmark">Уреди обележивач</string>
+    <string name="about">О апликацији</string>
+    <string name="export_db">Извези базу података</string>
+    <string name="import_db">Увези базу података</string>
+    <string name="synchronize">Синхронизуј</string>
+    <string name="set_bookmark_name">Унеси назив обележивача</string>
+    <string name="set_bookmark_at">Постави обележивач на</string>
+    <string name="no_bookmarks">За ову аудио датотеку још увек нема обележивача.</string>
+    <string name="bookmarks">Обележивачи</string>
+    <string name="untitled_bookmark">Без назива</string>
+    <string name="delete_from_device">Обриши са уређаја</string>
+    <string name="remove_from_db">Уклони из библиотеке</string>
+    <string name="remove_from_library">Уклони из библиотеке</string>
+    <string name="mark_as_not_started">Означи као непочето</string>
+    <string name="mark_as_completed">Означи као завршено</string>
+    <plurals name="items_selected">
+        <item quantity="one">Изабрано: %d</item>
+        <item quantity="few">Изабрано: %d</item>
+        <item quantity="other">Изабрано: %d</item>
+    </plurals>
+    <string name="mark_all_as_not_started">Означи све нумере као непочете</string>
+    <string name="mark_all_as_completed">Означи све нумере као завршене</string>
+    <string name="playback_speed">Брзина репродукције</string>
+    <string name="about_contributors">Списак сарадника можеш пронаћи на</string>
+    <string name="about_report_bugs">То је такође место где можеш пријавити грешке, дати сопствени допринос или оставити звездицу ако ти се апликација свиђа.</string>
+    <string name="about_donations">Ако ти се апликација свиђа и желиш да даш донацију, то можеш учинити преко</string>
+    <string name="about_donations_thanks">Хвала :)</string>
+    <string name="add_sub_dir">Додај директоријум који\nсадржи аудио датотеке</string>
+    <string name="add_parent_dir">Додај директоријум са\nподдиректоријумима који\nсадрже аудио датотеке</string>
+    <string name="add_directory">Можеш изабрати један директоријум који садржи аудио датотеке или надређени директоријум који садржи више директоријума са аудио датотекама.</string>
+
+    <!-- Dialog strings -->
+    <string name="changelog_title">Шта је ново</string>
+    <string name="dialog_msg_select_dir">Изабери</string>
+    <string name="dialog_msg_set_default_dir">Постави као подразумевано</string>
+    <string name="dialog_msg_sleep_timer">Унеси број минута током којих плејер треба да настави са репродукцијом</string>
+    <string name="dialog_msg_ok">У реду</string>
+    <string name="dialog_msg_cancel">Откажи</string>
+    <string name="dialog_msg_close">Затвори</string>
+    <string name="dialog_msg_delete">Обриши</string>
+    <string name="dialog_msg_goto">Унеси време на које желиш да скочиш</string>
+    <plurals name="dialog_msg_delete_album" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Да ли сигурно желиш да обришеш изабрани директоријум и његов садржај?</item>
+        <item quantity="few">Да ли сигурно желиш да обришеш изабране директоријуме и њихов садржај?</item>
+        <item quantity="other">Да ли сигурно желиш да обришеш изабране директоријуме и њихов садржај?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_album_from_db" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Да ли сигурно желиш да уклониш изабрани албум и његов садржај из своје библиотеке? Ова радња ће бити извршена само за датотеке које више не постоје у систему датотека.</item>
+        <item quantity="few">Да ли сигурно желиш да уклониш изабране албуме и њихов садржај из своје библиотеке? Ова радња ће бити извршена само за датотеке које више не постоје у систему датотека.</item>
+        <item quantity="other">Да ли сигурно желиш да уклониш изабране албуме и њихов садржај из своје библиотеке? Ова радња ће бити извршена само за датотеке које више не постоје у систему датотека.</item>
+    </plurals>
+    <plurals name="dialog_msg_delete_audio" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Да ли сигурно желиш да обришеш изабрани трек?</item>
+        <item quantity="few">Да ли сигурно желиш да обришеш изабране трекове?</item>
+        <item quantity="other">Да ли сигурно желиш да обришеш изабране трекове?</item>
+    </plurals>
+    <plurals name="dialog_msg_remove_audio_from_db" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Да ли сигурно желиш да уклониш изабрани трек из библиотеке? Ова радња ће бити извршена само за датотеке које више не постоје у систему датотека.</item>
+        <item quantity="few">Да ли сигурно желиш да уклониш изабране трекове из библиотеке? Ова радња ће бити извршена само за датотеке које више не постоје у систему датотека.</item>
+        <item quantity="other">Да ли сигурно желиш да уклониш изабране трекове из библиотеке? Ова радња ће бити извршена само за датотеке које више не постоје у систему датотека.</item>
+    </plurals>
+    <string name="dialog_msg_delete_bookmark">Обрисати овај обележивач?</string>
+    <string name="dialog_msg_remove_directory_from_db">Да ли сигурно желиш да уклониш изабрани директоријум из своје библиотеке? Ово ће такође уклонити његове албуме, аудио датотеке и обележиваче из твоје библиотеке.</string>
+
+    <string name="bookmark_second_to_last_play_position">&lt;претпоследња позиција репродукције&gt;</string>
+    <string name="bookmark_last_play_position">&lt;последња позиција репродукције&gt;</string>
+
+
+    <!-- Home screen widgets -->
+    <string name="widget_label_small">AudioAnchor дугме за пуштање</string>
+    <string name="widget_label_medium">AudioAnchor плејер</string>
+    <string name="widget_label_large">AudioAnchor плејер са свим дугмићима</string>
+    <string name="widget_description_small">Наставља репродукцију твоје последње пуштене нумере.</string>
+    <string name="widget_description_medium">Пуштање, паузирање и премотавање уназад и унапред.</string>
+    <string name="widget_description_large">Пуштање, паузирање, премотавање уназад и унапред помоћу оба пара дугмића и постављање обележивача.</string>
+    <string name="widget_nothing_played">Још увек ништа није пуштено</string>
+    <string name="widget_nothing_to_play">Још увек нема шта да се настави. Прво пусти неку нумеру у AudioAnchor-у.</string>
+</resources>
