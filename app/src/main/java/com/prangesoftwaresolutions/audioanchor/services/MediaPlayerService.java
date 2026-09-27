@@ -1306,6 +1306,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 try {
                     wasPlaying = mMediaPlayer.isPlaying();
                     if (wasPlaying) {
+                        // Update the retry target (see onError()) to match *before* pausing --
+                        // otherwise this pause() call's own mMediaPlayer.pause() faulting (the
+                        // same decoder instability described in setCurrentPosition(), not just
+                        // seeking) would retry by reloading and calling the stale onReady left
+                        // over from whenever this track was last (re)initialized -- typically a
+                        // "play immediately" callback from autoplay advancing to it -- silently
+                        // resuming playback a moment after this deliberate pause instead of
+                        // landing back on paused.
+                        mLastInitPosition = mMediaPlayer.getCurrentPosition();
+                        mLastInitOnReady = this::onResumedPaused;
                         mMediaPlayer.pause();
                     }
                 } catch (IllegalStateException e) {
