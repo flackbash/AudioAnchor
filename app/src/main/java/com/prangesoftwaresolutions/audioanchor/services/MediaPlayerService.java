@@ -130,6 +130,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private AudioManager audioManager;
     private boolean mIsPausedByTransientFocusLoss = false;
 
+    // True from the moment pause() is called until its (possibly still-pending, since the
+    // actual MediaPlayer.pause() runs asynchronously on mPlayerExecutor) attempt resolves. See
+    // pause() for why onAudioFocusChange() needs this.
+    private volatile boolean mPauseRequested = false;
+
     // Lock Manager
     LockManager mLockManager;
 
@@ -709,7 +714,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // is likely to resume
                 Log.e("MediaPlayerService", "Audiofocus loss transient");
 
-                if (isPlaying()) {
+                // !mPauseRequested: isPlaying() can still read true for a moment after a
+                // deliberate pause() (e.g. from the sleep timer) has already been requested,
+                // since the actual MediaPlayer.pause() runs asynchronously -- see pause().
+                // Without this, a focus blip landing in that gap would treat the already-pausing
+                // player as freshly interrupted and resume it on the next AUDIOFOCUS_GAIN.
+                if (isPlaying() && !mPauseRequested) {
                     pauseDueToAudioInterruption();
                 }
                 break;
@@ -717,7 +727,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
                 Log.e("MediaPlayerService", "Audiofocus loss can duck");
-                if (isPlaying()) {
+                if (isPlaying() && !mPauseRequested) {
                     boolean duckAudio = mSharedPreferences.getBoolean(getString(R.string.settings_duck_audio_key), Boolean.getBoolean(getString(R.string.settings_duck_audio_default)));
                     if (duckAudio) {
                         setVolume(0.1f);
@@ -1287,6 +1297,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     public void pause() {
+        // Set synchronously, before mMediaPlayer.pause() actually runs (see below) -- otherwise
+        // a transient audio-focus loss arriving in that gap would see isPlaying() still true,
+        // treat an already-pausing player as a fresh interruption via pauseDueToAudioInterruption(),
+        // and have the next AUDIOFOCUS_GAIN call play() again a moment after this pause, even
+        // though nothing ever actually interrupted playback. See onAudioFocusChange().
+        mPauseRequested = true;
+
         // Release the partial wake lock to save battery
         mLockManager.releaseWakeLock();
 
@@ -1322,10 +1339,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     e.printStackTrace();
                     wasPlaying = false;
                 }
+                // The attempt (successful, a no-op because it was already paused, or failed) is
+                // resolved either way -- clear this so a genuine later interruption isn't
+                // ignored too.
+                mPauseRequested = false;
                 if (wasPlaying) {
                     mMainHandler.post(this::onPlaybackPaused);
                 }
             });
+        } else {
+            mPauseRequested = false;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_DETACH);
