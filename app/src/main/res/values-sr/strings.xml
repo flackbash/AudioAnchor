@@ -168,10 +168,11 @@
     <string name="changelog_title">Шта је ново</string>
     <string name="dialog_msg_select_dir">Изабери</string>
     <string name="dialog_msg_set_default_dir">Постави као подразумевано</string>
-    <string name="dialog_msg_sleep_timer">Унеси број минута током којих плејер треба да настави са репродукцијом</string>
+    <string name="dialog_msg_sleep_timer">Унеси број минута током којих плејер треба да настави са репродукцијом, или додирни дугме за брзи избор</string>
     <string name="dialog_msg_ok">У реду</string>
     <string name="dialog_msg_cancel">Откажи</string>
     <string name="dialog_msg_close">Затвори</string>
+    <string name="dialog_msg_stop_sleep_timer">Заустави тајмер</string>
     <string name="dialog_msg_delete">Обриши</string>
     <string name="dialog_msg_goto">Унеси време на које желиш да скочиш</string>
     <plurals name="dialog_msg_delete_album" tools:ignore="ImpliedQuantity">

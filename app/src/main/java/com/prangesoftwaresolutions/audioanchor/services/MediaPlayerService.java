@@ -1685,9 +1685,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    private void terminateSleepTimer() {
+    public void terminateSleepTimer() {
         mStopAtEndOfCurrentTrack = false;
-        mSleepTimer.disableTimer();
+        if (mSleepTimer != null) {
+            mSleepTimer.disableTimer();
+        }
     }
 
     public SleepTimer getSleepTimer() {

@@ -71,6 +71,12 @@
     <string name="settings_cover_from_metadata_label">Get cover image from metadata</string>
     <string name="settings_sleep_timer_category">Sleep timer</string>
     <string name="settings_sleep_fadeout_label">Fade out time</string>
+    <string name="settings_sleep_quick_buttons_label">Quick buttons</string>
+    <string name="settings_sleep_quick_button_add_title">Add quick button</string>
+    <!-- Displayed on each card, e.g. "15 ✕": tapping the card removes it. -->
+    <string name="settings_sleep_quick_button_remove_label">%d ✕</string>
+    <string name="settings_sleep_quick_button_remove_desc">Remove %d minute quick button</string>
+    <string name="settings_sleep_quick_button_add_desc">Add a quick button</string>
     <string name="settings_shake_label">Shake to reset sleep timer</string>
     <string name="settings_shake_sensitivity_label">Shake sensitivity</string>
     <string name="settings_vibrate_shake_reset_label">Vibrate on reset by shake</string>
@@ -161,10 +167,11 @@
     <string name="changelog_title">What\'s new</string>
     <string name="dialog_msg_select_dir">Select</string>
     <string name="dialog_msg_set_default_dir">Set default</string>
-    <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing</string>
+    <string name="dialog_msg_sleep_timer">Enter the number of minutes for which the player should keep playing, or tap a quick button</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Cancel</string>
     <string name="dialog_msg_close">Close</string>
+    <string name="dialog_msg_stop_sleep_timer">Stop timer</string>
     <string name="dialog_msg_delete">Delete</string>
     <string name="dialog_msg_goto">Enter the time to which you want to jump</string>
     <plurals name="dialog_msg_delete_album">

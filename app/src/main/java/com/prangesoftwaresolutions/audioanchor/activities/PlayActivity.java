@@ -30,6 +30,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,6 +44,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
+
+import com.prangesoftwaresolutions.audioanchor.helpers.FlowLayout;
+import com.prangesoftwaresolutions.audioanchor.helpers.SleepQuickButtonsPreference;
 import com.prangesoftwaresolutions.audioanchor.helpers.SleepTimer;
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.models.Bookmark;
@@ -732,11 +737,9 @@ public class PlayActivity extends AppCompatActivity {
         final EditText setTime = dialogView.findViewById(R.id.sleep_timer_set_time);
         setTime.setText(restoredValues != null ? restoredValues[0] : String.valueOf(mLastSleepTime));
         setTime.setSelection(setTime.getText().length());
-        final Button quickButton0 = dialogView.findViewById(R.id.quick_button_0);
-        final Button quickButton1 = dialogView.findViewById(R.id.quick_button_1);
-        final Button quickButton2 = dialogView.findViewById(R.id.quick_button_2);
-        final Button quickButton3 = dialogView.findViewById(R.id.quick_button_3);
-        final Button quickButton4 = dialogView.findViewById(R.id.quick_button_4);
+        final FlowLayout quickButtonContainer = dialogView.findViewById(R.id.quick_button_container);
+        String quickButtonsCsv = mSharedPreferences.getString(getString(R.string.settings_sleep_quick_buttons_key), getString(R.string.settings_sleep_quick_buttons_default));
+        List<Integer> quickButtonValues = SleepQuickButtonsPreference.parse(quickButtonsCsv);
 
         // Setup alertDialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -759,6 +762,8 @@ public class PlayActivity extends AppCompatActivity {
                     minutes = 0;
                 }
             }
+            int maxSleepMinutes = Integer.parseInt(getString(R.string.settings_sleep_timer_max_minutes));
+            minutes = Math.min(minutes, maxSleepMinutes);
 
             if (mPlayer != null) {
                 mPlayer.startSleepTimer(minutes, mSleepCountDownTV);
@@ -779,15 +784,19 @@ public class PlayActivity extends AppCompatActivity {
             }
         });
 
+        builder.setNeutralButton(R.string.dialog_msg_stop_sleep_timer, (dialog, id) -> stopSleepTimer());
+
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
 
-        // Set quick button click listeners
-        setQuickButtonClickListener(quickButton0, alertDialog);
-        setQuickButtonClickListener(quickButton1, alertDialog);
-        setQuickButtonClickListener(quickButton2, alertDialog);
-        setQuickButtonClickListener(quickButton3, alertDialog);
-        setQuickButtonClickListener(quickButton4, alertDialog);
+        // Build one quick button per configured value (see SleepQuickButtonsPreference)
+        LayoutInflater inflater = getLayoutInflater();
+        for (int minutes : quickButtonValues) {
+            Button quickButton = (Button) inflater.inflate(R.layout.view_sleep_timer_quick_button, quickButtonContainer, false);
+            quickButton.setText(String.valueOf(minutes));
+            setQuickButtonClickListener(quickButton, alertDialog);
+            quickButtonContainer.addView(quickButton);
+        }
 
         mOpenDialogType = DIALOG_SLEEP_TIMER;
         mOpenDialogFields = new EditText[]{setTime};
@@ -824,6 +833,17 @@ public class PlayActivity extends AppCompatActivity {
         // Create and start timer
         mSleepTimer.createTimer(minutes * 60, shakeEnabledSetting, shakeForceRequired);
         mSleepTimer.startTimer(false);
+    }
+
+    /*
+     * Stop the currently running sleep timer, if any. A no-op if none is running.
+     */
+    void stopSleepTimer() {
+        if (mPlayer != null) {
+            mPlayer.terminateSleepTimer();
+        } else if (mSleepTimer != null) {
+            mSleepTimer.disableTimer();
+        }
     }
 
     /*

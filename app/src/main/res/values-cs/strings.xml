@@ -125,10 +125,11 @@
 
     <!-- Dialog strings -->
     <string name="dialog_msg_select_dir">Vyberte adresář</string>
-    <string name="dialog_msg_sleep_timer">Zadejte počet minut před vypnutím přehrávání</string>
+    <string name="dialog_msg_sleep_timer">Zadejte počet minut, po které má přehrávač pokračovat v přehrávání, nebo klepněte na tlačítko rychlé volby</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Zrušit</string>
     <string name="dialog_msg_close">Zavřít</string>
+    <string name="dialog_msg_stop_sleep_timer">Zastavit časovač</string>
     <string name="dialog_msg_delete">Smazat</string>
     <string name="dialog_msg_goto">Zadejte čas na který chcete přeskočit</string>
     <plurals name="dialog_msg_delete_album">

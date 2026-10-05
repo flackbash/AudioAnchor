@@ -144,10 +144,11 @@
 
     <!-- Dialog strings -->
     <string name="dialog_msg_select_dir">Wybierz katalog</string>
-    <string name="dialog_msg_sleep_timer">Wprowadź liczbę minut, przez które odtwarzacz powinien dalej odtwarzać</string>
+    <string name="dialog_msg_sleep_timer">Wprowadź liczbę minut, przez które odtwarzacz powinien dalej odtwarzać, lub dotknij przycisku szybkiego wyboru</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Anuluj</string>
     <string name="dialog_msg_close">Zamknij</string>
+    <string name="dialog_msg_stop_sleep_timer">Zatrzymaj minutnik</string>
     <string name="dialog_msg_delete">Usuń</string>
     <string name="dialog_msg_goto">Wprowadź czas, do którego chcesz skoczyć</string>
     <plurals name="dialog_msg_delete_album">

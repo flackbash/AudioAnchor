@@ -161,10 +161,11 @@
     <string name="changelog_title">Was ist neu</string>
     <string name="dialog_msg_select_dir">Auswählen</string>
     <string name="dialog_msg_set_default_dir">Als Standard festlegen</string>
-    <string name="dialog_msg_sleep_timer">Gib die Anzahl der Minuten ein, für die der Player weiterspielen soll</string>
+    <string name="dialog_msg_sleep_timer">Gib die Anzahl der Minuten ein, für die der Player weiterspielen soll, oder tippe auf einen Schnellwahl-Button</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Abbrechen</string>
     <string name="dialog_msg_close">Schließen</string>
+    <string name="dialog_msg_stop_sleep_timer">Timer stoppen</string>
     <string name="dialog_msg_delete">Löschen</string>
     <string name="dialog_msg_goto">Gib die Zeit ein, zu der du springen möchtest</string>
     <plurals name="dialog_msg_delete_album">

@@ -132,10 +132,11 @@
   <string name="add_parent_dir">Legg til mappe\nmed under­mapper\nmed lydfiler</string>
   <string name="add_directory">Du kan velja ei mappe som inneheld lydfiler eller ei mappe som inneheld undermapper med lydfiler.</string>
   <string name="dialog_msg_select_dir">Vel mappe</string>
-  <string name="dialog_msg_sleep_timer">Vel i kor mange minutt spelaren skal halda fram med avspeling.</string>
+  <string name="dialog_msg_sleep_timer">Vel kor mange minutt spelaren skal halda fram med avspeling, eller trykk på ein snøggval</string>
   <string name="dialog_msg_ok">OK</string>
   <string name="dialog_msg_cancel">Avbryt</string>
   <string name="dialog_msg_close">Lukk</string>
+  <string name="dialog_msg_stop_sleep_timer">Stopp tidtakar</string>
   <string name="dialog_msg_delete">Slett</string>
   <string name="dialog_msg_goto">Skriv inn tidspunktet du vil hoppa til</string>
   <plurals name="dialog_msg_delete_album">

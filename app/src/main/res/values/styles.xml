@@ -51,9 +51,18 @@
         <item name="android:layout_height">@dimen/sleep_timer_quick_button_height</item>
         <item name="android:background">@drawable/sleep_timer_quick_button</item>
         <item name="android:layout_margin">@dimen/tiny_margin</item>
-        <item name="android:padding">@dimen/medium_margin</item>
+        <!-- Keep this small: the button is a fixed-size circle, and with a customizable value
+             (see settings_sleep_quick_button_1_key etc.) up to 3 digits need to fit. -->
+        <item name="android:padding">2dp</item>
         <item name="android:minHeight">0dp</item>
         <item name="android:minWidth">0dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/small_font_size</item>
+        <item name="android:includeFontPadding">false</item>
+        <!-- Explicit rather than inherited from the theme: the button's own fill is fixed per
+             theme (see sleepTimerQuickButtonFill), not the app's general background, so the
+             text color needs to track that instead of the theme's default adaptive text color. -->
+        <item name="android:textColor">@color/sleepTimerQuickButtonText</item>
     </style>
 
 </resources>

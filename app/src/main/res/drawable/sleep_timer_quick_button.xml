@@ -3,19 +3,19 @@
     <item android:state_pressed="true" >
         <shape android:shape="oval"  >
             <stroke android:width="3dp" android:color="@color/colorPrimaryDark"/>
-            <solid android:color="@color/colorPrimary"/>
+            <solid android:color="@color/sleepTimerQuickButtonFillPressed"/>
         </shape>
     </item>
     <item android:state_focused="true">
         <shape android:shape="oval"  >
             <stroke android:width="3dp" android:color="@color/colorPrimaryDark"/>
-            <solid android:color="@color/colorPrimaryBright"/>
+            <solid android:color="@color/sleepTimerQuickButtonFill"/>
         </shape>
     </item>
     <item >
         <shape android:shape="oval"  >
             <stroke android:width="3dp" android:color="@color/colorPrimary"/>
-            <solid android:color="@color/colorPrimaryBright"/>
+            <solid android:color="@color/sleepTimerQuickButtonFill"/>
         </shape>
     </item>
 </selector>

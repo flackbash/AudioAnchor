@@ -142,10 +142,11 @@
 
     <!-- Dialog strings -->
     <string name="dialog_msg_select_dir">Velg mappe</string>
-    <string name="dialog_msg_sleep_timer">Angi antall minutter spilleren skal fortsette å spille</string>
+    <string name="dialog_msg_sleep_timer">Angi antall minutter spilleren skal fortsette å spille, eller trykk på en hurtigknapp</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Avbryt</string>
     <string name="dialog_msg_close">Lukk</string>
+    <string name="dialog_msg_stop_sleep_timer">Stopp tidsur</string>
     <string name="dialog_msg_delete">Slett</string>
     <string name="dialog_msg_goto">Angi tidspunktet du vil hoppe til</string>
     <plurals name="dialog_msg_delete_album">

@@ -22,4 +22,11 @@
     <color name="widgetBorder">#99FFB74D</color>
     <color name="widgetTextPrimary">#F5F5F5</color>
     <color name="widgetTextSecondary">#B0B0B5</color>
+
+    <!-- Sleep timer quick buttons: see values/colors.xml. Dark theme uses the more saturated
+         colorPrimaryDark as the fill (the pale default would wash out against a dark background)
+         with light text, and brightens to colorPrimaryBright on press instead of darkening. -->
+    <color name="sleepTimerQuickButtonFill">@color/colorPrimaryDark</color>
+    <color name="sleepTimerQuickButtonFillPressed">@color/colorPrimaryBright</color>
+    <color name="sleepTimerQuickButtonText">@color/widgetTextPrimary</color>
 </resources>

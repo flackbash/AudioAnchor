@@ -116,10 +116,11 @@
 
     <!-- Dialog strings -->
     <string name="dialog_msg_select_dir">Selecionar diretório</string>
-    <string name="dialog_msg_sleep_timer">Digite o número de minutos que o reprodutor deve reproduzir</string>
+    <string name="dialog_msg_sleep_timer">Digite o número de minutos que o reprodutor deve continuar a reproduzir, ou toque em um botão rápido</string>
     <string name="dialog_msg_ok">OK</string>
     <string name="dialog_msg_cancel">Cancelar</string>
     <string name="dialog_msg_close">Fechar</string>
+    <string name="dialog_msg_stop_sleep_timer">Parar temporizador</string>
     <string name="dialog_msg_delete">Apagar</string>
     <string name="dialog_msg_goto">Digite o tempo para qual você deseja avançar</string>
     <plurals name="dialog_msg_delete_album">

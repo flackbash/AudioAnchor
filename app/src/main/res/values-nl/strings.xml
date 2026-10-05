@@ -43,10 +43,11 @@
     <string name="bookmarks">Bladwijzers</string>
 
     <!-- Dialog strings -->
-    <string name="dialog_msg_sleep_timer">Voer het aantal minuten in dat de speler moet bljven afspelen:</string>
+    <string name="dialog_msg_sleep_timer">Voer het aantal minuten in dat de speler moet blijven afspelen, of tik op een snelkeuzeknop</string>
     <string name="dialog_msg_ok">Oké</string>
     <string name="dialog_msg_cancel">Annuleren</string>
     <string name="dialog_msg_close">Sluiten</string>
+    <string name="dialog_msg_stop_sleep_timer">Timer stoppen</string>
     <string name="dialog_msg_delete">Verwijderen</string>
     <string name="dialog_msg_goto">Voer de tijd in waarnaar je wilt doorspoelen:</string>
     <string name="dialog_msg_delete_bookmark">Wil je deze bladwijzer verwijderen?</string>

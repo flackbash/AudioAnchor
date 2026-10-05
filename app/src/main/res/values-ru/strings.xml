@@ -141,10 +141,11 @@
 
     <!-- Dialog strings -->
     <string name="dialog_msg_select_dir">Выбрать папку</string>
-    <string name="dialog_msg_sleep_timer">Введите количество минут, в течении которых проигрыватель должен играть</string>
+    <string name="dialog_msg_sleep_timer">Введите количество минут, в течение которых проигрыватель должен продолжать воспроизведение, или нажмите кнопку быстрого выбора</string>
     <string name="dialog_msg_ok">Ок</string>
     <string name="dialog_msg_cancel">Отмена</string>
     <string name="dialog_msg_close">Закрыть</string>
+    <string name="dialog_msg_stop_sleep_timer">Остановить таймер</string>
     <string name="dialog_msg_delete">Удалить</string>
     <string name="dialog_msg_goto">Введите время, на которое хотите перейти</string>
     <plurals name="dialog_msg_delete_album">

@@ -5,32 +5,14 @@
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <com.prangesoftwaresolutions.audioanchor.helpers.FlowLayout
+        android:id="@+id/quick_button_container"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:layout_marginTop="@dimen/medium_margin">
-        <Button
-            android:id="@+id/quick_button_0"
-            style="@style/sleep_timer_quick_button"
-            android:text="@string/sleep_timer_quick_button_0"/>
-        <Button
-            android:id="@+id/quick_button_1"
-            style="@style/sleep_timer_quick_button"
-            android:text="@string/sleep_timer_quick_button_1"/>
-        <Button
-            android:id="@+id/quick_button_2"
-            style="@style/sleep_timer_quick_button"
-            android:text="@string/sleep_timer_quick_button_2"/>
-        <Button
-            android:id="@+id/quick_button_3"
-            style="@style/sleep_timer_quick_button"
-            android:text="@string/sleep_timer_quick_button_3"/>
-        <Button
-            android:id="@+id/quick_button_4"
-            style="@style/sleep_timer_quick_button"
-            android:text="@string/sleep_timer_quick_button_4"/>
-    </LinearLayout>
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:clipToPadding="false"
+        android:clipChildren="false" />
 
 
     <EditText

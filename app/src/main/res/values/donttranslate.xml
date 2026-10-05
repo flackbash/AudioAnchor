@@ -5,6 +5,9 @@
     <string name="preference_filename" translatable="false">storage_directory</string>
     <string name="preference_last_sleep_val" translatable="false">10</string>
     <string name="preference_last_sleep_key" translatable="false">preference_last_sleep</string>
+    <!-- Also caps the quick button values in Settings: keeps them to at most 3 digits so they
+         fit the fixed-size quick button circles. -->
+    <string name="settings_sleep_timer_max_minutes" translatable="false">180</string>
     <string name="preference_playback_speed_key" translatable="false">preference_playback_speed</string>
     <string name="preference_playback_speed_default" translatable="false">100</string>
     <string name="preference_playback_speed_minimum" translatable="false">50</string>
@@ -102,11 +105,9 @@
     <string name="playback_speed_label" translatable="false">%.2f</string>
     <string name="github_link" translatable="false">https://github.com/flackbash/AudioAnchor</string>
     <string name="paypal_link" translatable="false"><a href="https://www.paypal.com/donate/?hosted_button_id=ZTVWJXZUVE64U">PayPal</a></string>
-    <string name="sleep_timer_quick_button_0" translatable="false">0</string>
-    <string name="sleep_timer_quick_button_1" translatable="false">15</string>
-    <string name="sleep_timer_quick_button_2" translatable="false">30</string>
-    <string name="sleep_timer_quick_button_3" translatable="false">45</string>
-    <string name="sleep_timer_quick_button_4" translatable="false">60</string>
+    <!-- Comma-separated list of minute values, see SleepQuickButtonsPreference. -->
+    <string name="settings_sleep_quick_buttons_key" translatable="false">sleep_timer_quick_buttons</string>
+    <string name="settings_sleep_quick_buttons_default" translatable="false">10,15,30,45,60</string>
 
     <!-- Others -->
     <string name="database_filename" translatable="false">audio_anchor.db</string>
