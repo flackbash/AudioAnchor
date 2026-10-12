@@ -1,0 +1,3 @@
+• Sleep timer quick buttons are now customizable: add or remove values (up to 6) right from Settings
+
+• Added German and Serbian translations
