@@ -56,6 +56,7 @@ import com.prangesoftwaresolutions.audioanchor.helpers.Synchronizer;
 import com.prangesoftwaresolutions.audioanchor.adapters.AlbumCursorAdapter;
 import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.ResumeFabUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.util.ArrayList;
@@ -255,6 +256,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Set up the FAB onClickListener
         mPlayPauseFAB.setOnClickListener(view -> {
             if (mPlayer == null) {
+                // The service is gone (e.g. the app was killed): resume the last played track.
+                // Ignore taps while a resume is already in flight (bound, connection pending).
+                if (!mServiceBound && Utils.resumeLastPlayed(this)) {
+                    mDoNotBindService = false;
+                    bindToService();
+                }
                 return;
             }
             if (mPlayer.isPlaying()) {
@@ -454,7 +461,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // still owns and closes the original `cursor`.
         cursor = sortAlbumsNaturally(cursor);
 
-        if (mPlayer != null) {
+        if (mPlayer != null && mPlayer.getCurrentAudioFile() != null) {
             long albumId = mPlayer.getCurrentAudioFile().getAlbumId();
 
             // Set the album completion time
@@ -591,6 +598,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mServiceBound = false;
+            mPlayer = null;
             Log.e("MainActivity", "OnServiceDisconnected called");
         }
     };
@@ -611,7 +619,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      * beginning -- see issue #196), otherwise play. Mirrors PlayActivity.updatePlayPauseIcon().
      */
     private void updatePlayPauseFABIcon() {
-        if (mPlayer == null) {
+        if (mPlayer == null || mPlayer.getCurrentAudioFile() == null) {
             return;
         }
         if (mPlayer.isPlaying()) {
@@ -634,12 +642,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      * Bind to MediaPlayerService if it has been started by the PlayActivity
      */
     private void bindToServiceIfRunning() {
-        if (!mServiceBound && !mDoNotBindService && Utils.isMediaPlayerServiceRunning(this)) {
-            Log.e("MainActivity", "Service is running - binding service");
-            Intent playerIntent = new Intent(this, MediaPlayerService.class);
-            bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
-            mServiceBound = true;
+        if (mServiceBound) {
+            return;
         }
+        boolean serviceRunning = Utils.isMediaPlayerServiceRunning(this);
+        if (serviceRunning && !mDoNotBindService) {
+            Log.e("MainActivity", "Service is running - binding service");
+            bindToService();
+        } else if (!serviceRunning && ResumeFabUtils.shouldShowResumeFab(false, !mDoNotBindService,
+                AudioFile.getMostRecentlyPlayed(this) != null)) {
+            // No service (e.g. the app was killed), but the last played track can be resumed
+            mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+            mPlayPauseFAB.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void bindToService() {
+        Intent playerIntent = new Intent(this, MediaPlayerService.class);
+        bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
+        mServiceBound = true;
     }
 
     /*
@@ -707,7 +728,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
             TextView durationTV = v.findViewById(R.id.album_info_time_album);
 
-            if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getID() == mCurrUpdatedAudioId) {
+            if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile() != null && mPlayer.getCurrentAudioFile().getID() == mCurrUpdatedAudioId) {
                 // Set the progress string for the album of the currently playing audio file
                 int completedTime = mPlayer.getCurrentPosition();
                 int currCompletedAlbumTime = mAlbumLastCompletedTime - mCurrAudioLastCompletedTime + completedTime;

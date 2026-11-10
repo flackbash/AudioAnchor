@@ -54,4 +54,6 @@ dependencies {
 // Other
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("com.nambimobile.widgets:expandable-fab:1.2.1")
+
+    testImplementation("junit:junit:4.13.2")
 }
