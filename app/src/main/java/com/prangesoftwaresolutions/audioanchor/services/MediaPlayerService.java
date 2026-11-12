@@ -1297,6 +1297,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     public void pause() {
+        // Clear this before anything else: it's only meant to track an unresolved transient
+        // focus loss so resumeAfterAudioFocusGain() can auto-resume once focus returns. Any
+        // other deliberate pause (sleep timer, user, media button) overrides that intent -- if
+        // left set, a focus-loss/gain pair resolving shortly after this pause (e.g. a lock-sound
+        // chime briefly grabbing focus when the screen locks) would otherwise call play() again
+        // a moment after this pause, even though it has nothing to do with the original
+        // interruption. pauseDueToAudioInterruption() re-sets this right after calling pause().
+        mIsPausedByTransientFocusLoss = false;
+
         // Set synchronously, before mMediaPlayer.pause() actually runs (see below) -- otherwise
         // a transient audio-focus loss arriving in that gap would see isPlaying() still true,
         // treat an already-pausing player as a fresh interruption via pauseDueToAudioInterruption(),
