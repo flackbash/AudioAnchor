@@ -4,6 +4,7 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYB
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.ForegroundServiceStartNotAllowedException;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -33,6 +34,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.core.app.NotificationCompat;
@@ -1073,12 +1075,42 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .setDeleteIntent(deleteIntent);
 
         Notification notification = mNotificationBuilder.build();
+        // Android 12+ refuses startForeground() while the app is in the background, e.g. when
+        // another app's alarm took audio focus and pause() just demoted this service. That is
+        // tolerated: the notification is still posted by notify() below.
+        tryStartForeground(notification);
+        mNotificationManager.notify(NOTIFICATION_ID, notification);
+    }
+
+    /**
+     * Calls startForeground(), tolerating Android 12+ refusing it while the app is in the
+     * background. The caller still posts the notification with notify().
+     */
+    private void tryStartForeground(Notification notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            tryStartForegroundApi31(notification);
+        } else {
+            startForegroundCompat(notification);
+        }
+    }
+
+    // ForegroundServiceStartNotAllowedException only exists from API 31, so it is only referenced
+    // from this method, which is only called on such devices.
+    @RequiresApi(Build.VERSION_CODES.S)
+    private void tryStartForegroundApi31(Notification notification) {
+        try {
+            startForegroundCompat(notification);
+        } catch (ForegroundServiceStartNotAllowedException e) {
+            Log.w("MediaPlayerService", "startForeground() not allowed, only updating the notification", e);
+        }
+    }
+
+    private void startForegroundCompat(Notification notification) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         } else {
             startForeground(NOTIFICATION_ID, notification);
         }
-        mNotificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     private PendingIntent playbackAction(int actionNumber) {
