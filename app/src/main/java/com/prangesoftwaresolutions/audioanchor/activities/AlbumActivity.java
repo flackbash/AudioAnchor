@@ -641,11 +641,15 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             return;
         }
         boolean serviceRunning = Utils.isMediaPlayerServiceRunning(this);
+        AudioFile lastPlayed = serviceRunning ? null : AudioFile.getMostRecentlyPlayed(this);
         if (serviceRunning && !mDoNotBindService) {
             Log.e("AlbumActivity", "Service is running - binding service");
             bindToService();
-        } else if (!serviceRunning && ResumeFabUtils.shouldShowResumeFab(false, !mDoNotBindService,
-                AudioFile.getMostRecentlyPlayed(this) != null)) {
+        } else if (ResumeFabUtils.shouldShowResumeFab(
+                serviceRunning,
+                !mDoNotBindService,
+                lastPlayed
+        )) {
             // No service (e.g. the app was killed), but the last played track can be resumed
             mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
             mPlayPauseFAB.setVisibility(View.VISIBLE);
