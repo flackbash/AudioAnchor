@@ -5,6 +5,15 @@
     <string name="button_play">Reproduzir</string>
     <string name="button_backward">Retroceder</string>
     <string name="button_forward">Avançar</string>
+    <string name="button_previous_track">Faixa anterior</string>
+    <string name="button_next_track">Faixa seguinte</string>
+    <string name="button_decrease">Diminuir</string>
+    <string name="button_increase">Aumentar</string>
+    <string name="button_reset_playback_speed">Repor velocidade da reprodução</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d segundo</item>
+        <item quantity="other">%d segundos</item>
+    </plurals>
 
     <!-- Toast messages -->
     <string name="no_albums">Está um pouco vazio aqui. Comece adicionando um diretório na sua biblioteca.</string>

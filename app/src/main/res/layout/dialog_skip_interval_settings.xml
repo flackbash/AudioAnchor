@@ -57,6 +57,7 @@
 
     <ImageView
         android:id="@+id/decrease_interval_iv"
+        android:contentDescription="@string/button_decrease"
         android:layout_width="@dimen/change_skip_interval_button_height"
         android:layout_height="@dimen/change_skip_interval_button_height"
         app:layout_constraintTop_toBottomOf="@+id/seekbar_ll"
@@ -67,6 +68,7 @@
 
     <ImageView
         android:id="@+id/increase_interval_iv"
+        android:contentDescription="@string/button_increase"
         android:layout_width="@dimen/change_skip_interval_button_height"
         android:layout_height="@dimen/change_skip_interval_button_height"
         app:layout_constraintTop_toBottomOf="@+id/seekbar_ll"

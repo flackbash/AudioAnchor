@@ -39,6 +39,7 @@
 
             <com.nambimobile.widgets.efab.ExpandableFab
                 android:id="@+id/add_directory_fam"
+                android:contentDescription="@string/choose_directory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -53,6 +54,7 @@
 
             <com.nambimobile.widgets.efab.FabOption
                 android:id="@+id/add_sub_dir_fab"
+                android:contentDescription="@string/add_sub_dir"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:fabSize="mini"
@@ -65,6 +67,7 @@
 
             <com.nambimobile.widgets.efab.FabOption
                 android:id="@+id/add_parent_dir_fab"
+                android:contentDescription="@string/add_parent_dir"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:fabSize="mini"

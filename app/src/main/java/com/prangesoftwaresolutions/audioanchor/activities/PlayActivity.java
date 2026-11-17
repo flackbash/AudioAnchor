@@ -206,7 +206,7 @@ public class PlayActivity extends AppCompatActivity {
                 if (s != null) {
                     switch (s) {
                         case MediaPlayerService.MSG_PLAY:
-                            mPlayIV.setImageResource(R.drawable.pause_button);
+                            Utils.setIcon(mPlayIV, R.drawable.pause_button, R.string.button_pause);
                             if (!serviceBound) {
                                 bindService();
                             }
@@ -324,40 +324,29 @@ public class PlayActivity extends AppCompatActivity {
         int skipIntervalForwardButton1 = SkipIntervalUtils.getForwardButton1(this);
         int skipIntervalForwardButton2 = SkipIntervalUtils.getForwardButton2(this);
 
-        // Set the skip interval text within the skip buttons
-        mBackward1TV.setText(String.valueOf(skipIntervalBackwardButton1));
-        mBackward2TV.setText(String.valueOf(skipIntervalBackwardButton2));
-        mForward1TV.setText(String.valueOf(skipIntervalForwardButton1));
-        mForward2TV.setText(String.valueOf(skipIntervalForwardButton2));
+        initSkipButton(mBackward1IV, mBackward1TV, skipIntervalBackwardButton1, false);
+        initSkipButton(mBackward2IV, mBackward2TV, skipIntervalBackwardButton2, false);
+        initSkipButton(mForward1IV, mForward1TV, skipIntervalForwardButton1, true);
+        initSkipButton(mForward2IV, mForward2TV, skipIntervalForwardButton2, true);
+    }
 
-        // Set the skip icon to next / previous if a button has a max skip interval set
-        if (SkipIntervalUtils.isMaxSkipInterval(skipIntervalBackwardButton1)) {
-            mBackward1IV.setImageResource(R.drawable.previous_button);
-            mBackward1TV.setVisibility(View.INVISIBLE);
+    /*
+     * Show the skip interval inside the button, or the next / previous track icon if the button
+     * has the max skip interval set. The interval text is hidden from screen readers in the
+     * layout, so the button's content description carries it instead.
+     */
+    private void initSkipButton(ImageView button, TextView intervalTV, int skipInterval, boolean forward) {
+        intervalTV.setText(String.valueOf(skipInterval));
+        if (SkipIntervalUtils.isMaxSkipInterval(skipInterval)) {
+            Utils.setIcon(button,
+                    forward ? R.drawable.next_button : R.drawable.previous_button,
+                    forward ? R.string.button_next_track : R.string.button_previous_track);
+            intervalTV.setVisibility(View.INVISIBLE);
         } else {
-            mBackward1IV.setImageResource(R.drawable.backward_button);
-            mBackward1TV.setVisibility(View.VISIBLE);
-        }
-        if (SkipIntervalUtils.isMaxSkipInterval(skipIntervalBackwardButton2)) {
-            mBackward2IV.setImageResource(R.drawable.previous_button);
-            mBackward2TV.setVisibility(View.INVISIBLE);
-        } else {
-            mBackward2IV.setImageResource(R.drawable.backward_button);
-            mBackward2TV.setVisibility(View.VISIBLE);
-        }
-        if (SkipIntervalUtils.isMaxSkipInterval(skipIntervalForwardButton1)) {
-            mForward1IV.setImageResource(R.drawable.next_button);
-            mForward1TV.setVisibility(View.INVISIBLE);
-        } else {
-            mForward1IV.setImageResource(R.drawable.forward_button);
-            mForward1TV.setVisibility(View.VISIBLE);
-        }
-        if (SkipIntervalUtils.isMaxSkipInterval(skipIntervalForwardButton2)) {
-            mForward2IV.setImageResource(R.drawable.next_button);
-            mForward2TV.setVisibility(View.INVISIBLE);
-        } else {
-            mForward2IV.setImageResource(R.drawable.forward_button);
-            mForward2TV.setVisibility(View.VISIBLE);
+            button.setImageResource(forward ? R.drawable.forward_button : R.drawable.backward_button);
+            button.setContentDescription(getString(forward ? R.string.button_forward : R.string.button_backward)
+                    + ", " + getResources().getQuantityString(R.plurals.skip_seconds, skipInterval, skipInterval));
+            intervalTV.setVisibility(View.VISIBLE);
         }
     }
 
@@ -646,11 +635,11 @@ public class PlayActivity extends AppCompatActivity {
     // of racing the stale pre-seek value.
     void updatePlayPauseIcon(int completedTime) {
         if (mPlayer != null && mPlayer.isPlaying()) {
-            mPlayIV.setImageResource(R.drawable.pause_button);
+            Utils.setIcon(mPlayIV, R.drawable.pause_button, R.string.button_pause);
         } else if (Utils.isFinished(mAudioFile, completedTime)) {
-            mPlayIV.setImageResource(R.drawable.replay_button);
+            Utils.setIcon(mPlayIV, R.drawable.replay_button, R.string.button_replay);
         } else {
-            mPlayIV.setImageResource(R.drawable.play_button);
+            Utils.setIcon(mPlayIV, R.drawable.play_button, R.string.button_play);
         }
     }
 

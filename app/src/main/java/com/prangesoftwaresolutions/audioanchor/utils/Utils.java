@@ -3,7 +3,10 @@ package com.prangesoftwaresolutions.audioanchor.utils;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.widget.ImageView;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
 
@@ -171,6 +174,16 @@ public class Utils {
      */
     public static boolean isFinished(AudioFile audioFile, int completedTime) {
         return audioFile.getTime() > 0 && completedTime >= audioFile.getTime();
+    }
+
+    /*
+     * Icon-only buttons have no text for a screen reader to announce, so an icon that changes
+     * meaning (play / pause / replay, skip / previous track) has to change its content
+     * description with it. Setting both through here keeps the two from drifting apart.
+     */
+    public static void setIcon(ImageView view, @DrawableRes int icon, @StringRes int description) {
+        view.setImageResource(icon);
+        view.setContentDescription(view.getContext().getString(description));
     }
 
     public static boolean isMediaPlayerServiceRunning(Context context) {

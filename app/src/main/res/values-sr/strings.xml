@@ -7,6 +7,16 @@
     <string name="button_backward">Уназад</string>
     <string name="button_forward">Унапред</string>
     <string name="button_bookmark">Обележивач</string>
+    <string name="button_previous_track">Претходни трек</string>
+    <string name="button_next_track">Следећи трек</string>
+    <string name="button_decrease">Смањи</string>
+    <string name="button_increase">Повећај</string>
+    <string name="button_reset_playback_speed">Ресетуј брзину репродукције</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d секунда</item>
+        <item quantity="few">%d секунде</item>
+        <item quantity="other">%d секунди</item>
+    </plurals>
 
     <!-- Toast messages -->
     <string name="no_albums">Овде је још увек прилично празно. Почни тако што ћеш додати директоријум у своју библиотеку.</string>

@@ -6,6 +6,17 @@
     <string name="button_backward">Назад</string>
     <string name="button_forward">Вперед</string>
 	<string name="button_bookmark">Закладка</string>
+    <string name="button_previous_track">Предыдущая запись</string>
+    <string name="button_next_track">Следующая запись</string>
+    <string name="button_decrease">Уменьшить</string>
+    <string name="button_increase">Увеличить</string>
+    <string name="button_reset_playback_speed">Сбросить скорость воспроизведения</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d секунда</item>
+        <item quantity="few">%d секунды</item>
+        <item quantity="many">%d секунд</item>
+        <item quantity="other">%d секунды</item>
+    </plurals>
 
     <!-- Toast messages -->
     <string name="no_albums">Пусто. Добавьте папку в вашу библиотеку.</string>

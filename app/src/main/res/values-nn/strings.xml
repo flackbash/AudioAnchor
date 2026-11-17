@@ -7,6 +7,15 @@
   <string name="button_backward">Spol bakover</string>
   <string name="button_forward">Spol framover</string>
   <string name="button_bookmark">Bokmerke</string>
+    <string name="button_previous_track">Førre spor</string>
+    <string name="button_next_track">Neste spor</string>
+    <string name="button_decrease">Reduser</string>
+    <string name="button_increase">Auk</string>
+    <string name="button_reset_playback_speed">Tilbakestill avspelingsfart</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d sekund</item>
+        <item quantity="other">%d sekund</item>
+    </plurals>
   <string name="no_albums">Det er ganske tomt her. Kom i gang ved å leggja til ei mappe.</string>
   <string name="no_directories">Ingen mapper er lagde til enno.</string>
   <string name="no_audio_files">Fann ingen lydfiler i albumet.</string>

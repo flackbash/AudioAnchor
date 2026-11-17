@@ -6,6 +6,15 @@
     <string name="button_backward">Atrás</string>
     <string name="button_forward">Adelante</string>
     <string name="button_bookmark">Favoritos</string>
+    <string name="button_previous_track">Pista anterior</string>
+    <string name="button_next_track">Pista siguiente</string>
+    <string name="button_decrease">Disminuir</string>
+    <string name="button_increase">Aumentar</string>
+    <string name="button_reset_playback_speed">Restablecer velocidad de reproducción</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d segundo</item>
+        <item quantity="other">%d segundos</item>
+    </plurals>
 
     <!-- Toast messages -->
     <string name="no_albums">Está un poco vacío aquí. Empieza por añadir un directorio a tu biblioteca.</string>

@@ -7,6 +7,15 @@
     <string name="button_backward">Bakover</string>
     <string name="button_forward">Framover</string>
     <string name="button_bookmark">Bokmerke</string>
+    <string name="button_previous_track">Forrige spor</string>
+    <string name="button_next_track">Neste spor</string>
+    <string name="button_decrease">Reduser</string>
+    <string name="button_increase">Øk</string>
+    <string name="button_reset_playback_speed">Tilbakestill avspillingshastighet</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d sekund</item>
+        <item quantity="other">%d sekunder</item>
+    </plurals>
 
     <!-- Toast messages -->
     <string name="no_albums">Det er tomt her. Kom i gang ved å legge til en mappe i biblioteket ditt.</string>

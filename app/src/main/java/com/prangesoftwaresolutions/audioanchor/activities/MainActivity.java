@@ -260,11 +260,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (mPlayer.isPlaying()) {
                 Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PAUSE_AUDIO);
                 LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(broadcastIntent);
-                mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+                Utils.setIcon(mPlayPauseFAB, R.drawable.ic_play_white, R.string.button_play);
             } else {
                 Intent broadcastIntent = new Intent(PlayActivity.BROADCAST_PLAY_AUDIO);
                 LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(broadcastIntent);
-                mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
+                Utils.setIcon(mPlayPauseFAB, R.drawable.ic_pause_white, R.string.button_pause);
             }
         });
 
@@ -615,11 +615,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return;
         }
         if (mPlayer.isPlaying()) {
-            mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_pause_white, R.string.button_pause);
         } else if (Utils.isFinished(mPlayer.getCurrentAudioFile(), mPlayer.getCurrentPosition())) {
-            mPlayPauseFAB.setImageResource(R.drawable.ic_replay_white);
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_replay_white, R.string.button_replay);
         } else {
-            mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_play_white, R.string.button_play);
         }
     }
 

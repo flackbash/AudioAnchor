@@ -10,6 +10,7 @@ import android.view.View;
 import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.listeners.PlayStatusChangeListener;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
+import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 public class PlayStatusReceiver extends BroadcastReceiver {
 
@@ -31,7 +32,7 @@ public class PlayStatusReceiver extends BroadcastReceiver {
         if (s != null) {
             switch (s) {
                 case MediaPlayerService.MSG_PLAY:
-                    mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
+                    Utils.setIcon(mPlayPauseFAB, R.drawable.ic_pause_white, R.string.button_pause);
                     mPlayPauseFAB.setVisibility(View.VISIBLE);
                     if (mListener != null) {
                         mListener.onPlayMsgReceived();
@@ -48,7 +49,7 @@ public class PlayStatusReceiver extends BroadcastReceiver {
                     }
                     break;
                 case MediaPlayerService.MSG_STOP:
-                    mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+                    Utils.setIcon(mPlayPauseFAB, R.drawable.ic_play_white, R.string.button_play);
                     mPlayPauseFAB.setVisibility(View.GONE);
                     break;
             }

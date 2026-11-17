@@ -608,11 +608,11 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             return;
         }
         if (mPlayer.isPlaying()) {
-            mPlayPauseFAB.setImageResource(R.drawable.ic_pause_white);
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_pause_white, R.string.button_pause);
         } else if (Utils.isFinished(mPlayer.getCurrentAudioFile(), mPlayer.getCurrentPosition())) {
-            mPlayPauseFAB.setImageResource(R.drawable.ic_replay_white);
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_replay_white, R.string.button_replay);
         } else {
-            mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_play_white, R.string.button_play);
         }
     }
 

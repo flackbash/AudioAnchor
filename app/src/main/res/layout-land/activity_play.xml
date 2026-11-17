@@ -68,6 +68,7 @@
 
                 <ImageView
                     android:id="@+id/play_play"
+                    android:contentDescription="@string/button_play"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/play_button"
@@ -84,6 +85,7 @@
                     android:layout_centerVertical="true">
                     <TextView
                         android:id="@+id/backward_1_tv"
+                        android:importantForAccessibility="no"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
@@ -106,6 +108,7 @@
                     android:layout_centerVertical="true">
                     <TextView
                         android:id="@+id/backward_2_tv"
+                        android:importantForAccessibility="no"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
@@ -128,6 +131,7 @@
                     android:layout_centerVertical="true">
                     <TextView
                         android:id="@+id/forward_1_tv"
+                        android:importantForAccessibility="no"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
@@ -150,6 +154,7 @@
                     android:layout_centerVertical="true">
                     <TextView
                         android:id="@+id/forward_2_tv"
+                        android:importantForAccessibility="no"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"

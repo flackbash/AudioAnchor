@@ -5,6 +5,17 @@
     <string name="button_play">Spustit</string>
     <string name="button_backward">Zpět</string>
     <string name="button_forward">Vpřed</string>
+    <string name="button_previous_track">Předchozí stopa</string>
+    <string name="button_next_track">Další stopa</string>
+    <string name="button_decrease">Snížit</string>
+    <string name="button_increase">Zvýšit</string>
+    <string name="button_reset_playback_speed">Obnovit rychlost přehrávání</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d sekunda</item>
+        <item quantity="few">%d sekundy</item>
+        <item quantity="many">%d sekundy</item>
+        <item quantity="other">%d sekund</item>
+    </plurals>
 
     <!-- Toast messages -->
     <string name="no_albums">Začnětě přidáním adresáře do knihovny.</string>

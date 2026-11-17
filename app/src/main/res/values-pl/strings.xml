@@ -6,6 +6,17 @@
     <string name="button_backward">Do tyłu</string>
     <string name="button_forward">Do przodu</string>
     <string name="button_bookmark">Zakładka</string>
+    <string name="button_previous_track">Poprzednia ścieżka</string>
+    <string name="button_next_track">Następna ścieżka</string>
+    <string name="button_decrease">Zmniejsz</string>
+    <string name="button_increase">Zwiększ</string>
+    <string name="button_reset_playback_speed">Resetuj prędkość odtwarzania</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d sekunda</item>
+        <item quantity="few">%d sekundy</item>
+        <item quantity="many">%d sekund</item>
+        <item quantity="other">%d sekundy</item>
+    </plurals>
 
     <!-- Toast messages -->
     <string name="no_albums">Nie znaleziono żadnych albumów w podanym katalogu.</string>

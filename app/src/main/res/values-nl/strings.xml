@@ -1,4 +1,13 @@
 <resources>
+    <string name="button_previous_track">Vorig nummer</string>
+    <string name="button_next_track">Volgend nummer</string>
+    <string name="button_decrease">Verlagen</string>
+    <string name="button_increase">Verhogen</string>
+    <string name="button_reset_playback_speed">Afspeelsnelheid herstellen</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d seconde</item>
+        <item quantity="other">%d seconden</item>
+    </plurals>
     <string name="channel_name">Mediabediening tonen</string>
     <string name="channel_description">Meldingskanaal om de mediabediening te tonen.</string>
 

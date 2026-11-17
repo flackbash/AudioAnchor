@@ -7,6 +7,15 @@
     <string name="button_backward">Backward</string>
     <string name="button_forward">Forward</string>
     <string name="button_bookmark">Bookmark</string>
+    <string name="button_previous_track">Previous track</string>
+    <string name="button_next_track">Next track</string>
+    <string name="button_decrease">Decrease</string>
+    <string name="button_increase">Increase</string>
+    <string name="button_reset_playback_speed">Reset playback speed</string>
+    <plurals name="skip_seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
 
     <!-- Toast messages -->
     <string name="no_albums">It\'s a bit empty here. Start by adding a directory to your library.</string>
