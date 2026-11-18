@@ -656,7 +656,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 lastPlayed
         )) {
             // No service (e.g. the app was killed), but the last played track can be resumed
-            mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_play_white, R.string.button_play);
             mPlayPauseFAB.setVisibility(View.VISIBLE);
         }
     }

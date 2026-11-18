@@ -162,6 +162,13 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 return;
             }
 
+            // Right after a resume FAB tap the service is bound but not yet connected. It can't
+            // be stopped yet either: it was started as a foreground service and stopping it
+            // before it calls startForeground() crashes the app. Ignore the tap until then.
+            if (mServiceBound && mPlayer == null) {
+                return;
+            }
+
             // If the MediaPlayerService is bound, check if it is playing the file that was
             // clicked. If not, stop the current service and let the PlayActivity start a new
             // one
@@ -651,7 +658,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 lastPlayed
         )) {
             // No service (e.g. the app was killed), but the last played track can be resumed
-            mPlayPauseFAB.setImageResource(R.drawable.ic_play_white);
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_play_white, R.string.button_play);
             mPlayPauseFAB.setVisibility(View.VISIBLE);
         }
     }
