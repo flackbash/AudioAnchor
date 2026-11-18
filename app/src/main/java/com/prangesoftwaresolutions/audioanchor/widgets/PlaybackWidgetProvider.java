@@ -11,18 +11,14 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import androidx.annotation.LayoutRes;
-import androidx.core.content.ContextCompat;
 
 import com.prangesoftwaresolutions.audioanchor.R;
 import com.prangesoftwaresolutions.audioanchor.activities.MainActivity;
 import com.prangesoftwaresolutions.audioanchor.activities.PlayActivity;
-import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
 import com.prangesoftwaresolutions.audioanchor.services.MediaPlayerService;
 import com.prangesoftwaresolutions.audioanchor.utils.SkipIntervalUtils;
-import com.prangesoftwaresolutions.audioanchor.utils.StorageUtil;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
-import java.util.ArrayList;
 
 /*
  * Base of the home screen playback widgets. The widgets come in several sizes (one subclass,
@@ -153,17 +149,9 @@ public abstract class PlaybackWidgetProvider extends AppWidgetProvider {
             return;
         }
 
-        AudioFile lastPlayed = AudioFile.getMostRecentlyPlayed(context);
-        if (lastPlayed == null) {
+        if (!Utils.resumeLastPlayed(context)) {
             Toast.makeText(context.getApplicationContext(), R.string.widget_nothing_to_play, Toast.LENGTH_LONG).show();
-            return;
         }
-
-        // The service picks up the queue it should play from storage when it starts, the same
-        // way it does when PlayActivity starts it
-        ArrayList<Long> queue = AudioFile.getSortedAudioIdsInAlbum(context, lastPlayed.getAlbumId());
-        new StorageUtil(context).storeAudioQueue(queue, queue.indexOf(lastPlayed.getID()));
-        ContextCompat.startForegroundService(context, serviceIntent(context, MediaPlayerService.ACTION_PLAY));
     }
 
     private static Intent serviceIntent(Context context, String action) {

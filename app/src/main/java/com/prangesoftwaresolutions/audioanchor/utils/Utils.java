@@ -2,12 +2,14 @@ package com.prangesoftwaresolutions.audioanchor.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import com.prangesoftwaresolutions.audioanchor.models.AudioFile;
@@ -16,6 +18,7 @@ import com.prangesoftwaresolutions.audioanchor.R;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 
 /**
  * Utility class for AudioAnchor
@@ -184,6 +187,25 @@ public class Utils {
     public static void setIcon(ImageView view, @DrawableRes int icon, @StringRes int description) {
         view.setImageResource(icon);
         view.setContentDescription(view.getContext().getString(description));
+    }
+
+    /*
+     * Start a playback session by resuming the most recently played track where it was left off.
+     * Returns false if there is nothing to resume.
+     */
+    public static boolean resumeLastPlayed(Context context) {
+        AudioFile lastPlayed = AudioFile.getMostRecentlyPlayed(context);
+        if (lastPlayed == null) {
+            return false;
+        }
+
+        // The service picks up the queue it should play from storage when it starts, the same
+        // way it does when PlayActivity starts it
+        ArrayList<Long> queue = AudioFile.getSortedAudioIdsInAlbum(context, lastPlayed.getAlbumId());
+        new StorageUtil(context).storeAudioQueue(queue, queue.indexOf(lastPlayed.getID()));
+        ContextCompat.startForegroundService(context,
+                new Intent(context, MediaPlayerService.class).setAction(MediaPlayerService.ACTION_PLAY));
+        return true;
     }
 
     public static boolean isMediaPlayerServiceRunning(Context context) {

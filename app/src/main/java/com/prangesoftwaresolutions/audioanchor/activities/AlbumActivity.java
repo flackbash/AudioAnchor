@@ -48,6 +48,7 @@ import com.prangesoftwaresolutions.audioanchor.data.AnchorContract;
 import com.prangesoftwaresolutions.audioanchor.utils.BitmapUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.DBAccessUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.TrackSortUtils;
+import com.prangesoftwaresolutions.audioanchor.utils.ResumeFabUtils;
 import com.prangesoftwaresolutions.audioanchor.utils.Utils;
 
 import java.io.File;
@@ -161,10 +162,17 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                 return;
             }
 
+            // Right after a resume FAB tap the service is bound but not yet connected. It can't
+            // be stopped yet either: it was started as a foreground service and stopping it
+            // before it calls startForeground() crashes the app. Ignore the tap until then.
+            if (mServiceBound && mPlayer == null) {
+                return;
+            }
+
             // If the MediaPlayerService is bound, check if it is playing the file that was
             // clicked. If not, stop the current service and let the PlayActivity start a new
             // one
-            if (mServiceBound && mPlayer.getCurrentAudioFile().getID() != audio.getID()) {
+            if (mServiceBound && mPlayer.getCurrentAudioFile() != null && mPlayer.getCurrentAudioFile().getID() != audio.getID()) {
                 Log.e("AlbumActivity", "Unbinding Service ");
                 unbindService(serviceConnection);
                 mServiceBound = false;
@@ -277,6 +285,12 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Set up the FAB onClickListener
         mPlayPauseFAB.setOnClickListener(view -> {
             if (mPlayer == null) {
+                // The service is gone (e.g. the app was killed): resume the last played track.
+                // Ignore taps while a resume is already in flight (bound, connection pending).
+                if (!mServiceBound && Utils.resumeLastPlayed(this)) {
+                    mDoNotBindService = false;
+                    bindToService();
+                }
                 return;
             }
             if (mPlayer.isPlaying()) {
@@ -469,7 +483,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         // Set the album info time
         int[] times = DBAccessUtils.getAlbumTimes(this, mAlbum.getID());
         Log.e("AlbumActivity", "Update AlbumLastCompletedTime");
-        if (mPlayer != null) {
+        if (mPlayer != null && mPlayer.getCurrentAudioFile() != null) {
             mCurrAudioLastCompletedTime = mPlayer.getCurrentAudioFile().getCompletedTime();
             mCurrUpdatedAudioId = mPlayer.getCurrentAudioFile().getID();
         }
@@ -565,7 +579,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
             updatePlayPauseFABIcon();
 
             Log.e("AlbumActivity", "Update currAudioLastCompletedTime");
-            if (mPlayer.getCurrentAudioFile().getAlbumId() == mAlbum.getID()) {
+            if (mPlayer.getCurrentAudioFile() != null && mPlayer.getCurrentAudioFile().getAlbumId() == mAlbum.getID()) {
                 // The Loader's onLoadFinished() only refreshes these two fields when it runs
                 // while the service is already bound. Binding here is async, same as the
                 // Loader's own reload, so onLoadFinished() can just as easily win that race and
@@ -584,6 +598,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mServiceBound = false;
+            mPlayer = null;
             Log.e("AlbumActivity", "OnServiceDisconnected called");
         }
     };
@@ -604,7 +619,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
      * beginning -- see issue #196), otherwise play. Mirrors PlayActivity.updatePlayPauseIcon().
      */
     private void updatePlayPauseFABIcon() {
-        if (mPlayer == null) {
+        if (mPlayer == null || mPlayer.getCurrentAudioFile() == null) {
             return;
         }
         if (mPlayer.isPlaying()) {
@@ -629,12 +644,29 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
      */
     private void bindToServiceIfRunning() {
         Log.e("AlbumActivity", "service bound: " + mServiceBound + "do not bind service: " + mDoNotBindService);
-        if (!mServiceBound && !mDoNotBindService && Utils.isMediaPlayerServiceRunning(this)) {
-            Log.e("AlbumActivity", "Service is running - binding service");
-            Intent playerIntent = new Intent(this, MediaPlayerService.class);
-            bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
-            mServiceBound = true;
+        if (mServiceBound) {
+            return;
         }
+        boolean serviceRunning = Utils.isMediaPlayerServiceRunning(this);
+        AudioFile lastPlayed = serviceRunning ? null : AudioFile.getMostRecentlyPlayed(this);
+        if (serviceRunning && !mDoNotBindService) {
+            Log.e("AlbumActivity", "Service is running - binding service");
+            bindToService();
+        } else if (ResumeFabUtils.shouldShowResumeFab(
+                serviceRunning,
+                !mDoNotBindService,
+                lastPlayed
+        )) {
+            // No service (e.g. the app was killed), but the last played track can be resumed
+            Utils.setIcon(mPlayPauseFAB, R.drawable.ic_play_white, R.string.button_play);
+            mPlayPauseFAB.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void bindToService() {
+        Intent playerIntent = new Intent(this, MediaPlayerService.class);
+        bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
+        mServiceBound = true;
     }
 
     /*
@@ -682,7 +714,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     }
                 }
 
-                if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile().getID() == mCurrUpdatedAudioId) {
+                if (mPlayer != null && mPlayer.isPlaying() && mPlayer.getCurrentAudioFile() != null && mPlayer.getCurrentAudioFile().getID() == mCurrUpdatedAudioId) {
                     // Set the progress string for the currently playing ListView item
                     int completedTime = mPlayer.getCurrentPosition();
                     if (v != null) {
@@ -816,7 +848,7 @@ public class AlbumActivity extends AppCompatActivity implements LoaderManager.Lo
                     if (!deletedFiles.contains(new File(audioFile.getPath()))) continue;
 
                     // Stop MediaPlayerService if the currently playing file was just deleted
-                    if (mPlayer != null) {
+                    if (mPlayer != null && mPlayer.getCurrentAudioFile() != null) {
                         long activeAudioId = mPlayer.getCurrentAudioFile().getID();
                         if (activeAudioId == audioFile.getID()) {
                             mPlayer.stopMedia();
